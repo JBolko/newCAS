@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern CAS - Matematik & Fysik</title>
+    
+    <link rel="stylesheet" href="assets/style.css">
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Modern CAS</h1>
+        <p>Indtast din matematik (f.eks. <code>g := 9.82; f(t) := 1/2 * g * t^2; f(5)</code>)</p>
+
+        <div class="input-area">
+            <textarea id="cas-input" rows="5" placeholder="Skriv her..."></textarea>
+            <button id="run-btn">Beregn</button>
+        </div>
+
+        <div class="output-area">
+            <h3>Resultat:</h3>
+            <div id="cas-output">Venter på input...</div>
+        </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+
+</body>
+</html>
