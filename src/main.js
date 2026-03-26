@@ -9,46 +9,60 @@ import { CASEngine } from './cas-engine.js';
 // 1. Skab maskinerne
 const transformer = new Transformer();
 const engine = new CASEngine(transformer);
+const calculateBtn = document.getElementById('run-btn'); // Rettet til 'run-btn' jf. CSS
+const mathInput = document.getElementById('cas-input');  // Rettet til 'cas-input' jf. CSS
+const outputElement = document.getElementById('cas-output');
 
-// 2. Start motoren (Top-level await)
+// 2. Event listener (Flyttet op så den registreres med det samme)
+if (!calculateBtn || !mathInput || !outputElement) {
+    console.error("FEJL: Kunne ikke finde de nødvendige HTML-elementer!");
+} else {
+  calculateBtn.addEventListener('click', async (e) => {
+    console.log("KNAPPEN ER TRYKKET!");
+    e.preventDefault();
+
+    // Tjek om engine overhovedet er klar
+    if (!engine.pyodide) {
+        outputElement.innerText = "Vent venligst... Motoren er stadig ved at varme op.";
+        return;
+    }
+
+    const input = mathInput.value.trim();
+    if (!input) return;
+
+    try {
+      // 1. Parse input til AST
+      const ast = parse(input);
+      
+      // 2. Kør beregning via engine (som nu returnerer objektet)
+      const result = await engine.calculate(ast);
+      console.log("CAS Resultat:", result);
+
+      // 3. Vis resultat med KaTeX
+      if (result.type !== "error") {
+        window.katex.render(result.latex, outputElement, {
+          throwOnError: false,
+          displayMode: true
+        });
+        
+        // Valgfrit: Hvis du har et felt til decimaltal, kan du tilføje det her
+        // decimalElement.innerText = "≈ " + result.decimal;
+
+      } else {
+        outputElement.innerHTML = `<span style="color:red">Fejl: ${result.message}</span>`;
+      }
+
+    } catch (err) {
+      console.error("Fejl under beregning:", err);
+      outputElement.innerText = "Syntaksfejl: " + err.message;
+    }
+  });
+}
+
+// 3. Start motoren (Kører i baggrunden)
 try {
     await engine.init();
-    console.log("CAS systemet er 100% klar med wrap_result!");
+    console.log("CAS systemet er 100% klar!");
 } catch (err) {
     console.error("CAS kunne ikke starte:", err);
 }
-
-async function handleCompute() {
-  const input = document.getElementById('cas-input').value;
-  const outputElement = document.getElementById('cas-output');
-  
-  try {
-    // 1. Parse input til AST
-    const ast = parse(input);
-    
-    // 2. Transformer AST til Python kode
-    const result = await engine.calculate(ast);
-    console.log("Genereret Python:", result);
-    
-    // 3. Kør beregning i Pyodide
-    // const result = await calculate(pythonCode);
-    
-    // 4. Vis resultat
-    if (result.type !== "error") {
-        // Vi bruger KaTeX til at tegne result.latex ind i dit outputElement
-        // Sørg for at outputElement er en div eller span
-        katex.render(result.latex, outputElement, {
-            throwOnError: false,
-            displayMode: true // Dette centrerer og gør matematikken tydelig
-        });
-
-        // Valgfrit: Hvis du også vil vise decimaltallet et sted:
-        // decimalElement.innerText = "≈ " + result.decimal;
-        
-    } else {
-        outputElement.innerText = "CAS Fejl: " + result.message;
-    }
-}
-
-// Event listener til din knap
-document.getElementById('run-btn').addEventListener('click', handleCompute);
