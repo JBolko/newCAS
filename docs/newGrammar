@@ -4,7 +4,6 @@
   }
 }}
 
-// === Hovedregler ===
 Program
   = _ head:Statement tail:(_ ";" _ s:Statement { return s; })* _ ";"? _
     { return [head, ...tail]; }
@@ -22,41 +21,33 @@ Assignment
 Expression
   = head:Term tail:(_ op:[+-] _ next:Term { return {op, next}; })*
     {
-      return tail.reduce((result, element) => {
-        return { type: "BinaryExpression", op: element.op, left: result, right: element.next };
-      }, head);
+      return tail.reduce((result, element) => makeNode("BinaryExpression", { op: element.op, left: result, right: element.next }), head);
     }
 
 Term
-  = head:Factor tail:(_ op:[*/] _ next:Factor { return {op, next}; })*
+  = head:ImplicitMulti tail:(_ op:[*/] _ next:ImplicitMulti { return {op, next}; })*
     {
-      return tail.reduce((result, element) => {
-        return { type: "BinaryExpression", op: element.op, left: result, right: element.next };
-      }, head);
+      return tail.reduce((result, element) =>
+        makeNode("BinaryExpression", { op: element.op, left: result, right: element.next }), head);
     }
 
-// Factor håndterer eksponent (^) – højeste prioritet
-Factor
-  = base:Primary _ "^" _ exponent:Factor
-    { return makeNode("PowerExpression", { base: base, exponent: exponent }); }
-  / ImplicitMulti
-
-// Implicit multiplikation (3x, 2(x+1), factor(…), sin x osv.)
 ImplicitMulti
-  = head:Primary tail:(_ &([a-zA-ZæøåÆØÅ_(]) next:Primary { return { op: "*", next }; })*
+  = head:Power tail:(_ &([a-zA-ZæøåÆØÅ_(]) next:Power { return { op: "*", next }; })*
     {
-      return tail.reduce((result, element) => {
-        return { type: "BinaryExpression", op: element.op, left: result, right: element.next };
-      }, head);
+      return tail.reduce((result, element) =>
+        makeNode("BinaryExpression", { op: element.op, left: result, right: element.next }), head);
     }
+
+Power
+  = base:Primary _ "^" _ exponent:Power
+    { return makeNode("PowerExpression", { base: base, exponent: exponent }); }
+  / Primary
 
 Primary
   = "(" _ expr:Expression _ ")" { return expr; }
   / "-" _ p:Primary { return { type: "UnaryExpression", op: "-", argument: p }; }
   / call:FunctionCall
-  / id:Identifier _ "[" _ idx:Expression _ "]" {
-      return { type: "Access", container: id, index: idx }; 
-    }
+  / id:Identifier _ "[" _ idx:Expression _ "]" { return { type: "Access", container: id, index: idx }; }
   / id:Identifier { return { type: "Variable", name: id }; }
   / List
   / Vector
@@ -85,11 +76,12 @@ Params
 Identifier "id" = [a-zA-ZæøåÆØÅ_][a-zA-ZæøåÆØÅ0-9_]* { return text(); }
 
 Number "number" = [0-9]+("."[0-9]+)? { return parseFloat(text()); }
-_ "whitespace" = [ \t\n\r]* { return null; }
+
+_ "whitespace" = [ \t\n\r]*
 
 Unit
   = "[" _ u:[^\]]+ _ "]" { return u.join("").trim(); }
- 
+
 List
   = "{" _ args:Args _ "}" { return { type: "List", elements: args }; }
 

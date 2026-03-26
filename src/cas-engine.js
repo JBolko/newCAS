@@ -8,19 +8,17 @@ export class CASEngine {
     try {
         console.log("Initialiserer Pyodide...");
 
-        // Brug en nyere og mere stabil Pyodide version + eksplicit indexURL
+        // Nyere og mere stabil version + eksplicit indexURL
         this.pyodide = await loadPyodide({
             indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/"
         });
 
-        console.log("Pyodide indlæst – indlæser sympy... (dette kan tage 10-30 sekunder første gang)");
+        console.log("Pyodide indlæst – indlæser sympy (kan tage 15-40 sekunder første gang)...");
 
-        // Load sympy direkte – det er den anbefalede måde for indbyggede pakker
         await this.pyodide.loadPackage("sympy");
 
-        console.log("SymPy indlæst – opretter wrapper...");
+        console.log("SymPy indlæst – opretter wrapper funktioner...");
 
-        // Python setup – tilføjet 'factor' eksplicit
         const pythonSetup = `
 import json
 from sympy import *
@@ -49,7 +47,7 @@ def wrap_result(res):
 
         await this.pyodide.runPythonAsync(pythonSetup);
         
-        console.log("✅ CASEngine er klar med SymPy + factor!");
+        console.log("✅ CASEngine er klar med SymPy og factor!");
 
     } catch (err) {
         console.error("❌ Fejl under Pyodide/SymPy opsætning:", err);
