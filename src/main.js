@@ -34,10 +34,20 @@ async function handleCompute() {
     // const result = await calculate(pythonCode);
     
     // 4. Vis resultat
-    outputElement.innerText = result;
-  } catch (err) {
-    outputElement.innerText = "Syntaksfejl: " + err.message;
-  }
+    if (result.type !== "error") {
+        // Vi bruger KaTeX til at tegne result.latex ind i dit outputElement
+        // Sørg for at outputElement er en div eller span
+        katex.render(result.latex, outputElement, {
+            throwOnError: false,
+            displayMode: true // Dette centrerer og gør matematikken tydelig
+        });
+
+        // Valgfrit: Hvis du også vil vise decimaltallet et sted:
+        // decimalElement.innerText = "≈ " + result.decimal;
+        
+    } else {
+        outputElement.innerText = "CAS Fejl: " + result.message;
+    }
 }
 
 // Event listener til din knap
