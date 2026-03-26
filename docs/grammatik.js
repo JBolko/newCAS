@@ -1,11 +1,9 @@
 {{
-  // Her kan vi indsætte små JS-hjælpefunktioner
   function makeNode(type, data) {
     return { type: type, ...data };
   }
 }}
 
-// Start-reglen
 Program
   = _ head:Statement tail:(_ ";" _ s:Statement { return s; })* _ ";"? _
     { return [head, ...tail]; }
@@ -23,43 +21,33 @@ Assignment
 Expression
   = head:Term tail:(_ op:[+-] _ next:Term { return {op, next}; })*
     {
-      return tail.reduce((result, element) => {
-        return { type: "BinaryExpression", op: element.op, left: result, right: element.next };
-      }, head);
+      return tail.reduce((result, element) => makeNode("BinaryExpression", { op: element.op, left: result, right: element.next }), head);
     }
 
-// Denne nye regel håndterer 4x og 2(x+1)
-// Term håndterer de hårde operatorer (* og /)
 Term
-  = head:ImplicitTerm tail:(_ op:[*/] _ next:ImplicitTerm { return {op, next}; })*
+  = head:ImplicitMulti tail:(_ op:[*/] _ next:ImplicitMulti { return {op, next}; })*
     {
-      return tail.reduce((result, element) => {
-        return { type: "BinaryExpression", op: element.op, left: result, right: element.next };
-      }, head);
+      return tail.reduce((result, element) =>
+        makeNode("BinaryExpression", { op: element.op, left: result, right: element.next }), head);
     }
 
-// ImplicitTerm håndterer 4x, xy, 2(x+1)
-// Den tjekker &(_ [a-zA-ZæøåÆØÅ_({]) for at sikre at det næste er noget, 
-// der må ganges implicit med (bogstav, parentes eller start-klods)
-ImplicitTerm
-  = head:Factor tail:(_ &([a-zA-ZæøåÆØÅ_({]) next:Factor { return { op: "*", next }; })*
+ImplicitMulti
+  = head:Power tail:(_ &([a-zA-ZæøåÆØÅ_(]) next:Power { return { op: "*", next }; })*
     {
-      return tail.reduce((result, element) => {
-        return { type: "BinaryExpression", op: element.op, left: result, right: element.next };
-      }, head);
+      return tail.reduce((result, element) =>
+        makeNode("BinaryExpression", { op: element.op, left: result, right: element.next }), head);
     }
-Factor
-  = left:Primary _ "^" _ right:Factor
-    { return { type: "PowerExpression", base: left, exponent: right }; }
+
+Power
+  = base:Primary _ "^" _ exponent:Power
+    { return makeNode("PowerExpression", { base: base, exponent: exponent }); }
   / Primary
 
 Primary
   = "(" _ expr:Expression _ ")" { return expr; }
   / "-" _ p:Primary { return { type: "UnaryExpression", op: "-", argument: p }; }
-  / id:Identifier _ "[" _ idx:Expression _ "]" {
-      return { type: "Access", container: id, index: idx }; 
-    }
   / call:FunctionCall
+  / id:Identifier _ "[" _ idx:Expression _ "]" { return { type: "Access", container: id, index: idx }; }
   / id:Identifier { return { type: "Variable", name: id }; }
   / List
   / Vector
@@ -67,7 +55,7 @@ Primary
   / num:Number { return { type: "Literal", value: num }; }
 
 FunctionCall
-  = id:Identifier "(" _ args:Args _ ")"
+  = id:Identifier _ "(" _ args:Args _ ")"
     { return makeNode("FunctionCall", { name: id, args: args }); }
 
 Equation
@@ -88,11 +76,12 @@ Params
 Identifier "id" = [a-zA-ZæøåÆØÅ_][a-zA-ZæøåÆØÅ0-9_]* { return text(); }
 
 Number "number" = [0-9]+("."[0-9]+)? { return parseFloat(text()); }
-_ "whitespace" = [ \t\n\r]* { return null; }
+
+_ "whitespace" = [ \t\n\r]*
 
 Unit
   = "[" _ u:[^\]]+ _ "]" { return u.join("").trim(); }
- 
+
 List
   = "{" _ args:Args _ "}" { return { type: "List", elements: args }; }
 

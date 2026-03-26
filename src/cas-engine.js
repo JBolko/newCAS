@@ -31,8 +31,8 @@ def wrap_result(res):
         if isinstance(res, (list, tuple)):
             return json.dumps({
                 "type": "list",
-                "latex": [latex(r) for r in res],
-                "decimal": [str(N(r)) for r in res]
+                "latex": ", ".join([latex(simplify(r)) for r in res]),
+                "decimal": ", ".join([str(N(r)) for r in res])
             })
         
         return json.dumps({
