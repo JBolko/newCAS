@@ -2,15 +2,21 @@
  * main.js - Entry point for applikationen.
  */
 
-import { settings } from './settings.js
-import { parse } from './parser.mjs'; // Peggy output
-import { translateASTtoPython } from './transformer.js';
-import { initCAS, calculate } from './cas-engine.js';
+import { parse } from './parser.mjs';
+import { Transformer } from './transformer.js';
+import { CASEngine } from './cas-engine.js';
 
-// Initialiser CAS når siden loader
-initCAS().then(() => {
-  console.log("CAS systemet er klar!");
-});
+// 1. Skab maskinerne
+const transformer = new Transformer();
+const engine = new CASEngine(transformer);
+
+// 2. Start motoren (Top-level await)
+try {
+    await engine.init();
+    console.log("CAS systemet er 100% klar med wrap_result!");
+} catch (err) {
+    console.error("CAS kunne ikke starte:", err);
+}
 
 async function handleCompute() {
   const input = document.getElementById('cas-input').value;
@@ -21,11 +27,11 @@ async function handleCompute() {
     const ast = parse(input);
     
     // 2. Transformer AST til Python kode
-    const pythonCode = translateASTtoPython(ast);
-    console.log("Genereret Python:", pythonCode);
+    const result = await engine.calculate(ast);
+    console.log("Genereret Python:", result);
     
     // 3. Kør beregning i Pyodide
-    const result = await calculate(pythonCode);
+    // const result = await calculate(pythonCode);
     
     // 4. Vis resultat
     outputElement.innerText = result;

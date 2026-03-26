@@ -1,70 +1,66 @@
 /**
  * transformer.js - Konverterer AST til SymPy-kompatibel Python-kode.
  */
+export class Transformer {
+    constructor() {
+        // Her kan vi senere tilføje settings
+    }
 
-export function translateASTtoPython(node) {
-  if (Array.isArray(node)) {
-    return node.map(translateASTtoPython).join('\n');
-  }
+    toPython(node) {
+        return this.translate(node);
+    }
 
-  if (!node) return "";
+    translate(node) {
+        if (Array.isArray(node)) {
+            return node.map(n => this.translate(n)).join('\n');
+        }
 
-  const ops = { 
-    '+': '+', 
-    '-': '-', 
-    '*': '*', 
-    '/': '/', 
-    '^': '**' };
+        if (!node) return "";
 
-  switch (node.type) {
-    case 'Literal': 
-      return node.value.toString();
+        const ops = { 
+            '+': '+', 
+            '-': '-', 
+            '*': '*', 
+            '/': '/', 
+            '^': '**' 
+        };
 
-    case 'Variable': 
-      return node.name;
+        switch (node.type) {
+            case 'Literal': 
+                return node.value.toString();
 
-    case 'BinaryExpression':
-      // Denne fanger +, -, * og /
-      return `(${translateASTtoPython(node.left)} ${ops[node.op]} ${translateASTtoPython(node.right)})`;
+            case 'Variable': 
+                return node.name;
 
-    case 'PowerExpression':
-      // Denne fanger ^ og oversætter til Python's **
-      // Vi bruger 'base' og 'exponent', da det er det, dit AST viser
-      return `(${translateASTtoPython(node.base)} ** ${translateASTtoPython(node.exponent)})`;
+            case 'BinaryExpression':
+                return `(${this.translate(node.left)} ${ops[node.op]} ${this.translate(node.right)})`;
 
-    case 'UnaryExpression':
-      return `(-${translateASTtoPython(node.argument)})`;
+            case 'PowerExpression':
+                return `(${this.translate(node.base)} ** ${this.translate(node.exponent)})`;
 
-    case 'Assignment': 
-      return `${node.name} = ${translateASTtoPython(node.value)}`;
+            case 'UnaryExpression':
+                return `(-${this.translate(node.argument)})`;
 
-    case 'FunctionDefinition': 
-      const params = node.params.join(', ');
-      return `${node.name} = Lambda((${params}), ${translateASTtoPython(node.body)})`;
+            case 'Assignment': 
+                return `${node.name} = ${this.translate(node.value)}`;
 
-        case 'FunctionCall':
-      const args = node.args.map(translateASTtoPython).join(', ');
-      return `${node.name}(${args})`;
+            case 'FunctionDefinition': 
+                const params = node.params.join(', ');
+                return `${node.name} = Lambda((${params}), ${this.translate(node.body)})`;
 
-    case 'Equation':
-      return `Eq(${translateASTtoPython(node.left)}, ${translateASTtoPython(node.right)})`;
+            case 'FunctionCall':
+                const args = node.args.map(a => this.translate(a)).join(', ');
+                return `${node.name}(${args})`;
 
-    case 'Quantity':
-      // Kalder en Python-hjælpefunktion 'parse_units' defineret i cas-engine.js
-      return `(${node.value} * parse_units("${node.unit}"))`;
+            case 'Equation':
+                return `Eq(${this.translate(node.left)}, ${this.translate(node.right)})`;
 
-    case 'List':
-      return `[${node.elements.map(translateASTtoPython).join(', ')}]`;
+            case 'List':
+                return `[${node.elements.map(e => this.translate(e)).join(', ')}]`;
 
-    case 'Vector':
-      return `Matrix([[${node.components.map(translateASTtoPython).join(', ')}]])`;
-
-    case 'Access':
-      // Konverterer fra 1-baseret (elev) til 0-baseret (Python) indeks
-      return `${node.container}[${translateASTtoPython(node.index)} - 1]`;
-
-    default:
-      console.warn("Ukendt AST-node:", node.type);
-      return "";
-  }
+            default:
+                console.warn("Ukendt AST-node:", node.type);
+                return "";
+        }
+    }
 }
