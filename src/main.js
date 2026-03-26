@@ -9,9 +9,22 @@ import { CASEngine } from './cas-engine.js';
 // 1. Skab maskinerne
 const transformer = new Transformer();
 const engine = new CASEngine(transformer);
+
+// Hent HTML-elementer
 const calculateBtn = document.getElementById('run-btn'); // Rettet til 'run-btn' jf. CSS
 const mathInput = document.getElementById('cas-input');  // Rettet til 'cas-input' jf. CSS
 const outputElement = document.getElementById('cas-output');
+
+// Knappen skal være disabled indtil motoren er klar
+calculateBtn.disabled = true;
+calculateBtn.innerText = "Indlæser CAS...";
+
+// 1. Initialiser motoren
+engine.init().then(() => {
+    calculateBtn.disabled = false;
+    calculateBtn.innerText = "Beregn";
+    console.log("Systemet er klar - CAS er indlæst!");
+});
 
 // 2. Event listener (Flyttet op så den registreres med det samme)
 if (!calculateBtn || !mathInput || !outputElement) {

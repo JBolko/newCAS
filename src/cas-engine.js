@@ -5,27 +5,31 @@ export class CASEngine {
     }
 
     async init() {
+    try {
         console.log("Initialiserer Pyodide...");
-        // Hent Pyodide fra den globale context (index.html skal have scriptet)
-        this.pyodide = await loadPyodide();
-        
-        // Indlæs SymPy
+
+        // Brug en nyere og mere stabil Pyodide version + eksplicit indexURL
+        this.pyodide = await loadPyodide({
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/"
+        });
+
+        console.log("Pyodide indlæst – indlæser sympy... (dette kan tage 10-30 sekunder første gang)");
+
+        // Load sympy direkte – det er den anbefalede måde for indbyggede pakker
         await this.pyodide.loadPackage("sympy");
 
-        // Her definerer vi vores "Wrapper" i Python. 
-        // Læg mærke til backticks ` ` - det gør det til en streng i JS.
+        console.log("SymPy indlæst – opretter wrapper...");
+
+        // Python setup – tilføjet 'factor' eksplicit
         const pythonSetup = `
 import json
 from sympy import *
-# Vi importerer specifikt de her for at være sikre på, de er tilgængelige
-from sympy import latex, N, simplify, symbols
+from sympy import latex, N, simplify, factor, symbols
 
-# Her definerer vi standard symboler, så de altid virker
 x, y, z, t = symbols('x y z t')
 
 def wrap_result(res):
     try:
-        # Hvis resultatet er en liste (f.eks. ved solve)
         if isinstance(res, (list, tuple)):
             return json.dumps({
                 "type": "list",
@@ -33,23 +37,31 @@ def wrap_result(res):
                 "decimal": [str(N(r)) for r in res]
             })
         
-        # Standard skalært resultat (som sqrt(8))
         return json.dumps({
             "type": "scalar",
             "latex": latex(res),
             "decimal": str(N(res)),
-            "is_symbolic": bool(res.free_symbols)
+            "is_symbolic": bool(getattr(res, 'free_symbols', False))
         })
     except Exception as e:
         return json.dumps({"type": "error", "message": str(e)})
 `;
 
-        // Kør setup-koden i Python én gang
         await this.pyodide.runPythonAsync(pythonSetup);
-        console.log("CASEngine er klar med wrap_result!");
+        
+        console.log("✅ CASEngine er klar med SymPy + factor!");
+
+    } catch (err) {
+        console.error("❌ Fejl under Pyodide/SymPy opsætning:", err);
+        throw err;
     }
+}
 
     async calculate(ast) {
+    if (!this.pyodide) {
+        throw new Error("Vent venligst – systemet er stadig ved at starte op.");
+    }
+    
     if (!this.pyodide) throw new Error("Pyodide er ikke klar endnu");
 
     // 1. Transformer din AST til Python-kode (f.eks. "sqrt(8)")
