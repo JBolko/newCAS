@@ -34,12 +34,13 @@ def wrap_result(res):
                 "latex": ", ".join([latex(simplify(r)) for r in res]),
                 "decimal": ", ".join([str(N(r)) for r in res])
             })
-        
+        # Hvis det er et enkelt tal/udtryk
+        simplified_res = simplify(res) # Vi simplificerer herinde i stedet
         return json.dumps({
             "type": "scalar",
-            "latex": latex(res),
-            "decimal": str(N(res)),
-            "is_symbolic": bool(getattr(res, 'free_symbols', False))
+            "latex": latex(simplified_res),
+            "decimal": str(N(simplified_res)),
+            "is_symbolic": bool(getattr(simplified_res, 'free_symbols', False))
         })
     except Exception as e:
         return json.dumps({"type": "error", "message": str(e)})
@@ -56,20 +57,16 @@ def wrap_result(res):
 }
 
     async calculate(ast) {
-    if (!this.pyodide) {
-        throw new Error("Vent venligst – systemet er stadig ved at starte op.");
-    }
-    
     if (!this.pyodide) throw new Error("Pyodide er ikke klar endnu");
 
-    // 1. Transformer din AST til Python-kode (f.eks. "sqrt(8)")
+    // 1. Transformer din AST til Python-kode
     const pythonCode = this.transformer.toPython(ast);
 
-    // 2. Kør koden i Python og brug wrap_result til at få JSON tilbage
-    // Vi bruger simplify() så SymPy altid prøver at gøre udtrykket pænt
-    const result = await this.pyodide.runPythonAsync(`wrap_result(simplify(${pythonCode}))`);
+    // 2. KØR KODEN DIREKTE (vi har allerede simplify inde i wrap_result)
+    // Vi fjerner simplify() herfra, så den ikke crasher på lister
+    const result = await this.pyodide.runPythonAsync(`wrap_result(${pythonCode})`);
 
-    // 3. Lav JSON-strengen fra Python om til et JS-objekt
+    // 3. Lav JSON-strengen om til et JS-objekt
     return JSON.parse(result);
 }
 }

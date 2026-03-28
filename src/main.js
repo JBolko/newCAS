@@ -71,15 +71,3 @@ if (!calculateBtn || !mathInput || !outputElement) {
     }
   });
 }
-
-// 3. Start motoren (Kører i baggrunden)
-console.log("Starter CASEngine...");
-try {
-    await engine.init();
-    console.log("✅ CAS systemet er 100% klar!");
-    calculateBtn.disabled = false;           // Hvis du vil aktivere knappen
-    calculateBtn.textContent = "Beregn";     // Hvis du vil ændre teksten
-} catch (err) {
-    console.error("CAS kunne ikke starte:", err);
-    outputElement.innerHTML = `<span style="color:red">Fejl ved opstart af CAS: ${err.message}</span>`;
-}
