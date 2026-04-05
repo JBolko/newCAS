@@ -26,6 +26,10 @@ engine.init().then(() => {
     console.log("Systemet er klar - CAS er indlæst!");
 });
 
+engine.onStatusUpdate = (msg) => {
+    outputElement.innerText = msg;
+};
+
 // 2. Event listener (Flyttet op så den registreres med det samme)
 if (!calculateBtn || !mathInput || !outputElement) {
     console.error("FEJL: Kunne ikke finde de nødvendige HTML-elementer!");
@@ -53,17 +57,35 @@ if (!calculateBtn || !mathInput || !outputElement) {
 
       // 3. Vis resultat med KaTeX
       if (result.type !== "error") {
-        window.katex.render(result.latex, outputElement, {
+        let displayLatex = result.latex;
+
+        // Hvis det er en liste (f.eks. fra solve eller sort), 
+        // pakker vi det ind i mængde-parenteser for et professionelt look
+        if (result.type === "list") {
+          displayLatex = `\\left\\{ ${result.latex} \\right\\}`;
+        }
+
+        // Render det primære resultat
+        window.katex.render(displayLatex, outputElement, {
           throwOnError: false,
           displayMode: true
         });
-        
-        // Valgfrit: Hvis du har et felt til decimaltal, kan du tilføje det her
-        // decimalElement.innerText = "≈ " + result.decimal;
 
-      } else {
-        outputElement.innerHTML = `<span style="color:red">Fejl: ${result.message}</span>`;
-      }
+        // Tilføj decimal-visning under det eksakte resultat (hvis togglen er tænkt ind)
+        if (result.decimal) {
+          const decDiv = document.createElement('div');
+          decDiv.className = "decimal-output"; // Så du kan style den i CSS
+          decDiv.style.fontSize = "0.85em";
+          decDiv.style.color = "#666";
+          decDiv.style.textAlign = "center";
+          decDiv.style.marginTop = "5px";
+          decDiv.innerHTML = `&asymp; ${result.decimal}`;
+          outputElement.appendChild(decDiv);
+        }
+    } else {
+      // Din eksisterende fejlhåndtering
+      outputElement.innerHTML = `<span style="color:red">Fejl: ${result.message}</span>`;
+    }
 
     } catch (err) {
       console.error("Fejl under beregning:", err);

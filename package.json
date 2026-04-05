@@ -1,0 +1,33 @@
+{
+  "name": "newcas",
+  "version": "0.1.0",
+  "description": "An open-source Computer Algebra System (CAS) running in the browser with SymPy via Pyodide. Focused on pedagogy and accessibility.",
+  "author": "Jakob Bolko",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"Open index.html directly in your browser (no build step needed yet)\"",
+    "start": "echo \"Open index.html directly in your browser\"",
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [
+    "cas",
+    "computer-algebra-system",
+    "sympy",
+    "pyodide",
+    "math",
+    "parser",
+    "katex",
+    "education",
+    "accessibility"
+  ],
+  "homepage": "https://github.com/JBolko/newCAS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JBolko/newCAS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JBolko/newCAS/issues"
+  }
+}

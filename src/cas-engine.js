@@ -19,35 +19,16 @@ export class CASEngine {
 
         console.log("SymPy indlæst – opretter wrapper funktioner...");
 
-        const pythonSetup = `
-import json
-from sympy import *
-from sympy import latex, N, simplify, factor, symbols
+        console.log("Henter setup.py...");
 
-x, y, z, t = symbols('x y z t')
-
-def wrap_result(res):
-    try:
-        if isinstance(res, (list, tuple)):
-            return json.dumps({
-                "type": "list",
-                "latex": ", ".join([latex(simplify(r)) for r in res]),
-                "decimal": ", ".join([str(N(r)) for r in res])
-            })
-        # Hvis det er et enkelt tal/udtryk
-        simplified_res = simplify(res) # Vi simplificerer herinde i stedet
-        return json.dumps({
-            "type": "scalar",
-            "latex": latex(simplified_res),
-            "decimal": str(N(simplified_res)),
-            "is_symbolic": bool(getattr(simplified_res, 'free_symbols', False))
-        })
-    except Exception as e:
-        return json.dumps({"type": "error", "message": str(e)})
-`;
-
-        await this.pyodide.runPythonAsync(pythonSetup);
+        const response = await fetch('./src/python/setup.py');
+        if (!response.ok) throw new Error("Kunne ikke finde setup.py");
         
+        const pythonCode = await response.text();
+        
+        console.log("Eksekverer Python-setup...");
+        await this.pyodide.runPythonAsync(pythonCode);
+
         console.log("✅ CASEngine er klar med SymPy og factor!");
 
     } catch (err) {
