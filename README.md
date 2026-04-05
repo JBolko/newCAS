@@ -59,7 +59,7 @@ See the full [roadmap.md](roadmap.md) for details.
    git clone https://github.com/JBolko/newCAS.git
    cd newCAS
    ```
-   2. Open index.html in a modern browser (Chrome/Edge/Firefox recommended).
+2. Open index.html in a modern browser (Chrome/Edge/Firefox recommended).
 
 **Note:** The first load downloads Pyodide (≈20–40 MB), so it may take 15–40 seconds to initialize.
 
