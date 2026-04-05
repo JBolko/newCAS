@@ -58,3 +58,52 @@ See the full [roadmap.md](roadmap.md) for details.
    ```bash
    git clone https://github.com/JBolko/newCAS.git
    cd newCAS
+   
+   2. Open index.html in a modern browser (Chrome/Edge/Firefox recommended).
+
+**Note:** The first load downloads Pyodide (≈20–40 MB), so it may take 15–40 seconds to initialize.
+
+## Target Audience
+
+- High school and university students
+- Teachers looking for an open and customizable tool
+- Users with dyslexia or other accessibility needs
+- Anyone who wants a free, local CAS without tracking or paywalls
+
+
+## Roadmap
+Detailed development plan is available in roadmap.md.
+The project is structured in five main phases:
+
+1. Foundation
+2. Intelligent Output
+3. Advanced Mathematics & Notation
+4. Visualization & Statistics
+5. UI & Accessibility
+
+
+## Tech Stack
+
+- Frontend: Vanilla ES6 JavaScript (modular)
+- Parser: Peggy
+- CAS Engine: Pyodide + SymPy (WebAssembly)
+- Rendering: KaTeX
+- Architecture: Clean separation between parser → transformer → engine → UI
+
+
+## Contributing
+Contributions are welcome! The project is still early-stage, but feel free to:
+
+- Open issues with bugs, feature requests or ideas
+- Submit pull requests (especially parser improvements, UI, tests or documentation)
+
+
+## License
+This project is licensed under the MIT License (see LICENSE when added).
+
+## Author
+Created by **Jakob Bolko** as an open educational and hobby project.
+Feedback, ideas or questions? Feel free to open an issue.
+
+**Thank you for visiting!**
+We hope newCAS can become a useful tool for students and educators
