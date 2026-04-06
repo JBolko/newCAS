@@ -1,0 +1,97 @@
+/* Alt der har med indramning af matematik at gøre */
+
+.cell-wrap { position: relative; margin-bottom: .5rem; }
+
+.math-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    box-shadow: var(--shadow);
+}
+
+.math-input {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    border-radius: 7px 7px 0 0;
+    overflow: hidden;
+}
+
+/* Selve tekstfeltet hvor man skriver matematik */
+.math-ta {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .92rem;
+    padding: .7rem .9rem;
+    border: none;
+    background: transparent;
+    outline: none;
+    min-height: 52px;
+}
+
+/* KaTex relateret */
+
+.math-out {
+    padding: .5rem .8rem .6rem 2.8rem;
+    border-radius: 0 0 7px 7px;
+}
+
+.out-row {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    padding: .2rem 0;
+}
+
+.out-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    color: var(--muted);
+}
+
+.out-val {
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+/* Opgavecontaineren */
+
+.assignment {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.assignment-header {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+}
+
+.assignment-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    font-size: 1.2rem;
+    width: 100%;
+}
+
+/* Knapper og Kontroller */
+
+.math-run, .math-approx {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--code-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+}
+
+.math-run:hover { background: var(--accent); color: #fff; }

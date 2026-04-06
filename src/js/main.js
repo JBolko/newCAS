@@ -1,95 +1,109 @@
 /**
- * main.js - Entry point for applikationen.
+ * main.js - Opdateret til Notebook/Cell struktur
  */
-
-import { parse } from '../parser.mjs';
+import { parse } from './parser.mjs';
 import { Transformer } from './transformer.js';
 import { CASEngine } from './cas-engine.js';
+import { settings } from './settings.js';
 
-// 1. Skab maskinerne
+// 1. Initialisér maskinerne
 const transformer = new Transformer();
 const engine = new CASEngine(transformer);
 
-// Hent HTML-elementer
-const calculateBtn = document.getElementById('run-btn'); // Rettet til 'run-btn' jf. CSS
-const mathInput = document.getElementById('cas-input');  // Rettet til 'cas-input' jf. CSS
-const outputElement = document.getElementById('cas-output');
+// Vi har ikke én knap længere, så vi bruger status-dotten til feedback
+const sdot = document.getElementById('sdot');
 
-// Knappen skal være disabled indtil motoren er klar
-calculateBtn.disabled = true;
-calculateBtn.innerText = "Indlæser CAS...";
-
-// 1. Initialiser motoren
+// 2. Initialisér motoren
 engine.init().then(() => {
-    calculateBtn.disabled = false;
-    calculateBtn.innerText = "Beregn";
-    console.log("Systemet er klar - CAS er indlæst!");
+    if (sdot) sdot.classList.add('ready');
+    console.log("Systemet er klar - CAS er indlæst i Notebook-mode!");
 });
 
-engine.onStatusUpdate = (msg) => {
-    outputElement.innerText = msg;
-};
+// 3. Event Listener: Lyt efter Enter i ALLE matematik-felter
+document.addEventListener('keydown', async (e) => {
+    // Tjek om det er Enter (uden Shift) og om vi er i et matematik-felt
+    if (e.key === 'Enter' && !e.shiftKey && e.target.classList.contains('math-input')) {
+        e.preventDefault(); // Stop linjeskift i feltet
 
-// 2. Event listener (Flyttet op så den registreres med det samme)
-if (!calculateBtn || !mathInput || !outputElement) {
-    console.error("FEJL: Kunne ikke finde de nødvendige HTML-elementer!");
-} else {
-  calculateBtn.addEventListener('click', async (e) => {
-    console.log("KNAPPEN ER TRYKKET!");
-    e.preventDefault();
+        const inputField = e.target;
+        const cell = inputField.closest('.cell');
+        const input = inputField.value.trim();
 
-    // Tjek om engine overhovedet er klar
-    if (!engine.pyodide) {
-        outputElement.innerText = "Vent venligst... Motoren er stadig ved at varme op.";
-        return;
-    }
+        if (!input) return;
 
-    const input = mathInput.value.trim();
-    if (!input) return;
+        // Find output-områderne i netop denne celle
+        const latexDiv = cell.querySelector('.latex-output');
+        const decimalDiv = cell.querySelector('.decimal-output');
 
-    try {
-      // 1. Parse input til AST
-      const ast = parse(input);
-      
-      // 2. Kør beregning via engine (som nu returnerer objektet)
-      const result = await engine.calculate(ast);
-      console.log("CAS Resultat:", result);
+        // Vis at vi arbejder (valgfrit - kræver CSS klasse .working)
+        cell.classList.add('working');
 
-      // 3. Vis resultat med KaTeX
-      if (result.type !== "error") {
-        let displayLatex = result.latex;
+        try {
+            // A. Parse input til AST
+            const ast = parse(input);
+            
+            // B. Kør beregning via engine
+            const result = await engine.calculate(ast);
+            console.log("Celle Resultat:", result);
 
-        // Hvis det er en liste (f.eks. fra solve eller sort), 
-        // pakker vi det ind i mængde-parenteser for et professionelt look
-        if (result.type === "list") {
-          displayLatex = `\\left\\{ ${result.latex} \\right\\}`;
+            // C. Vis resultat med KaTeX
+            if (result.type !== "error") {
+                let displayLatex = result.latex;
+
+                if (result.type === "list") {
+                    displayLatex = `\\left\\{ ${result.latex} \\right\\}`;
+                }
+
+                // Render det primære resultat i denne celles latex-felt
+                window.katex.render(displayLatex, latexDiv, {
+                    throwOnError: false,
+                    displayMode: false // false ser ofte bedre ud inde i celler
+                });
+
+                // D. Vis decimal-visning
+                if (result.decimal) {
+                    const sep = settings.user.decimalSeparator || ',';
+                    decimalDiv.innerHTML = `&asymp; ${result.decimal.replace('.', sep)}`;
+                } else {
+                    decimalDiv.innerHTML = "";
+                }
+            } else {
+                latexDiv.innerHTML = `<span style="color:var(--accent2)">Fejl: ${result.message}</span>`;
+                decimalDiv.innerHTML = "";
+            }
+
+        } catch (err) {
+            console.error("Fejl under beregning:", err);
+            latexDiv.innerHTML = `<span style="color:var(--accent2)">Syntaksfejl: ${err.message}</span>`;
+        } finally {
+            cell.classList.remove('working');
         }
-
-        // Render det primære resultat
-        window.katex.render(displayLatex, outputElement, {
-          throwOnError: false,
-          displayMode: true
-        });
-
-        // Tilføj decimal-visning under det eksakte resultat (hvis togglen er tænkt ind)
-        if (result.decimal) {
-          const decDiv = document.createElement('div');
-          decDiv.className = "decimal-output"; // Så du kan style den i CSS
-          decDiv.style.fontSize = "0.85em";
-          decDiv.style.color = "#666";
-          decDiv.style.textAlign = "center";
-          decDiv.style.marginTop = "5px";
-          decDiv.innerHTML = `&asymp; ${result.decimal}`;
-          outputElement.appendChild(decDiv);
-        }
-    } else {
-      // Din eksisterende fejlhåndtering
-      outputElement.innerHTML = `<span style="color:red">Fejl: ${result.message}</span>`;
     }
+});
 
-    } catch (err) {
-      console.error("Fejl under beregning:", err);
-      outputElement.innerText = "Syntaksfejl: " + err.message;
+// 4. Knappen "Tilføj felt" (Hvis du vil have den til at virke med det samme)
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('add-cell-btn')) {
+        addNewCell();
     }
-  });
+});
+
+function addNewCell() {
+    const container = document.querySelector('.cells-container');
+    const newId = document.querySelectorAll('.cell').length + 1;
+    
+    const cellHtml = `
+        <div class="cell math-cell" id="cell-${newId}">
+            <div class="cell-input-wrapper">
+                <span class="cell-label">In [${newId}]:</span>
+                <input type="text" class="math-input" placeholder="Skriv matematik...">
+            </div>
+            <div class="cell-output-wrapper">
+                <div class="latex-output"></div>
+                <div class="decimal-output"></div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', cellHtml);
+    container.lastElementChild.querySelector('.math-input').focus();
 }

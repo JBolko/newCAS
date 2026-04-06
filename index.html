@@ -3,33 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern CAS - Matematik & Fysik</title>
+    <title>newCAS - Matematik Notebook</title>
     
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="lib/katex/katex.min.css">
-    <script defer src="lib/katex/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js"></script>
+    <link rel="stylesheet" href="src/css/style.css">
+    <link rel="stylesheet" href="src/css/components.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Modern CAS</h1>
-        <p>Indtast din matematik (f.eks. <code>g := 9.82; f(t) := 1/2 * g * t^2; f(5)</code>)</p>
+    <div id="app-container">
+        <aside id="variable-sidebar">
+            <h3>Variable</h3>
+            <ul id="variable-list">
+                </ul>
+        </aside>
 
-        <div class="input-area">
-            <textarea id="cas-input" rows="5" placeholder="Skriv her..."></textarea>
-            <button id="run-btn">Beregn</button>
-        </div>
+        <main id="notebook">
+            <header>
+                <h1>Mit Arbejdsark</h1>
+            </header>
 
-        <div class="output-area">
-            <h3>Resultat:</h3>
-            <div id="cas-output">Venter på input...</div>
-        </div>
+            <section class="assignment" id="assignment-1">
+                <div class="assignment-header">
+                    <input type="text" placeholder="Opgave titel..." class="assignment-title">
+                </div>
+
+                <div class="cells-container">
+                    <div class="cell math-cell active" id="cell-1">
+                        <div class="cell-input-wrapper">
+                            <span class="cell-label">In [1]:</span>
+                            <input type="text" class="math-input" placeholder="Skriv matematik her (f.eks. 2x + 5 = 10)">
+                        </div>
+                        <div class="cell-output-wrapper">
+                            <div class="latex-output"></div>
+                            <div class="decimal-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="add-cell-btn">+ Tilføj felt</button>
+            </section>
+        </main>
     </div>
 
-    <script type="module" src="src/main.js"></script>
-
+    <script type="module" src="src/js/main.js"></script>
 </body>
 </html>

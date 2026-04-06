@@ -8,26 +8,28 @@ export class CASEngine {
     try {
         console.log("Initialiserer Pyodide...");
 
-        // Nyere og mere stabil version + eksplicit indexURL
+        // Sørg for at denne version matcher din <script> i index.html!
         this.pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/"
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/" 
         });
 
-        console.log("Pyodide indlæst – indlæser sympy (kan tage 15-40 sekunder første gang)...");
-
+        console.log("Pyodide indlæst – henter SymPy...");
         await this.pyodide.loadPackage("sympy");
 
         console.log("Henter setup.py...");
-
-        const response = await fetch('./src/python/setup.py');
-        if (!response.ok) throw new Error("Kunne ikke finde setup.py");
+        // RETTET: fjernet det ekstra 's' i stien
+        const response = await fetch('src/python/setup.py'); 
+        
+        if (!response.ok) {
+            throw new Error(`Kunne ikke finde setup.py på stien: ${response.url}`);
+        }
         
         const pythonCode = await response.text();
         
         console.log("Eksekverer Python-setup...");
         await this.pyodide.runPythonAsync(pythonCode);
 
-        console.log("✅ CASEngine er klar med SymPy og factor!");
+        console.log("✅ CASEngine er klar med SymPy!");
 
     } catch (err) {
         console.error("❌ Fejl under Pyodide/SymPy opsætning:", err);
