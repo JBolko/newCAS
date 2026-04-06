@@ -2,7 +2,7 @@
  * main.js - Entry point for applikationen.
  */
 
-import { parse } from './parser.mjs';
+import { parse } from '../parser.mjs';
 import { Transformer } from './transformer.js';
 import { CASEngine } from './cas-engine.js';
 

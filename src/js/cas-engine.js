@@ -17,8 +17,6 @@ export class CASEngine {
 
         await this.pyodide.loadPackage("sympy");
 
-        console.log("SymPy indlæst – opretter wrapper funktioner...");
-
         console.log("Henter setup.py...");
 
         const response = await fetch('./src/python/setup.py');
