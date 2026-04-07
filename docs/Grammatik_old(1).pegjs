@@ -10,7 +10,6 @@ Program
 
 Statement
   = Assignment
-  / Equation 
   / Expression
 
 Assignment
@@ -33,25 +32,20 @@ Term
     }
 
 ImplicitMulti
-  = head:Unary tail:(_ &([a-zA-ZæøåÆØÅ_(]) next:Unary { return { op: "*", next }; })*
+  = head:Power tail:(_ &([a-zA-ZæøåÆØÅ_(]) next:Power { return { op: "*", next }; })*
     {
       return tail.reduce((result, element) =>
         makeNode("BinaryExpression", { op: element.op, left: result, right: element.next }), head);
     }
 
-// 1. UNARY ligger nu YDERST (lavest præcedens af de tre)
-Unary
-  = "-" _ p:Unary { return { type: "UnaryExpression", op: "-", argument: p }; }
-  / Power
-
-// 2. POWER ligger INDENI Unary (højere præcedens)
 Power
   = base:Primary _ "^" _ exponent:Power
     { return makeNode("PowerExpression", { base: base, exponent: exponent }); }
   / Primary
-  
+
 Primary
   = "(" _ expr:Expression _ ")" { return expr; }
+  / "-" _ p:Primary { return { type: "UnaryExpression", op: "-", argument: p }; }
   / call:FunctionCall
   / id:Identifier _ "[" _ idx:Expression _ "]" { return { type: "Access", container: id, index: idx }; }
   / id:Identifier { return { type: "Variable", name: id }; }
@@ -75,16 +69,13 @@ Args
   / "" { return []; }
 
 Params
-  = head:Identifier tail:(_ [;,] _ i:Identifier { return i; })*
+  = head:Identifier tail:(_ "," _ i:Identifier { return i; })*
     { return [head, ...tail]; }
   / "" { return []; }
 
 Identifier "id" = [a-zA-ZæøåÆØÅ_][a-zA-ZæøåÆØÅ0-9_]* { return text(); }
 
-Number "number" = [0-9]+([.,][0-9]+)?
-    { 
-      return parseFloat(text().replace(",", ".")); 
-    }
+Number "number" = [0-9]+("."[0-9]+)? { return parseFloat(text()); }
 
 _ "whitespace" = [ \t\n\r]*
 

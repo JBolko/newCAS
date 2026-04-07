@@ -29,5 +29,8 @@
   },
   "bugs": {
     "url": "https://github.com/JBolko/newCAS/issues"
+  },
+  "dependencies": {
+    "peggy": "^5.1.0"
   }
 }

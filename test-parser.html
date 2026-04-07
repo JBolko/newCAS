@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>newCAS — Parser Tests</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0f0f12;
+            color: #c9d1d9;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 1.6rem;
+            font-weight: normal;
+            color: #e6edf3;
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.03em;
+        }
+
+        .subtitle {
+            color: #6e7681;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Summary bar */
+        #summary {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            padding: 0.9rem 1.2rem;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        #summary .stat { display: flex; align-items: center; gap: 0.5rem; }
+        #summary .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-pass  { background: #2ea043; }
+        .dot-fail  { background: #f85149; }
+        .dot-skip  { background: #6e7681; }
+        #summary strong { font-size: 1.1rem; }
+
+        /* Progress bar */
+        #progress-bar {
+            height: 4px;
+            background: #21262d;
+            border-radius: 2px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ea043, #26a641);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 2px;
+        }
+
+        /* Suite */
+        .suite {
+            margin-bottom: 2rem;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .suite-header {
+            background: #161b22;
+            padding: 0.7rem 1.2rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #8b949e;
+            border-bottom: 1px solid #21262d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suite-badge {
+            font-size: 0.75rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 10px;
+            background: #21262d;
+            color: #8b949e;
+        }
+
+        /* Test rows */
+        .test-row {
+            display: grid;
+            grid-template-columns: 22px 1fr 1fr;
+            gap: 0;
+            padding: 0.55rem 1.2rem;
+            border-bottom: 1px solid #161b22;
+            font-size: 0.82rem;
+            align-items: start;
+            transition: background 0.1s;
+        }
+        .test-row:last-child { border-bottom: none; }
+        .test-row:hover { background: #161b22; }
+
+        .test-icon { padding-top: 1px; }
+        .pass .test-icon::before { content: "✓"; color: #2ea043; }
+        .fail .test-icon::before { content: "✗"; color: #f85149; }
+
+        .test-input {
+            color: #79c0ff;
+            padding-right: 1rem;
+            word-break: break-all;
+        }
+        .test-input em {
+            display: block;
+            font-style: normal;
+            color: #6e7681;
+            font-size: 0.78rem;
+            margin-top: 2px;
+        }
+
+        .test-result { color: #6e7681; font-size: 0.78rem; }
+        .pass .test-result { color: #56d364; }
+
+        .fail .test-result {
+            color: #f85149;
+        }
+
+        .expected {
+            color: #6e7681;
+            font-size: 0.75rem;
+            margin-top: 3px;
+        }
+
+        .ast-peek {
+            color: #3fb950;
+            font-size: 0.75rem;
+            margin-top: 2px;
+            opacity: 0.8;
+        }
+
+        /* Error tests */
+        .test-row.should-fail.pass .test-result { color: #d29922; }
+        .test-row.should-fail.pass .test-icon::before { content: "✓"; color: #d29922; }
+
+        #loading {
+            color: #8b949e;
+            font-size: 0.9rem;
+            padding: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>newCAS · Parser Testsuite</h1>
+<p class="subtitle">Åbn denne fil fra roden af projektet i en moderne browser.</p>
+
+<div id="summary">
+    <span id="loading">⏳ Indlæser parser...</span>
+</div>
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="results"></div>
+
+<script type="module">
+// ─── Importer din parser ──────────────────────────────────────────────────────
+import { parse } from './src/js/parser.mjs';
+
+// ─── Hjælpefunktioner ────────────────────────────────────────────────────────
+
+function getNode(ast) {
+    // Program returnerer altid et array — tag første statement
+    if (Array.isArray(ast)) return ast[0];
+    return ast;
+}
+
+function tryParse(input) {
+    try {
+        return { ok: true, ast: parse(input) };
+    } catch (e) {
+        return { ok: false, error: e.message };
+    }
+}
+
+// Tjek at en sti i AST har en bestemt værdi
+// f.eks. check(ast, "type", "Equation")
+function check(ast, ...path_and_value) {
+    const value = path_and_value.pop();
+    let node = getNode(ast);
+    for (const key of path_and_value) {
+        if (node === undefined || node === null) return false;
+        node = node[key];
+    }
+    return node === value;
+}
+
+// ─── Test-definitioner ────────────────────────────────────────────────────────
+// Format: { input, desc, expect: fn(ast) => bool, shouldFail?: true }
+
+const suites = [
+
+  {
+    name: "Basis: tal og variable",
+    tests: [
+      {
+        input: "42",
+        desc: "Heltal",
+        expect: ast => check(ast, "type", "Literal") && getNode(ast).value === 42
+      },
+      {
+        input: "3.14",
+        desc: "Decimaltal med punktum",
+        expect: ast => check(ast, "type", "Literal") && Math.abs(getNode(ast).value - 3.14) < 0.0001
+      },
+      {
+        input: "3,14",
+        desc: "Decimaltal med komma (dansk notation)",
+        expect: ast => check(ast, "type", "Literal") && Math.abs(getNode(ast).value - 3.14) < 0.0001
+      },
+      {
+        input: "x",
+        desc: "Enkelt variabel",
+        expect: ast => check(ast, "type", "Variable") && getNode(ast).name === "x"
+      },
+      {
+        input: "æøå",
+        desc: "Danske bogstaver i identifier",
+        expect: ast => check(ast, "type", "Variable")
+      },
+    ]
+  },
+
+  {
+    name: "Aritmetik og operatorpræcedens",
+    tests: [
+      {
+        input: "2 + 3",
+        desc: "Addition",
+        expect: ast => check(ast, "type", "BinaryExpression") && getNode(ast).op === "+"
+      },
+      {
+        input: "2 + 3 * 4",
+        desc: "* har højere præcedens end + (højre side er produkt)",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "+" &&
+                   n.right.type === "BinaryExpression" && n.right.op === "*";
+        }
+      },
+      {
+        input: "2 * 3 + 4",
+        desc: "* har højere præcedens end + (venstre side er produkt)",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "+" &&
+                   n.left.type === "BinaryExpression" && n.left.op === "*";
+        }
+      },
+      {
+        input: "(2 + 3) * 4",
+        desc: "Parenteser overstyrer præcedens",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "*" &&
+                   n.left.type === "BinaryExpression" && n.left.op === "+";
+        }
+      },
+      {
+        input: "2^3^2",
+        desc: "Eksponentiering er højreassociativ: 2^(3^2) = 2^9",
+        expect: ast => {
+            const n = getNode(ast);
+            // base=2, exponent skal selv være en Power: 3^2
+            return n.type === "PowerExpression" &&
+                   n.base.value === 2 &&
+                   n.exponent.type === "PowerExpression" &&
+                   n.exponent.base.value === 3;
+        }
+      },
+    ]
+  },
+
+  {
+    name: "Unært minus og fortegn",
+    tests: [
+      {
+        input: "-x",
+        desc: "Unært minus på variabel",
+        expect: ast => check(ast, "type", "UnaryExpression")
+      },
+      {
+        input: "-x^2",
+        desc: "-x^2 skal være -(x^2), ikke (-x)^2",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "UnaryExpression" &&
+                   n.argument.type === "PowerExpression";
+        }
+      },
+      {
+        input: "(-x)^2",
+        desc: "(-x)^2 — parenteser giver (-x) som base",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "PowerExpression" &&
+                   n.base.type === "UnaryExpression";
+        }
+      },
+      {
+        input: "-3 + x",
+        desc: "Negativt tal i addition",
+        expect: ast => check(ast, "type", "BinaryExpression")
+      },
+    ]
+  },
+
+  {
+    name: "Implicit multiplikation",
+    tests: [
+      {
+        input: "2x",
+        desc: "2x → 2 * x",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "*" &&
+                   n.left.value === 2 && n.right.name === "x";
+        }
+      },
+      {
+        input: "2x^2",
+        desc: "2x^2 → 2 * (x^2), ikke (2x)^2",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "*" &&
+                   n.left.value === 2 &&
+                   n.right.type === "PowerExpression";
+        }
+      },
+      {
+        input: "2(x+1)",
+        desc: "2(x+1) → 2 * (x+1)  — implicit mult med parentes",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "*" &&
+                   n.left.value === 2 &&
+                   n.right.type === "BinaryExpression" && n.right.op === "+";
+        }
+      },
+      {
+        input: "ab",
+        desc: "ab → a * b (to variable)",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "*";
+        }
+      },
+      {
+        input: "3x + 2y",
+        desc: "3x + 2y — implicit mult på begge led",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "BinaryExpression" && n.op === "+" &&
+                   n.left.op === "*" && n.right.op === "*";
+        }
+      },
+    ]
+  },
+
+  {
+    name: "Tildelinger (Assignment)",
+    tests: [
+      {
+        input: "x := 5",
+        desc: "Simpel tildeling",
+        expect: ast => check(ast, "type", "Assignment") &&
+                       getNode(ast).name === "x" &&
+                       getNode(ast).value.value === 5
+      },
+      {
+        input: "g := 9,82",
+        desc: "Tildeling med komma-decimal",
+        expect: ast => check(ast, "type", "Assignment") &&
+                       Math.abs(getNode(ast).value.value - 9.82) < 0.0001
+      },
+      {
+        input: "f(x) := x^2 + 1",
+        desc: "Funktionsdefinition",
+        expect: ast => check(ast, "type", "FunctionDefinition") &&
+                       getNode(ast).name === "f" &&
+                       getNode(ast).params[0] === "x"
+      },
+      {
+        input: "f(x; y) := x^2 + y",
+        desc: "Funktionsdefinition med to parametre (semikolon)",
+        expect: ast => check(ast, "type", "FunctionDefinition") &&
+                       getNode(ast).params.length === 2
+      },
+    ]
+  },
+
+  {
+    name: "Ligninger (Equation) — nu i Statement",
+    tests: [
+      {
+        input: "2x + 3 = 7",
+        desc: "Ligning som top-level statement",
+        expect: ast => check(ast, "type", "Equation") &&
+                       getNode(ast).operator === "="
+      },
+      {
+        input: "x^2 - 4 = 0",
+        desc: "Andengradsligning",
+        expect: ast => check(ast, "type", "Equation")
+      },
+      {
+        input: "x <= 5",
+        desc: "Ulighed <=",
+        expect: ast => check(ast, "type", "Equation") &&
+                       getNode(ast).operator === "<="
+      },
+      {
+        input: "a >= b",
+        desc: "Ulighed >=",
+        expect: ast => check(ast, "type", "Equation") &&
+                       getNode(ast).operator === ">="
+      },
+      {
+        input: "2 < x",
+        desc: "Ulighed <",
+        expect: ast => check(ast, "type", "Equation") &&
+                       getNode(ast).operator === "<"
+      },
+    ]
+  },
+
+  {
+    name: "Funktionskald",
+    tests: [
+      {
+        input: "sin(x)",
+        desc: "Simpelt funktionskald",
+        expect: ast => check(ast, "type", "FunctionCall") &&
+                       getNode(ast).name === "sin" &&
+                       getNode(ast).args.length === 1
+      },
+      {
+        input: "f(1,5)",
+        desc: "Ét argument med komma-decimal — ikke to args",
+        expect: ast => check(ast, "type", "FunctionCall") &&
+                       getNode(ast).args.length === 1 &&
+                       Math.abs(getNode(ast).args[0].value - 1.5) < 0.0001
+      },
+      {
+        input: "f(1,5 ; 2,3)",
+        desc: "To komma-decimal-argumenter adskilt med semikolon",
+        expect: ast => check(ast, "type", "FunctionCall") &&
+                       getNode(ast).args.length === 2 &&
+                       Math.abs(getNode(ast).args[0].value - 1.5) < 0.0001 &&
+                       Math.abs(getNode(ast).args[1].value - 2.3) < 0.0001
+      },
+      {
+        input: "solve(x^2 = 4 ; x)",
+        desc: "solve med ligning og variabel som argumenter",
+        expect: ast => check(ast, "type", "FunctionCall") &&
+                       getNode(ast).name === "solve" &&
+                       getNode(ast).args.length === 2 &&
+                       getNode(ast).args[0].type === "Equation"
+      },
+      {
+        input: "solve(x^2 - 4 = 0 ; x)",
+        desc: "solve med nulstillet ligning",
+        expect: ast => check(ast, "type", "FunctionCall") &&
+                       getNode(ast).args[0].type === "Equation"
+      },
+      {
+        input: "f(g(x))",
+        desc: "Indlejrede funktionskald",
+        expect: ast => check(ast, "type", "FunctionCall") &&
+                       getNode(ast).args[0].type === "FunctionCall"
+      },
+    ]
+  },
+
+  {
+    name: "Lister og Vektorer",
+    tests: [
+      {
+        input: "{1 ; 2 ; 3}",
+        desc: "Liste med semikolon-separator",
+        expect: ast => check(ast, "type", "List") &&
+                       getNode(ast).elements.length === 3
+      },
+      {
+        input: "{1,5 ; 2,3 ; 3,7}",
+        desc: "Liste med komma-decimal værdier",
+        expect: ast => check(ast, "type", "List") &&
+                       getNode(ast).elements.length === 3 &&
+                       Math.abs(getNode(ast).elements[0].value - 1.5) < 0.0001
+      },
+      {
+        input: "[1 ; 2 ; 3]",
+        desc: "Vektor",
+        expect: ast => check(ast, "type", "Vector") &&
+                       getNode(ast).components.length === 3
+      },
+    ]
+  },
+
+  {
+    name: "Enheder (Quantity)",
+    tests: [
+      {
+        input: "9,82[m/s^2]",
+        desc: "Tal med enhed (komma-decimal)",
+        expect: ast => check(ast, "type", "Quantity") &&
+                       Math.abs(getNode(ast).value - 9.82) < 0.0001 &&
+                       getNode(ast).unit === "m/s^2"
+      },
+      {
+        input: "5[m]",
+        desc: "Simpel enhed",
+        expect: ast => check(ast, "type", "Quantity") &&
+                       getNode(ast).unit === "m"
+      },
+      {
+        input: "60[km/h]",
+        desc: "Sammensat enhed",
+        expect: ast => check(ast, "type", "Quantity") &&
+                       getNode(ast).unit === "km/h"
+      },
+    ]
+  },
+
+  {
+    name: "Indeksering (Access)",
+    tests: [
+      {
+        input: "data[0]",
+        desc: "Listeindeksering",
+        expect: ast => check(ast, "type", "Access") &&
+                       getNode(ast).container === "data"
+      },
+      {
+        input: "v[i+1]",
+        desc: "Udtryk som indeks",
+        expect: ast => check(ast, "type", "Access") &&
+                       getNode(ast).index.type === "BinaryExpression"
+      },
+    ]
+  },
+
+  {
+    name: "Flerlinjet input (Program med flere statements)",
+    tests: [
+      {
+        input: "x := 5 ; y := 3",
+        desc: "To tildelinger med semikolon",
+        expect: ast => {
+            const prog = parse("x := 5 ; y := 3");
+            return Array.isArray(prog) && prog.length === 2 &&
+                   prog[0].type === "Assignment" && prog[1].type === "Assignment";
+        }
+      },
+      {
+        input: "a := 2 ; b := 3 ; a + b",
+        desc: "To tildelinger og et udtryk",
+        expect: ast => {
+            const prog = parse("a := 2 ; b := 3 ; a + b");
+            return Array.isArray(prog) && prog.length === 3;
+        }
+      },
+      {
+        input: "x := 5;",
+        desc: "Trailing semikolon er tilladt",
+        expect: ast => {
+            const prog = parse("x := 5;");
+            return Array.isArray(prog) && prog.length === 1;
+        }
+      },
+    ]
+  },
+
+  {
+    name: "Input der SKAL fejle (parser skal kaste fejl)",
+    tests: [
+      {
+        input: "2 +",
+        desc: "Ufuldstændig addition",
+        shouldFail: true,
+        expect: () => true // vi tjekker kun at det fejler
+      },
+      {
+        input: ":= 5",
+        desc: "Tildeling uden navn",
+        shouldFail: true,
+        expect: () => true
+      },
+      {
+        input: "f()",
+        desc: "Tomt funktionskald er faktisk OK — args er []",
+        shouldFail: false,
+        expect: ast => check(ast, "type", "FunctionCall") &&
+                       getNode(ast).args.length === 0
+      },
+    ]
+  },
+
+];
+
+// ─── Test-kørsel ──────────────────────────────────────────────────────────────
+
+let totalPass = 0, totalFail = 0;
+
+function runSuite(suite) {
+    const suiteEl = document.createElement('div');
+    suiteEl.className = 'suite';
+
+    const header = document.createElement('div');
+    header.className = 'suite-header';
+
+    const title = document.createElement('span');
+    title.textContent = suite.name;
+
+    const badge = document.createElement('span');
+    badge.className = 'suite-badge';
+    badge.textContent = `${suite.tests.length} tests`;
+
+    header.appendChild(title);
+    header.appendChild(badge);
+    suiteEl.appendChild(header);
+
+    let suitePass = 0, suiteFail = 0;
+
+    for (const t of suite.tests) {
+        const result = tryParse(t.input);
+        const row = document.createElement('div');
+        row.className = 'test-row';
+        if (t.shouldFail) row.classList.add('should-fail');
+
+        let passed;
+        let resultText = '';
+        let detail = '';
+
+        if (t.shouldFail) {
+            passed = !result.ok;
+            resultText = passed
+                ? 'Fejler korrekt ✓'
+                : `Burde fejle, men parsede: ${JSON.stringify(result.ast?.[0]?.type)}`;
+        } else {
+            if (!result.ok) {
+                passed = false;
+                resultText = `Parse-fejl: ${result.error.split('\n')[0]}`;
+            } else {
+                try {
+                    passed = t.expect(result.ast);
+                    if (passed) {
+                        const node = getNode(result.ast);
+                        resultText = `${node?.type ?? '?'}`;
+                        // Lidt ekstra info
+                        if (node?.op) resultText += ` op="${node.op}"`;
+                        if (node?.name) resultText += ` name="${node.name}"`;
+                        if (node?.value !== undefined && typeof node.value !== 'object')
+                            resultText += ` value=${node.value}`;
+                    } else {
+                        const node = getNode(result.ast);
+                        resultText = `Forventet betingelse fejlede. Fik: ${JSON.stringify(node?.type)}`;
+                        detail = JSON.stringify(node, null, 0).slice(0, 120);
+                    }
+                } catch(e) {
+                    passed = false;
+                    resultText = `Fejl i forventning: ${e.message}`;
+                }
+            }
+        }
+
+        if (passed) { suitePass++; totalPass++; row.classList.add('pass'); }
+        else         { suiteFail++; totalFail++; row.classList.add('fail'); }
+
+        row.innerHTML = `
+          <div class="test-icon"></div>
+          <div class="test-input">
+            <code>${escHtml(t.input)}</code>
+            <em>${escHtml(t.desc)}</em>
+          </div>
+          <div class="test-result">
+            ${escHtml(resultText)}
+            ${detail ? `<div class="expected">${escHtml(detail)}</div>` : ''}
+          </div>
+        `;
+
+        suiteEl.appendChild(row);
+    }
+
+    // Opdater badge med resultat
+    badge.textContent = suiteFail > 0
+        ? `${suitePass}/${suite.tests.length} ✓  ${suiteFail} ✗`
+        : `${suitePass}/${suite.tests.length} ✓`;
+    if (suiteFail > 0) badge.style.color = '#f85149';
+    else badge.style.color = '#2ea043';
+
+    return suiteEl;
+}
+
+function escHtml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// ─── Kør og render ────────────────────────────────────────────────────────────
+
+const resultsEl = document.getElementById('results');
+const summaryEl = document.getElementById('summary');
+const progressEl = document.getElementById('progress-fill');
+
+for (const suite of suites) {
+    resultsEl.appendChild(runSuite(suite));
+}
+
+const total = totalPass + totalFail;
+const pct = Math.round((totalPass / total) * 100);
+
+progressEl.style.width = pct + '%';
+if (totalFail > 0) progressEl.style.background = 'linear-gradient(90deg, #f85149, #da3633)';
+
+summaryEl.innerHTML = `
+  <div class="stat">
+    <div class="dot dot-pass"></div>
+    <strong>${totalPass}</strong> bestået
+  </div>
+  <div class="stat">
+    <div class="dot dot-fail"></div>
+    <strong>${totalFail}</strong> fejlet
+  </div>
+  <div class="stat" style="margin-left:auto; color:#6e7681">
+    ${total} tests · ${pct}% 
+  </div>
+  ${totalFail === 0
+    ? '<span style="color:#2ea043; margin-left:auto">🎉 Alle tests består</span>'
+    : '<span style="color:#f85149">⚠ Se fejlede tests herunder</span>'}
+`;
+
+</script>
+</body>
+</html>
