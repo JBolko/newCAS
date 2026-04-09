@@ -4,7 +4,7 @@
 
 newCAS combines a custom mathematical parser with **SymPy** (via Pyodide) to deliver powerful symbolic computation directly in the browser — no server required.
 
-The project aims to create a tool that is both mathematically robust and genuinely user-friendly, especially for students, including those with dyslexia or who prefer Danish-style notation (comma as decimal separator, implicit multiplication, etc.).
+The goal is to create a tool that is both mathematically robust and genuinely user-friendly, especially for students — including those with dyslexia or who prefer Danish-style notation (comma as decimal separator, implicit multiplication, etc.).
 
 ---
 
@@ -30,7 +30,7 @@ newCAS addresses this by being:
 
 - **Phase 2: Intelligent Output** — 🟡 In progress (next priority)
 
-See the full [roadmap.md](roadmap.md) for details.
+See the full [roadmap](docs/Styredokumenter/roadmap.md) for details.
 
 ---
 
@@ -43,12 +43,13 @@ See the full [roadmap.md](roadmap.md) for details.
 - Beautiful math rendering with KaTeX
 
 **Planned features:**
-- Structured JSON output (type, domain, LaTeX)
+- Structured JSON output (type, domain, LaTeX, etc.)
 - Intervals and piecewise functions
 - Vectors and matrices
 - Function plotting
 - Statistics tools
 - Advanced accessibility settings
+- Proper multi-level scoping (global + per-task)
 
 ---
 
@@ -59,35 +60,31 @@ See the full [roadmap.md](roadmap.md) for details.
    git clone https://github.com/JBolko/newCAS.git
    cd newCAS
    ```
-2. Open index.html in a modern browser (Chrome/Edge/Firefox recommended).
+
+2. Open index.html in a modern browser (Chrome/Edge/Firefox recommended). As of yet, you probably has to use a local server to prevent CORS issues.
 
 **Note:** The first load downloads Pyodide (≈20–40 MB), so it may take 15–40 seconds to initialize.
+
+## Examples
+```text
+3x + 5
+x := 7
+solve(x^2 - 9 = 0)
+factor(x^2 + 5x + 6)
+```
 
 ---
 
 ## Target Audience
 
-- High school and university students
+- High school and 'university students (especially in Denmark)
 - Teachers looking for an open and customizable tool
 - Users with dyslexia or other accessibility needs
 - Anyone who wants a free, local CAS without tracking or paywalls
 
 ---
 
-## Roadmap
-Detailed development plan is available in roadmap.md.
-The project is structured in five main phases:
-
-1. Foundation
-2. Intelligent Output
-3. Advanced Mathematics & Notation
-4. Visualization & Statistics
-5. UI & Accessibility
-
----
-
 ## Tech Stack
-
 - Frontend: Vanilla ES6 JavaScript (modular)
 - Parser: Peggy
 - CAS Engine: Pyodide + SymPy (WebAssembly)
@@ -96,22 +93,22 @@ The project is structured in five main phases:
 
 ---
 
+## Roadmap & Documentation
+Detailed development plan and steering documents are located in the docs/Styredokumenter/ folder.
+
+---
+
 ## Contributing
-Contributions are welcome! The project is still early-stage, but feel free to:
+Contributions are welcome! The project is still early-stage. Feel free to:
 
 - Open issues with bugs, feature requests or ideas
 - Submit pull requests (especially parser improvements, UI, tests or documentation)
 
----
-
 ## License
-This project is licensed under the MIT License (see LICENSE when added).
-
----
+This project is licensed under the MIT License.
 
 ## Author
-Created by **Jakob Bolko** as an open educational and hobby project.
+Created by Jakob Bolko as an open educational and hobby project.
 Feedback, ideas or questions? Feel free to open an issue.
-
-**Thank you for visiting!**
+Thank you for visiting!
 We hope newCAS can become a useful tool for students and educators
