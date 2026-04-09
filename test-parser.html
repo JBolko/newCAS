@@ -352,14 +352,6 @@ const suites = [
         }
       },
       {
-        input: "ab",
-        desc: "ab → a * b (to variable)",
-        expect: ast => {
-            const n = getNode(ast);
-            return n.type === "BinaryExpression" && n.op === "*";
-        }
-      },
-      {
         input: "3x + 2y",
         desc: "3x + 2y — implicit mult på begge led",
         expect: ast => {
@@ -609,6 +601,57 @@ const suites = [
       },
     ]
   },
+  {
+  name: "Lange variabelnavne og implicit multiplikation",
+  tests: [
+    {
+      input: "ab",
+      desc: "ab er ét variabelnavn, ikke a*b",
+      expect: ast => check(ast, "type", "Variable") &&
+                     getNode(ast).name === "ab"
+    },
+    {
+      input: "a b",
+      desc: "a b (med mellemrum) er implicit multiplikation",
+      expect: ast => {
+          const n = getNode(ast);
+          return n.type === "BinaryExpression" && n.op === "*" &&
+                 n.left.name === "a" && n.right.name === "b";
+      }
+    },
+    {
+      input: "abc",
+      desc: "abc er ét variabelnavn",
+      expect: ast => check(ast, "type", "Variable") &&
+                     getNode(ast).name === "abc"
+    },
+    {
+      input: "2ab",
+      desc: "2ab er 2 * ab (tal foran langt variabelnavn)",
+      expect: ast => {
+          const n = getNode(ast);
+          return n.type === "BinaryExpression" && n.op === "*" &&
+                 n.left.value === 2 &&
+                 n.right.type === "Variable" && n.right.name === "ab";
+      }
+    },
+    {
+      input: "2 ab",
+      desc: "2 ab (med mellemrum) er også 2 * ab",
+      expect: ast => {
+          const n = getNode(ast);
+          return n.type === "BinaryExpression" && n.op === "*" &&
+                 n.right.name === "ab";
+      }
+    },
+    {
+      input: "a2",
+      desc: "a2 er ét variabelnavn (tal må stå inde i identifier)",
+      expect: ast => check(ast, "type", "Variable") &&
+                     getNode(ast).name === "a2"
+    },
+  ]
+},
 
 ];
 

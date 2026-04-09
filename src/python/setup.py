@@ -1,5 +1,6 @@
 import json
 from sympy import *
+from sympy.physics.units import *
 
 # 1. Gem originale Python-funktioner
 py_min = min
@@ -63,4 +64,42 @@ def wrap_result(res):
             "is_symbolic": bool(getattr(simplified_res, 'free_symbols', False))
         })
     except Exception as e:return json.dumps({"type": "error", "message": str(e)})
+ 
+# 5. Fysik og Scopes
+
+# Vi definerer de enheder, som Transformeren spytter ud (m, s, kg osv.)
+units_dict = {
+    'm': meter, 's': second, 'kg': kilogram, 'J': joule, 'N': newton, 'Pa': pascal
+}
+
+# Grundlæggende konstanter og funktioner (Baseline)
+base_context = {
+    **globals(),       # Inkluderer x, y, z, t, mean, wrap_result osv.
+    **units_dict,      # Inkluderer enhederne
+    'g': 9.82 * meter / second**2,
+    'h_planck': planck,
+}
+
+task_registry = {}
+
+def run_in_task(task_id, code):
+    if task_id not in task_registry:
+        task_registry[task_id] = {}
     
+    # Vi bruger base_context som "globals" og task_registry som "locals"
+    # Det er den mest robuste måde at køre exec/eval på.
+    locs = task_registry[task_id]
+    globs = base_context
+
+    try:
+        # Tjek om det er en tildeling (Assignment)
+        if "=" in code and "Eq(" not in code:
+            exec(code, globs, locs)
+            return json.dumps({"status": "success"})
+        else:
+            # Det er et udtryk der skal beregnes
+            result = eval(code, globs, locs)
+            return wrap_result(result)
+            
+    except Exception as e:
+        return json.dumps({"type": "error", "message": str(e)})

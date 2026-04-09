@@ -63,11 +63,8 @@ See the full [roadmap.md](roadmap.md) for details.
 
 **Note:** The first load downloads Pyodide (≈20–40 MB), so it may take 15–40 seconds to initialize.
 
-<<<<<<< HEAD
 ---
 
-=======
->>>>>>> f5edb8a634ff5142aaa041a636f9027c2c94ba1e
 ## Target Audience
 
 - High school and university students
@@ -75,10 +72,7 @@ See the full [roadmap.md](roadmap.md) for details.
 - Users with dyslexia or other accessibility needs
 - Anyone who wants a free, local CAS without tracking or paywalls
 
-<<<<<<< HEAD
 ---
-=======
->>>>>>> f5edb8a634ff5142aaa041a636f9027c2c94ba1e
 
 ## Roadmap
 Detailed development plan is available in roadmap.md.
@@ -90,10 +84,7 @@ The project is structured in five main phases:
 4. Visualization & Statistics
 5. UI & Accessibility
 
-<<<<<<< HEAD
 ---
-=======
->>>>>>> f5edb8a634ff5142aaa041a636f9027c2c94ba1e
 
 ## Tech Stack
 
@@ -103,10 +94,7 @@ The project is structured in five main phases:
 - Rendering: KaTeX
 - Architecture: Clean separation between parser → transformer → engine → UI
 
-<<<<<<< HEAD
 ---
-=======
->>>>>>> f5edb8a634ff5142aaa041a636f9027c2c94ba1e
 
 ## Contributing
 Contributions are welcome! The project is still early-stage, but feel free to:
@@ -114,19 +102,13 @@ Contributions are welcome! The project is still early-stage, but feel free to:
 - Open issues with bugs, feature requests or ideas
 - Submit pull requests (especially parser improvements, UI, tests or documentation)
 
-<<<<<<< HEAD
 ---
-=======
->>>>>>> f5edb8a634ff5142aaa041a636f9027c2c94ba1e
 
 ## License
 This project is licensed under the MIT License (see LICENSE when added).
 
-<<<<<<< HEAD
 ---
 
-=======
->>>>>>> f5edb8a634ff5142aaa041a636f9027c2c94ba1e
 ## Author
 Created by **Jakob Bolko** as an open educational and hobby project.
 Feedback, ideas or questions? Feel free to open an issue.

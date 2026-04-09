@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>newCAS — Transformer Tests</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0f0f12;
+            color: #c9d1d9;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 1.6rem;
+            font-weight: normal;
+            color: #e6edf3;
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.03em;
+        }
+
+        .subtitle {
+            color: #6e7681;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        #summary {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            padding: 0.9rem 1.2rem;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        #summary .stat { display: flex; align-items: center; gap: 0.5rem; }
+        #summary .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-pass { background: #2ea043; }
+        .dot-fail { background: #f85149; }
+        #summary strong { font-size: 1.1rem; }
+
+        #progress-bar {
+            height: 4px;
+            background: #21262d;
+            border-radius: 2px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ea043, #26a641);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 2px;
+        }
+
+        .suite {
+            margin-bottom: 2rem;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .suite-header {
+            background: #161b22;
+            padding: 0.7rem 1.2rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #8b949e;
+            border-bottom: 1px solid #21262d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suite-badge {
+            font-size: 0.75rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 10px;
+            background: #21262d;
+            color: #8b949e;
+        }
+
+        /* 4-kolonner: ikon | beskrivelse | forventet | fik */
+        .test-row {
+            display: grid;
+            grid-template-columns: 22px 1fr 1fr 1fr;
+            gap: 0;
+            padding: 0.55rem 1.2rem;
+            border-bottom: 1px solid #161b22;
+            font-size: 0.82rem;
+            align-items: start;
+            transition: background 0.1s;
+        }
+        .test-row:last-child { border-bottom: none; }
+        .test-row:hover { background: #161b22; }
+
+        .col-icon { padding-top: 1px; }
+        .pass .col-icon::before { content: "✓"; color: #2ea043; }
+        .fail .col-icon::before { content: "✗"; color: #f85149; }
+
+        .col-desc { color: #8b949e; padding-right: 1rem; }
+        .col-desc strong { display: block; color: #c9d1d9; margin-bottom: 2px; }
+
+        .col-expected { color: #6e7681; font-size: 0.78rem; padding-right: 1rem; word-break: break-all; }
+        .col-expected em { display: block; color: #3d444d; font-style: normal; margin-bottom: 2px; font-size: 0.72rem; }
+
+        .col-got { font-size: 0.78rem; word-break: break-all; }
+        .pass .col-got { color: #56d364; }
+        .fail .col-got { color: #f85149; }
+        .fail .col-got .diff { background: #3d1f1f; padding: 1px 3px; border-radius: 3px; }
+
+        .col-header {
+            font-size: 0.72rem;
+            color: #3d444d;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+    </style>
+</head>
+<body>
+
+<h1>newCAS · Transformer Testsuite</h1>
+<p class="subtitle">AST → Python-streng. Åbn fra roden af projektet via Live Server.</p>
+
+<div id="summary">⏳ Kører tests...</div>
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="results"></div>
+
+<script type="module">
+import { Transformer } from './src/js/transformer.js';
+
+const T = new Transformer();
+
+// Hjælper: kald toPython og fang fejl
+function run(ast) {
+    try {
+        return { ok: true, result: T.toPython(ast) };
+    } catch(e) {
+        return { ok: false, result: `FEJL: ${e.message}` };
+    }
+}
+
+// Hjælper: byg AST-noder kortfattet
+const Lit  = v          => ({ type: 'Literal',          value: v });
+const Var  = n          => ({ type: 'Variable',          name: n });
+const Bin  = (op, l, r) => ({ type: 'BinaryExpression',  op, left: l, right: r });
+const Pow  = (b, e)     => ({ type: 'PowerExpression',   base: b, exponent: e });
+const Uni  = a          => ({ type: 'UnaryExpression',   op: '-', argument: a });
+const Eq   = (l, r)     => ({ type: 'Equation',          operator: '=', left: l, right: r });
+const Fn   = (n, ...a)  => ({ type: 'FunctionCall',      name: n, args: a });
+const Asgn = (n, v)     => ({ type: 'Assignment',        name: n, value: v });
+const FDef = (n, p, b)  => ({ type: 'FunctionDefinition', name: n, params: p, body: b });
+const Lst  = (...el)    => ({ type: 'List',               elements: el });
+const Vec  = (...c)     => ({ type: 'Vector',             components: c });
+const Qty  = (v, u)     => ({ type: 'Quantity',           value: v, unit: u });
+const Acc  = (c, i)     => ({ type: 'Access',             container: c, index: i });
+
+// ─── Suites ──────────────────────────────────────────────────────────────────
+
+const suites = [
+
+  {
+    name: "Atomare værdier",
+    tests: [
+      {
+        desc: "Heltal",
+        ast:  Lit(42),
+        expected: "42"
+      },
+      {
+        desc: "Decimaltal",
+        ast:  Lit(3.14),
+        expected: "3.14"
+      },
+      {
+        desc: "Nul",
+        ast:  Lit(0),
+        expected: "0"
+      },
+      {
+        desc: "Enkelt variabel",
+        ast:  Var("x"),
+        expected: "x"
+      },
+      {
+        desc: "Langt variabelnavn",
+        ast:  Var("hastighed"),
+        expected: "hastighed"
+      },
+      {
+        desc: "Variabel med tal i navn",
+        ast:  Var("x1"),
+        expected: "x1"
+      },
+    ]
+  },
+
+  {
+    name: "BinaryExpression — alle operatorer",
+    tests: [
+      {
+        desc: "Addition: x + 1",
+        ast:  Bin('+', Var('x'), Lit(1)),
+        expected: "(x + 1)"
+      },
+      {
+        desc: "Subtraktion: x - 1",
+        ast:  Bin('-', Var('x'), Lit(1)),
+        expected: "(x - 1)"
+      },
+      {
+        desc: "Multiplikation: 2 * x",
+        ast:  Bin('*', Lit(2), Var('x')),
+        expected: "(2 * x)"
+      },
+      {
+        desc: "Division: x / 2",
+        ast:  Bin('/', Var('x'), Lit(2)),
+        expected: "(x / 2)"
+      },
+      {
+        desc: "Indlejret: (x + 1) * (x - 1)",
+        ast:  Bin('*', Bin('+', Var('x'), Lit(1)), Bin('-', Var('x'), Lit(1))),
+        expected: "((x + 1) * (x - 1))"
+      },
+      {
+        desc: "Dybt indlejret: 2x^2 + 3x - 1",
+        ast:  Bin('+',
+                Bin('-',
+                  Bin('*', Lit(2), Pow(Var('x'), Lit(2))),
+                  Bin('*', Lit(3), Var('x'))
+                ),
+                Lit(1)
+              ),
+        // Bemærk: rækkefølgen afhænger af din AST-konstruktion
+        expected: "((( 2 * (x ** 2)) - (3 * x)) + 1)",
+        // Vi bruger en custom check for dette komplekse tilfælde
+        check: r => r.includes('x ** 2') && r.includes('2 *') && r.includes('3 *')
+      },
+    ]
+  },
+
+  {
+    name: "PowerExpression",
+    tests: [
+      {
+        desc: "x^2 → x ** 2",
+        ast:  Pow(Var('x'), Lit(2)),
+        expected: "(x ** 2)"
+      },
+      {
+        desc: "2^10",
+        ast:  Pow(Lit(2), Lit(10)),
+        expected: "(2 ** 10)"
+      },
+      {
+        desc: "Højreassociativ: x^(y^z)",
+        ast:  Pow(Var('x'), Pow(Var('y'), Var('z'))),
+        expected: "(x ** (y ** z))"
+      },
+      {
+        desc: "x^(1/2) — kvadratrod som potens",
+        ast:  Pow(Var('x'), Bin('/', Lit(1), Lit(2))),
+        expected: "(x ** (1 / 2))"
+      },
+    ]
+  },
+
+  {
+    name: "UnaryExpression (negation)",
+    tests: [
+      {
+        desc: "-x",
+        ast:  Uni(Var('x')),
+        expected: "(-x)"
+      },
+      {
+        desc: "-1",
+        ast:  Uni(Lit(1)),
+        expected: "(-1)"
+      },
+      {
+        desc: "-(x + 1)",
+        ast:  Uni(Bin('+', Var('x'), Lit(1))),
+        expected: "(-(x + 1))"
+      },
+      {
+        desc: "-(x^2) — unær minus på potens",
+        ast:  Uni(Pow(Var('x'), Lit(2))),
+        expected: "(-(x ** 2))"
+      },
+    ]
+  },
+
+  {
+    name: "FunctionCall",
+    tests: [
+      {
+        desc: "sin(x)",
+        ast:  Fn('sin', Var('x')),
+        expected: "sin(x)"
+      },
+      {
+        desc: "sqrt(x + 1)",
+        ast:  Fn('sqrt', Bin('+', Var('x'), Lit(1))),
+        expected: "sqrt((x + 1))"
+      },
+      {
+        desc: "solve med to argumenter",
+        ast:  Fn('solve', Eq(Var('x'), Lit(5)), Var('x')),
+        expected: "solve(Eq(x, 5), x)"
+      },
+      {
+        desc: "Indlejret: sin(cos(x))",
+        ast:  Fn('sin', Fn('cos', Var('x'))),
+        expected: "sin(cos(x))"
+      },
+      {
+        desc: "Tre argumenter: integrate(f; x; 0; 1)",
+        ast:  Fn('integrate', Var('f'), Var('x'), Lit(0), Lit(1)),
+        expected: "integrate(f, x, 0, 1)"
+      },
+      {
+        desc: "Tom argument-liste: f()",
+        ast:  Fn('f'),
+        expected: "f()"
+      },
+    ]
+  },
+
+  {
+    name: "Equation",
+    tests: [
+      {
+        desc: "x = 5 → Eq(x, 5)",
+        ast:  Eq(Var('x'), Lit(5)),
+        expected: "Eq(x, 5)"
+      },
+      {
+        desc: "x^2 - 4 = 0",
+        ast:  Eq(Bin('-', Pow(Var('x'), Lit(2)), Lit(4)), Lit(0)),
+        expected: "Eq((( x ** 2) - 4), 0)",
+        check: r => r.startsWith("Eq(") && r.includes("x ** 2") && r.endsWith(", 0)")
+      },
+      {
+        desc: "2x + 3 = 7",
+        ast:  Eq(Bin('+', Bin('*', Lit(2), Var('x')), Lit(3)), Lit(7)),
+        expected: "Eq(((2 * x) + 3), 7)",
+        check: r => r.startsWith("Eq(") && r.includes("2 * x") && r.endsWith(", 7)")
+      },
+    ]
+  },
+
+  {
+    name: "Assignment og FunctionDefinition",
+    tests: [
+      {
+        desc: "x := 5",
+        ast:  Asgn('x', Lit(5)),
+        expected: "x = 5"
+      },
+      {
+        desc: "g := 9.82",
+        ast:  Asgn('g', Lit(9.82)),
+        expected: "g = 9.82"
+      },
+      {
+        desc: "f(x) := x^2",
+        ast:  FDef('f', ['x'], Pow(Var('x'), Lit(2))),
+        expected: "f = Lambda((x), (x ** 2))"
+      },
+      {
+        desc: "f(x; y) := x^2 + y (to parametre)",
+        ast:  FDef('f', ['x', 'y'], Bin('+', Pow(Var('x'), Lit(2)), Var('y'))),
+        expected: "f = Lambda((x, y), ((x ** 2) + y))"
+      },
+      {
+        desc: "Tildeling af udtryk: a := 2x + 1",
+        ast:  Asgn('a', Bin('+', Bin('*', Lit(2), Var('x')), Lit(1))),
+        expected: "a = ((2 * x) + 1)"
+      },
+    ]
+  },
+
+  {
+    name: "List",
+    tests: [
+      {
+        desc: "Tom liste",
+        ast:  Lst(),
+        expected: "[]"
+      },
+      {
+        desc: "{1; 2; 3}",
+        ast:  Lst(Lit(1), Lit(2), Lit(3)),
+        expected: "[1, 2, 3]"
+      },
+      {
+        desc: "Liste af udtryk",
+        ast:  Lst(Bin('+', Var('x'), Lit(1)), Bin('*', Lit(2), Var('y'))),
+        expected: "[(x + 1), (2 * y)]"
+      },
+      {
+        desc: "Indlejret liste",
+        ast:  Lst(Lst(Lit(1), Lit(2)), Lst(Lit(3), Lit(4))),
+        expected: "[[1, 2], [3, 4]]"
+      },
+    ]
+  },
+
+  {
+    name: "Vector → Matrix",
+    tests: [
+      {
+        desc: "[1; 2; 3] → kolonnevektor",
+        ast:  Vec(Lit(1), Lit(2), Lit(3)),
+        expected: "Matrix([[1], [2], [3]])"
+      },
+      {
+        desc: "[x; y] → vektor med variable",
+        ast:  Vec(Var('x'), Var('y')),
+        expected: "Matrix([[x], [y]])"
+      },
+      {
+        desc: "Vektor af udtryk",
+        ast:  Vec(Bin('+', Var('x'), Lit(1)), Bin('*', Lit(2), Var('y'))),
+        expected: "Matrix([[(x + 1)], [(2 * y)]])"
+      },
+    ]
+  },
+
+  {
+    name: "Quantity (enheder)",
+    tests: [
+      {
+        desc: "5[m]",
+        ast:  Qty(5, 'm'),
+        expected: "(5 * m)"
+      },
+      {
+        desc: "9.82[m/s^2]",
+        ast:  Qty(9.82, 'm/s^2'),
+        expected: "(9.82 * m/s^2)"
+      },
+      {
+        desc: "60[km/h]",
+        ast:  Qty(60, 'km/h'),
+        expected: "(60 * km/h)"
+      },
+    ]
+  },
+
+  {
+    name: "Access (indeksering)",
+    tests: [
+      {
+        desc: "data[0]",
+        ast:  Acc('data', Lit(0)),
+        expected: "data[0]"
+      },
+      {
+        desc: "v[i]",
+        ast:  Acc('v', Var('i')),
+        expected: "v[i]"
+      },
+      {
+        desc: "liste[i + 1]",
+        ast:  Acc('liste', Bin('+', Var('i'), Lit(1))),
+        expected: "liste[(i + 1)]"
+      },
+    ]
+  },
+
+  {
+    name: "Program — array af statements",
+    tests: [
+      {
+        desc: "To tildelinger som array",
+        ast:  [Asgn('x', Lit(5)), Asgn('y', Lit(3))],
+        expected: "x = 5\ny = 3"
+      },
+      {
+        desc: "Tildeling + udtryk",
+        ast:  [Asgn('a', Lit(2)), Bin('+', Var('a'), Lit(1))],
+        expected: "a = 2\n(a + 1)"
+      },
+      {
+        desc: "Tre statements",
+        ast:  [Asgn('g', Lit(9.82)), FDef('f', ['t'], Bin('*', Bin('*', Lit(0.5), Var('g')), Pow(Var('t'), Lit(2)))), Fn('f', Lit(5))],
+        check: r => r.includes("g = 9.82") && r.includes("Lambda") && r.includes("f(5)")
+      },
+    ]
+  },
+
+  {
+    name: "Realistiske matematik-udtryk",
+    tests: [
+      {
+        desc: "Andengradsligning: x^2 - 5x + 6 = 0",
+        ast:  Eq(
+                Bin('-', Bin('+', Pow(Var('x'), Lit(2)), Bin('*', Lit(5), Var('x'))), Lit(6)),
+                Lit(0)
+              ),
+        check: r => r.startsWith("Eq(") && r.includes("x ** 2") && r.endsWith(", 0)")
+      },
+      {
+        desc: "solve(x^2 = 4; x)",
+        ast:  Fn('solve', Eq(Pow(Var('x'), Lit(2)), Lit(4)), Var('x')),
+        expected: "solve(Eq((x ** 2), 4), x)"
+      },
+      {
+        desc: "integrate(sin(x); x; 0; pi)",
+        ast:  Fn('integrate', Fn('sin', Var('x')), Var('x'), Lit(0), Var('pi')),
+        expected: "integrate(sin(x), x, 0, pi)"
+      },
+      {
+        desc: "Fysik: s(t) := 1/2 * g * t^2",
+        ast:  FDef('s', ['t'],
+                Bin('*', Bin('*', Bin('/', Lit(1), Lit(2)), Var('g')), Pow(Var('t'), Lit(2)))
+              ),
+        check: r => r.includes("Lambda") && r.includes("1 / 2") && r.includes("t ** 2")
+      },
+    ]
+  },
+
+];
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+
+function escHtml(s) {
+    return String(s ?? '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let totalPass = 0, totalFail = 0;
+const resultsEl = document.getElementById('results');
+
+for (const suite of suites) {
+    const suiteEl = document.createElement('div');
+    suiteEl.className = 'suite';
+
+    const header = document.createElement('div');
+    header.className = 'suite-header';
+    const title = document.createElement('span');
+    title.textContent = suite.name;
+    const badge = document.createElement('span');
+    badge.className = 'suite-badge';
+    badge.textContent = `${suite.tests.length} tests`;
+    header.append(title, badge);
+    suiteEl.appendChild(header);
+
+    // Kolonneoverskrifter
+    const colHead = document.createElement('div');
+    colHead.className = 'test-row';
+    colHead.style.background = '#0d1117';
+    colHead.innerHTML = `
+        <div></div>
+        <div class="col-header">Beskrivelse</div>
+        <div class="col-header">Forventet Python</div>
+        <div class="col-header">Fik</div>
+    `;
+    suiteEl.appendChild(colHead);
+
+    let suitePass = 0, suiteFail = 0;
+
+    for (const t of suite.tests) {
+        const { ok, result } = run(t.ast);
+
+        let passed;
+        if (!ok) {
+            passed = false;
+        } else if (t.check) {
+            passed = t.check(result);
+        } else {
+            passed = result === t.expected;
+        }
+
+        if (passed) { suitePass++; totalPass++; }
+        else        { suiteFail++; totalFail++; }
+
+        const row = document.createElement('div');
+        row.className = `test-row ${passed ? 'pass' : 'fail'}`;
+
+        const gotHtml = passed
+            ? escHtml(result)
+            : `<span class="diff">${escHtml(result)}</span>`;
+
+        const expectedCol = t.expected
+            ? `<code>${escHtml(t.expected)}</code>`
+            : `<em>(custom check)</em>`;
+
+        row.innerHTML = `
+            <div class="col-icon"></div>
+            <div class="col-desc"><strong>${escHtml(t.desc)}</strong></div>
+            <div class="col-expected">${expectedCol}</div>
+            <div class="col-got"><code>${gotHtml}</code></div>
+        `;
+        suiteEl.appendChild(row);
+    }
+
+    badge.textContent = suiteFail > 0
+        ? `${suitePass}/${suite.tests.length} ✓  ${suiteFail} ✗`
+        : `${suitePass}/${suite.tests.length} ✓`;
+    badge.style.color = suiteFail > 0 ? '#f85149' : '#2ea043';
+
+    resultsEl.appendChild(suiteEl);
+}
+
+// Summary
+const total = totalPass + totalFail;
+const pct   = Math.round((totalPass / total) * 100);
+
+const progressEl = document.getElementById('progress-fill');
+progressEl.style.width = pct + '%';
+if (totalFail > 0) progressEl.style.background = 'linear-gradient(90deg, #f85149, #da3633)';
+
+document.getElementById('summary').innerHTML = `
+    <div class="stat"><div class="dot dot-pass"></div><strong>${totalPass}</strong> bestået</div>
+    <div class="stat"><div class="dot dot-fail"></div><strong>${totalFail}</strong> fejlet</div>
+    <div class="stat" style="margin-left:auto; color:#6e7681">${total} tests · ${pct}%</div>
+    ${totalFail === 0
+        ? '<span style="color:#2ea043">🎉 Alle tests består</span>'
+        : '<span style="color:#f85149">⚠ Se fejlede tests herunder</span>'}
+`;
+
+</script>
+</body>
+</html>
