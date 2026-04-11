@@ -164,6 +164,7 @@ const Lst  = (...el)    => ({ type: 'List',               elements: el });
 const Vec  = (...c)     => ({ type: 'Vector',             components: c });
 const Qty  = (v, u)     => ({ type: 'Quantity',           value: v, unit: u });
 const Acc  = (c, i)     => ({ type: 'Access',             container: c, index: i });
+const Conv = (expr, u)  => ({ type: 'Conversion',         expr: expr, targetUnit: u });
 
 // ─── Suites ──────────────────────────────────────────────────────────────────
 
@@ -529,6 +530,70 @@ const suites = [
                 Bin('*', Bin('*', Bin('/', Lit(1), Lit(2)), Var('g')), Pow(Var('t'), Lit(2)))
               ),
         check: r => r.includes("Lambda") && r.includes("1 / 2") && r.includes("t ** 2")
+      },
+    ]
+  },
+
+  // ── NYE SUITES (rev. 0704279+) ────────────────────────────────────────────
+
+  {
+    name: "Conversion (enhedskonvertering: udtryk -> [enhed])",
+    tests: [
+      {
+        desc: "Simpel konvertering: variabel -> enhed",
+        ast:  Conv(Var('v'), 'm/s'),
+        expected: `convert_to_unit(v, "m/s")`
+      },
+      {
+        desc: "Quantity -> enhed",
+        ast:  Conv(Qty(5, 'm/s'), 'km/h'),
+        expected: `convert_to_unit((5 * m/s), "km/h")`
+      },
+      {
+        desc: "Sammensat enhed med potens",
+        ast:  Conv(Qty(9.82, 'm/s^2'), 'km/h^2'),
+        expected: `convert_to_unit((9.82 * m/s^2), "km/h^2")`
+      },
+      {
+        desc: "Konvertering af udtryk",
+        ast:  Conv(Bin('*', Var('m'), Pow(Var('v'), Lit(2))), 'J'),
+        expected: `convert_to_unit((m * (v ** 2)), "J")`
+      },
+      {
+        desc: "Konvertering af tildeling",
+        ast:  Conv(Asgn('afstand', Qty(100, 'km')), 'm'),
+        expected: `convert_to_unit(afstand = (100 * km), "m")`
+      },
+      {
+        desc: "Enhedsstreng med / og ^ bevares præcist",
+        ast:  Conv(Var('a'), 'kg*m/s^2'),
+        expected: `convert_to_unit(a, "kg*m/s^2")`
+      },
+    ]
+  },
+
+  {
+    name: "Unary/Power præcedens i transformer",
+    tests: [
+      {
+        desc: "-(x^2): UnaryExpression wrapper om PowerExpression",
+        ast:  Uni(Pow(Var('x'), Lit(2))),
+        expected: "(-(x ** 2))"
+      },
+      {
+        desc: "(-x)^2: PowerExpression med UnaryExpression som base",
+        ast:  Pow(Uni(Var('x')), Lit(2)),
+        expected: "((-x) ** 2)"
+      },
+      {
+        desc: "Dobbelt negation --x = -(-x)",
+        ast:  Uni(Uni(Var('x'))),
+        expected: "(-(-x))"
+      },
+      {
+        desc: "-sin(x)",
+        ast:  Uni(Fn('sin', Var('x'))),
+        expected: "(-sin(x))"
       },
     ]
   },

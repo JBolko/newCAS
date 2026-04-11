@@ -653,6 +653,198 @@ const suites = [
   ]
 },
 
+  // ── NYE SUITES (grammatik rev. 0704279+) ─────────────────────────────────
+
+  {
+    name: "Unary/Power præcedens (opdateret grammatik)",
+    tests: [
+      {
+        input: "-x^2",
+        desc: "-x^2 er -(x^2), IKKE (-x)^2  [Unary over Power]",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "UnaryExpression" &&
+                   n.argument.type === "PowerExpression" &&
+                   n.argument.base.name === "x" &&
+                   n.argument.exponent.value === 2;
+        }
+      },
+      {
+        input: "(-x)^2",
+        desc: "(-x)^2 — parentes giver (-x) som base",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "PowerExpression" &&
+                   n.base.type === "UnaryExpression";
+        }
+      },
+      {
+        input: "-2^3",
+        desc: "-2^3 er -(2^3) = -8, ikke (-2)^3",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "UnaryExpression" &&
+                   n.argument.type === "PowerExpression" &&
+                   n.argument.base.value === 2 &&
+                   n.argument.exponent.value === 3;
+        }
+      },
+      {
+        input: "--x",
+        desc: "Dobbelt negation: --x = -(-x)",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "UnaryExpression" &&
+                   n.argument.type === "UnaryExpression";
+        }
+      },
+      {
+        input: "-sin(x)",
+        desc: "-sin(x) — unær minus på funktionskald",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "UnaryExpression" &&
+                   n.argument.type === "FunctionCall" &&
+                   n.argument.name === "sin";
+        }
+      },
+    ]
+  },
+
+  {
+    name: "Konvertering (Conversion: udtryk -> [enhed])",
+    tests: [
+      {
+        input: "5[m/s] -> [km/h]",
+        desc: "Hastighedskonvertering m/s → km/h",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "Conversion" &&
+                   n.expr.type === "Quantity" &&
+                   n.expr.unit === "m/s" &&
+                   n.targetUnit === "km/h";
+        }
+      },
+      {
+        input: "100[km/h] -> [m/s]",
+        desc: "Omvendt konvertering km/h → m/s",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "Conversion" &&
+                   n.targetUnit === "m/s";
+        }
+      },
+      {
+        input: "v -> [m/s]",
+        desc: "Konvertering af variabel",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "Conversion" &&
+                   n.expr.type === "Variable" &&
+                   n.expr.name === "v" &&
+                   n.targetUnit === "m/s";
+        }
+      },
+      {
+        input: "9,82[m/s^2] -> [km/h^2]",
+        desc: "Konvertering med komma-decimal og sammensat enhed",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "Conversion" &&
+                   n.expr.type === "Quantity" &&
+                   Math.abs(n.expr.value - 9.82) < 0.0001 &&
+                   n.targetUnit === "km/h^2";
+        }
+      },
+      {
+        input: "x := 5[m] -> [cm]",
+        desc: "Konvertering af tildeling (Assignment kan indgå)",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "Conversion" &&
+                   n.expr.type === "Assignment";
+        }
+      },
+    ]
+  },
+
+  {
+    name: "Args: komma/semikolon og decimal-tvetydighed",
+    tests: [
+      {
+        input: "f(1,5)",
+        desc: "f(1,5) — komma UDEN mellemrum: ét arg med decimal 1.5",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "FunctionCall" &&
+                   n.args.length === 1 &&
+                   Math.abs(n.args[0].value - 1.5) < 0.0001;
+        }
+      },
+      {
+        input: "f(1, 5)",
+        desc: "f(1, 5) — komma MED mellemrum: to separate args",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "FunctionCall" &&
+                   n.args.length === 2 &&
+                   n.args[0].value === 1 &&
+                   n.args[1].value === 5;
+        }
+      },
+      {
+        input: "f(1; 5)",
+        desc: "f(1; 5) — semikolon: to args (altid entydigt)",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "FunctionCall" &&
+                   n.args.length === 2;
+        }
+      },
+      {
+        input: "f(1,5; 2,3)",
+        desc: "f(1,5; 2,3) — to komma-decimal args med semikolon",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "FunctionCall" &&
+                   n.args.length === 2 &&
+                   Math.abs(n.args[0].value - 1.5) < 0.0001 &&
+                   Math.abs(n.args[1].value - 2.3) < 0.0001;
+        }
+      },
+      {
+        input: "f(1,5, 2,3)",
+        desc: "f(1,5, 2,3) — komma-decimal + komma-separator: to args",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "FunctionCall" &&
+                   n.args.length === 2 &&
+                   Math.abs(n.args[0].value - 1.5) < 0.0001 &&
+                   Math.abs(n.args[1].value - 2.3) < 0.0001;
+        }
+      },
+      {
+        input: "solve(x^2 = 4; x)",
+        desc: "solve med ligning og variabel (semikolon)",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "FunctionCall" &&
+                   n.args.length === 2 &&
+                   n.args[0].type === "Equation";
+        }
+      },
+      {
+        input: "integrate(sin(x); x; 0; pi)",
+        desc: "Fire argumenter med semikolon",
+        expect: ast => {
+            const n = getNode(ast);
+            return n.type === "FunctionCall" &&
+                   n.args.length === 4;
+        }
+      },
+    ]
+  },
+
 ];
 
 // ─── Test-kørsel ──────────────────────────────────────────────────────────────

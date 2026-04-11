@@ -9,9 +9,14 @@ Program
     { return [head, ...tail]; }
 
 Statement
-  = Assignment
+  = Conversion 
+  / Assignment
   / Equation 
   / Expression
+
+Conversion
+  = expr:(Assignment / Equation / Expression) _ "->" _ unit:Unit
+    { return { type: "Conversion", expr: expr, targetUnit: unit }; }
 
 Assignment
   = id:Identifier _ "(" _ params:Params _ ")" _ ":=" _ expr:Expression

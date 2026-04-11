@@ -71,11 +71,25 @@ export class Transformer {
             case 'Quantity':
                 // Enheder håndteres lettest ved at gange tallet med en enheds-variabel
                 // Vi antager at SymPy har enheder defineret (f.eks. fra sympy.physics.units)
-                return `(${node.value} * ${node.unit})`;
+                let unitClean = node.unit.replace(/\^/g, '**').trim();
+                return `(${node.value} * ${unitClean})`;
 
             case 'Access':
                 // Liste/Vektor opslag: data[0]. SymPy (Python) bruger 0-baseret indeksering.
                 return `${node.container}[${this.translate(node.index)}]`;
+
+            case 'Conversion':
+                let targetClean = node.targetUnit
+                    .replace(/[\[\]]/g, '')     // fjern [ og ]
+                    .replace(/\^/g, '**')       // ^ → **
+                    .trim();
+                
+                // Hvis targetClean er tom eller ugyldig, falder vi tilbage
+                if (!targetClean) {
+                    return this.translate(node.expr);   // ingen konvertering
+                }
+                
+                return `convert_to_unit(${this.translate(node.expr)}, "${targetClean}")`;turn `convert_to_unit(${this.translate(node.expr)}, "${targetClean}")`;
 
             default:
                 console.warn("Ukendt AST-node:", node.type);
