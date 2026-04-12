@@ -89,8 +89,8 @@ def wrap_result(res):
             else:
                 return json.dumps({
                     "type": "scalar",
-                    "latex": str(res),
-                    "decimal": str(res)
+                    "latex": latex(Rational(res).limit_denominator(1000) if isinstance(res, float) else res),
+                    "decimal": str(float(res))   # Altid numerisk — aldrig "1/2"
                 })
 
         # Normal symbolsk/scalar case
@@ -120,7 +120,7 @@ units_dict = {
     'N': newton, 'J': joule, 'kJ': kilo * joule, 'MJ': mega * joule,
     'W': watt, 'kW': kilo * watt, 'kWh': 3600000 * joule,
     'Pa': pascal, 'bar': bar, 'hPa': 100 * pascal,
-    'C': coulomb, 'V': volt, 'A': ampere, 'Ohm': ohm,
+    'C': coulomb, 'V': volt, 'A': ampere, 'Ohm': ohm, 'mA': milli * ampere, 'kV': kilo * volt,
     'K': kelvin, 'degC': degree_Celsius, 'deltaC': kelvin,
 }
 
@@ -168,6 +168,16 @@ base_context = {
     'min':             min_func,
     'max':             max_func,
     'minute':          minute,
+
+    # ⑤ Matematiske konstanter — IKKE callable, filtreres fra af vars()
+    #    Skal tilføjes eksplicit, ellers opretter auto-symbol-handleren
+    #    Symbol('pi') i stedet for den rigtige π-konstant.
+    'pi':  sympy_module.pi,
+    'E':   sympy_module.E,
+    'I':   sympy_module.I,
+    'oo':  sympy_module.oo,
+    'zoo': sympy_module.zoo,
+    'nan': sympy_module.nan,
 }
 
 # ── 8. Scope-registry ────────────────────────────────────────────────────────
@@ -179,6 +189,8 @@ FORBIDDEN_SYMBOLS = {
     'mean', 'median', 'Q1', 'Q3', 'min', 'max',
     'wrap_result', 'convert_to_unit', 'convert_to',
     'Matrix', 'symbols', 'Symbol', 'N', 'latex',
+    # Konstanter — må aldrig auto-symboliseres
+    'pi', 'E', 'I', 'oo', 'zoo', 'nan',
 }
 
 def run_in_task(task_id, code):

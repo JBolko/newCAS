@@ -7,7 +7,7 @@ import { CASEngine } from './cas-engine.js';
 import { settings } from './settings.js';
 
 // 1. Initialisér maskinerne
-const transformer = new Transformer();
+const transformer = new Transformer(settings);
 const engine = new CASEngine(transformer);
 
 // Vi har ikke én knap længere, så vi bruger status-dotten til feedback

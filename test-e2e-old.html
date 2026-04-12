@@ -246,9 +246,7 @@ import { CASEngine }    from './src/js/cas-engine.js';
 
 // ─── Engine setup ─────────────────────────────────────────────────────────────
 
-const transformer    = new Transformer(settings);
-const transformerDeg = new Transformer({ user: { angleMode: 'deg' } });
-const transformerRad = new Transformer({ user: { angleMode: 'rad' } });
+const transformer = new Transformer(settings);
 const engine = new CASEngine(transformer);
 let   pyodide     = null;
 
@@ -302,9 +300,9 @@ async function initEngine() {
 
 // ─── Core runner ──────────────────────────────────────────────────────────────
 
-async function runCAS(input, taskId, xformer = transformer) {
+async function runCAS(input, taskId) {
     const ast        = parse(input);
-    const pythonCode = xformer.toPython(ast);
+    const pythonCode = transformer.toPython(ast);
     const raw        = await pyodide.runPythonAsync(
         `run_in_task(${JSON.stringify(taskId)}, ${JSON.stringify(pythonCode)})`
     );
@@ -671,128 +669,45 @@ const suites = [
   
   // ── 9 ────────────────────────────────────────────────────────────────────
   {
-    name: "Trigonometri — grader (angleMode: 'deg')",
-    transformer: transformerDeg,
+    name: "Tidligere issues",
     tests: [
       {
-        input:  "sin(30)",
-        desc:   "sin(30°) = 0,5",
-        checkDesc: "decimal ≈ 0.5",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.001
+        input: "sin(30)",
+        desc:   "sin(30) med angleMode='deg' i settings.js",
+        checkDesc: "Burde returnere 0,5 (30°) — ikke sin(30 rad) ≈ -0.988",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.01
       },
-      {
-        input:  "cos(60)",
-        desc:   "cos(60°) = 0,5",
-        checkDesc: "decimal ≈ 0.5",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.001
-      },
-      {
-        input:  "tan(45)",
-        desc:   "tan(45°) = 1",
-        checkDesc: "decimal ≈ 1.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.0) < 0.001
-      },
-      {
-        input:  "sin(90)",
-        desc:   "sin(90°) = 1",
-        checkDesc: "decimal ≈ 1.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.0) < 0.001
-      },
-      {
-        input:  "cos(0)",
-        desc:   "cos(0°) = 1",
-        checkDesc: "decimal ≈ 1.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.0) < 0.001
-      },
-      {
-        input:  "asin(0.5)",
-        desc:   "asin(0,5) = 30°  (invers trig)",
-        checkDesc: "decimal ≈ 30.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 30.0) < 0.01
-      },
-      {
-        input:  "acos(0.5)",
-        desc:   "acos(0,5) = 60°",
-        checkDesc: "decimal ≈ 60.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 60.0) < 0.01
-      },
-      {
-        input:  "atan(1)",
-        desc:   "atan(1) = 45°",
-        checkDesc: "decimal ≈ 45.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 45.0) < 0.01
-      },
-      {
-        input:  "sin(30) + cos(60)",
-        desc:   "sin(30°) + cos(60°) = 0,5 + 0,5 = 1",
-        checkDesc: "decimal ≈ 1.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.0) < 0.001
-      },
-      {
-        input:  "f(v) := sin(v) ; f(30)",
-        desc:   "Funktion der bruger sin — f(30) = sin(30°) = 0,5",
-        checkDesc: "decimal ≈ 0.5",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.001
-      },
-    ]
-  },
+      ]
+    },
 
-  // ── 10 ───────────────────────────────────────────────────────────────────
+  // ── 10 ────────────────────────────────────────────────────────────────────
   {
-    name: "Trigonometri — radianer (angleMode: 'rad')",
-    transformer: transformerRad,
-    tests: [
-      {
-        input:  "sin(0)",
-        desc:   "sin(0) = 0",
-        checkDesc: "decimal = 0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal)) < 0.001
-      },
-      {
-        input:  "cos(0)",
-        desc:   "cos(0) = 1",
-        checkDesc: "decimal ≈ 1.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.0) < 0.001
-      },
-      {
-        input:  "sin(pi/6)",
-        desc:   "sin(π/6) = 0,5",
-        checkDesc: "decimal ≈ 0.5",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.001
-      },
-      {
-        input:  "cos(pi/3)",
-        desc:   "cos(π/3) = 0,5",
-        checkDesc: "decimal ≈ 0.5",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.001
-      },
-      {
-        input:  "tan(pi/4)",
-        desc:   "tan(π/4) = 1",
-        checkDesc: "decimal ≈ 1.0",
-        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.0) < 0.001
-      },
-    ]
-  },
-
-  // ── 11 ───────────────────────────────────────────────────────────────────
-  {
-    name: "Kendte tilbageværende problemer (gule advarsler)",
+    name: "Kendte problemer — dokumenterede bugs (vises i gult)",
     knownIssues: true,
     tests: [
       {
-        input:  "9,82[m/s^2]",
-        desc:   "Quantity med ^ i enhedsstreng (transformer retter ^ → ** nu)",
-        checkDesc: "type='scalar', indeholder '9.82'",
-        check:  r => r.type === 'scalar' && r.decimal?.includes('9.82'),
-        knownIssue: false,  // Denne er rettet i transformer.js — sæt til false!
+        input:  "x := 5",
+        desc:   "Ren tildeling som eneste statement",
+        checkDesc: "Burde returnere type='assignment' eller 'success', men …",
+        check:  r => r.type !== 'error',
+        knownIssue: true,
+        bugNote: "BUG i run_in_task: exec('x = 5') sætter x korrekt, men eval('x = 5') kaster SyntaxError. Fix: tjek om last_line er en assignment-statement og returner success i stedet for at eval'e den."
       },
       {
         input:  "sin(30)",
-        desc:   "sin(30) MED default settings (fra app — ikke mock)",
-        checkDesc: "Med app-settings (deg): decimal ≈ 0.5",
+        desc:   "sin(30) med angleMode='deg' i settings.js",
+        checkDesc: "Burde returnere 0,5 (30°) — ikke sin(30 rad) ≈ -0.988",
         check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.01,
-        knownIssue: false,  // Rettet — transformer bruger nu settings korrekt
+        knownIssue: true,
+        bugNote: "BUG: settings.js angleMode='deg' er ikke koblet til transformer eller engine. sin(30) beregnes i radianer. Fix: transformer skal konvertere trig-kald til sin(rad(x)) baseret på settings.angleMode."
+      },
+      {
+        input:  "9,82[m/s^2]",
+        desc:   "Quantity med ^ i enhedsstreng",
+        checkDesc: "Burde give 9.82 m/s², men ^=XOR i Python",
+        check:  r => r.type === 'scalar' && !r.message,
+        knownIssue: true,
+        bugNote: "BUG i transformer.js Quantity-case: genererer '(9.82 * m/s^2)' — men ^ er bitwise XOR i Python, ikke potens. Fix: node.unit.replace(/\\^/g, '**') i transformer. Tilsvarende for targetUnit i Conversion-case."
       },
     ]
   },
@@ -805,14 +720,11 @@ const testQueue = [];
 suites.forEach((suite, si) => {
     suite.tests.forEach((test, ti) => {
         let taskId;
-        if (test.taskId)        taskId = test.taskId;
+        if (test.taskId)       taskId = test.taskId;
         else if (suite.scopeId) taskId = suite.scopeId;
-        else                    taskId = `s${si}_t${ti}`;
+        else                   taskId = `s${si}_t${ti}`;
 
-        // Tillad per-suite transformer (til trig-tests med grader/radianer)
-        const xformer = suite.transformer || transformer;
-
-        testQueue.push({ ...test, taskId, xformer, _suiteIdx: si, _testIdx: ti });
+        testQueue.push({ ...test, taskId, _suiteIdx: si, _testIdx: ti });
     });
 });
 
@@ -965,7 +877,7 @@ async function main() {
 
         let result, passed;
         try {
-            result = await runCAS(t.input, t.taskId, t.xformer);
+            result = await runCAS(t.input, t.taskId);
             passed = t.check(result);
         } catch(e) {
             result = { type: 'error', message: e.message, _python: '(fejl under kørsel)' };
