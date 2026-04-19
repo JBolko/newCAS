@@ -57,6 +57,7 @@ Power
   
 Primary
   = "(" _ expr:Expression _ ")" { return expr; }
+  / call:DerivativeCall 
   / call:FunctionCall
   / id:Identifier _ "[" _ idx:Expression _ "]" { return { type: "Access", container: id, index: idx }; }
   / id:Identifier { return { type: "Variable", name: id }; }
@@ -64,6 +65,16 @@ Primary
   / Vector
   / num:Number _ unit:Unit { return { type: "Quantity", value: num, unit: unit }; }
   / num:Number { return { type: "Literal", value: num }; }
+  
+DerivativeCall
+  = name:Identifier ticks:"'"+ _ "(" _ args:Args _ ")"
+    {
+      return makeNode("Derivative", {
+        name:  name,
+        order: ticks.length,   // f' = 1, f'' = 2, f''' = 3
+        args:  args
+      });
+    }
 
 FunctionCall
   = id:Identifier _ "(" _ args:Args _ ")"

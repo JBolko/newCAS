@@ -173,19 +173,42 @@ frequencyTable(data)            → frekvenstabel (rå + relativ + kumulativ)
 *Mål: Alle standard matematikopgaver på STX A-niveau.*
 
 ### 3.1 Calculus-udvidelser
+
+**Implementeret og testbekræftet ✅**
 ```
-derivative(f; x)                → f'(x), allerede via diff()
-derivative(f; x; n)             → n'te afledte
-limit(f(x); x; a)               → grænseværdi
+diff(f; x)                      → f'(x)
+diff(f; x; n)                   → n'te afledte
+integrate(f; x)                 → ubestemt integral
 integrate(f; x; a; b)           → bestemt integral
 arclength(f; x; a; b)           → kurvelængde ∫√(1+f'²) dx
+limit(f; x; a)                  → grænseværdi (tvetydig ved singulariteter)
 ```
 
-Notation-sukker — disse oversættes i transformerlaget:
+**Planlagt 📋**
 ```
-f'(x)    → diff(f(x), x)
+limit(f; x; a; '+')             → grænseværdi fra højre
+limit(f; x; a; '-')             → grænseværdi fra venstre
+```
+Kræver: valgfrit fjerde argument i grammatik + wrapper i `setup.py`.
+Relevant fordi `limit(1/x; x; 0)` er meningsløs uden retningsangivelse.
+Implementering: ~30 min. Prioritet: høj.
+
+```
+integrate(f; t; 0[s]; 5[s])     → integral med enheder (watt·s = joule)
+```
+SymPy understøtter principielt integration med enheder — grænser med dimension
+sendes som `(0*second, 5*second)`. Kræver verifikation af at `integrate_cas`
+håndterer `Quantity`-grænser korrekt. Relevant for fysik: arbejde, impuls, ladning.
+Prioritet: middel — undersøges som del af enheds-udvidelsen i Fase 3.
+
+Notation-sukker — implementeret ✅
+```
+f'(x)    → diff(f(x), x, 1)
 f''(x)   → diff(f(x), x, 2)
+f'''(x)  → diff(f(x), x, 3)
 ```
+Parser: `DerivativeCall`-regel i grammatikken — ticks tælles og
+mappes til `order`-feltet i AST-noden. Transformer: ny `Derivative`-case.
 
 ### 3.2 Komplet ligningshåndtering
 ```
@@ -335,7 +358,26 @@ Disse spørgsmål er ikke besvaret endnu og vil forme beslutninger i Fase 3-7:
 
 **Reaktiv genberegning:** Skal ændring af én celle automatisk genberegne afhængige celler? Det er et stærkt pædagogisk feature (som i et regneark), men kræver en dependency-graf og er ikke trivielt at implementere korrekt.
 
+**KaTeX fontfiler:** `lib/katex/fonts/` indeholder hvert font i tre
+formater (`.ttf`, `.woff`, `.woff2`). Moderne browsere bruger udelukkende `.woff2`.
+`.ttf` og `.woff`-filerne er slettet — sparer ~2,5 MB uden tab af funktionalitet. ✅
+
 **Enhedsstrenge i LaTeX-output:** Den nuværende `5\,\text{meter/100}` er ikke pæn. Der skal defineres en enhedsformatter der konverterer SymPy-enhedsobjekter til pæn LaTeX som `5\,\mathrm{cm}`.
+
+**Symboler med reelt domæne:** `Symbol('x', real=True)` giver SymPy bedre
+domæne-information (fx `sqrt(x**2) = Abs(x)` i stedet for `x`) og er matematisk
+mere korrekt for gymnasieelever der arbejder i ℝ. Men det er en global
+arkitekturbeslutning: det kan påvirke `solve`-resultater og overraske elever
+der arbejder med komplekse tal i fysik. Implementeres som en del af
+`settings.engine.defaultDomain` — auto-symboler oprettes med `real=True`
+som default, overstyrbar per session. Fase 3.
+
+**Proaktiv domænevalidering via SymPy:** I stedet for regex-baseret
+fejlklassificering i `error-catalog.js` kan vi wrappe trig- og log-funktioner
+i `setup.py` med eksplicit domænetjek — fx
+`if not (-1 <= float(arg) <= 1): raise DomainError('asin kræver argument i [-1, 1]')`.
+Det giver mere præcise fejlbeskeder og fjerner afhængigheden af regex på
+Python-koden. Kræver at vi definerer et lille sæt wrapper-funktioner. Fase 1-afslutning.
 
 ---
 
@@ -343,16 +385,30 @@ Disse spørgsmål er ikke besvaret endnu og vil forme beslutninger i Fase 3-7:
 
 I prioriteret rækkefølge:
 
-1. Ret assignment-detektion i `run_in_task` (linje med `":="` tjek)
-2. Definér og implementér det endelige output-format for alle result-typer (Fase 1.1)
-3. Implementér `classify_error()` til pædagogiske fejlbeskeder
-4. Tilføj peggy til package.json og lav build-script
-5. Indlæs scipy og numpy i cas-engine.js og verificér opstartstid
-6. Implementér `linReg` og `expReg` med E2E-tests
-7. Implementér `binompdf`, `binomcdf`, `normalcdf` med E2E-tests
+**Afslutning af Fase 1 (motor-stabilisering):**
+1. ✅ Assignment-detektion rettet (regex `^[A-Za-z_]\w*\s*=(?![=<>])`)
+2. ✅ Output-format defineret og implementeret (scalar/list/warning/error/success)
+3. ✅ `classify_error()` + `error-catalog.js` med danske fejlbeskeder
+4. ✅ Domænefejl-detektion (COMPLEX_RESULT via `is_real`)
+5. ✅ Calculus: diff, integrate, arclength, limit implementeret og testet
+6. ✅ Apostrof-notation f', f'', f''' implementeret (DerivativeCall i grammatik + transformer)
+7. ✅ Mappestruktur ryddet: KaTeX .ttf/.woff slettet, style_old.css fjernet
+8. Tilføj `limit(f; x; a; '+'/'-')` for ensidede grænseværdier (~30 min)
+9. Tilføj peggy til package.json og lav build-script
+
+**Fase 2 — Statistik og sandsynlighed:**
+8. Indlæs scipy og numpy i cas-engine.js og verificér opstartstid
+9. Implementér `linReg` og `expReg` med E2E-tests
+10. Implementér `binompdf`, `binomcdf`, `normalcdf` med E2E-tests
+11. Implementér hypotesetest: `binomtest`, `chi2GOF`
+
+**Fase 3 — løbende:**
+12. Undersøg integration med enheder (`integrate(P; t; 0[s]; 5[s])`)
+13. Implementér `real=True` som default for auto-symboler (settings-koblet)
+14. Proaktiv domænevalidering som erstatning for regex-fejlklassificering
 
 ---
 
-*Rev. 120426 · Sidst opdateret: 12. april 2026*
+*Rev. 190426b · Sidst opdateret: 19. april 2026*
 *Erstatter: `roadmap.md (Rev. 070426)`, `Strategisk_udviklingsplan.md`*
 *Supplerer (erstatter ikke): `Formål.md`, `Arkitektur_og_dataflow.md`, `Funktionskatalog.md`*

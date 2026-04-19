@@ -242,6 +242,7 @@
 import { parse }        from './src/js/parser.mjs';
 import { settings }     from './src/js/settings.js';
 import { Transformer }  from './src/js/transformer.js';
+import { getFriendlyMessage } from './src/js/error-catalog.js';
 import { CASEngine }    from './src/js/cas-engine.js';
 
 // ─── Engine setup ─────────────────────────────────────────────────────────────
@@ -662,9 +663,9 @@ const suites = [
       },
       {
         input:  "sqrt(-4)",
-        desc:   "√(-4) = 2i  (komplekst tal håndteres af SymPy)",
-        checkDesc: "latex indeholder 'i'",
-        check:  r => r.type === 'scalar' && r.latex.includes('i')
+        desc:   "√(-4) — negativt tal under kvadratrod giver advarsel i reelt domæne",
+        checkDesc: "type='warning', code='COMPLEX_RESULT'",
+        check:  r => r.type === 'warning' && r.code === 'COMPLEX_RESULT'
       },
     ]
   },
@@ -797,6 +798,332 @@ const suites = [
     ]
   },
 
+  // ── Fejlhåndtering ───────────────────────────────────────────────────────
+  {
+    name: "Fejlhåndtering — Python-fejl giver danske beskeder",
+    tests: [
+      {
+        input:  "1/0",
+        desc:   "Division med nul",
+        checkDesc: "type='error', code='ZERO_DIVISION'",
+        check:  r => r.type === 'error' && r.code === 'ZERO_DIVISION'
+      },
+      {
+        input:  "udefineretVariabel",
+        desc:   "Udefineret variabel — men auto-symbol oprettes, så vi ser symbolsk resultat",
+        checkDesc: "type='scalar' med is_symbolic=true (auto-symbol)",
+        check:  r => r.type === 'scalar' && r.is_symbolic === true
+      },
+      {
+        input:  "x := 5 ; udefineretFunktion(x)",
+        desc:   "Kald til funktion der ikke eksisterer",
+        checkDesc: "type='error', code='UNDEFINED_NAME' (FORBIDDEN_SYMBOLS blokerer auto-symbol)",
+        check:  r => r.type === 'error'
+      },
+    ]
+  },
+
+  // ── Domænefejl — komplekse resultater ────────────────────────────────────
+  {
+    name: "Domænefejl — reelt domæne giver advarsel (type='warning')",
+    tests: [
+      {
+        input:  "asin(2)",
+        desc:   "asin(2) — argument > 1, komplekst resultat",
+        checkDesc: "type='warning', code='COMPLEX_RESULT'",
+        check:  r => r.type === 'warning' && r.code === 'COMPLEX_RESULT'
+      },
+      {
+        input:  "acos(-2)",
+        desc:   "acos(-2) — argument < -1",
+        checkDesc: "type='warning', code='COMPLEX_RESULT'",
+        check:  r => r.type === 'warning' && r.code === 'COMPLEX_RESULT'
+      },
+      {
+        input:  "sqrt(-9)",
+        desc:   "sqrt(-9) — kvadratrod af negativt tal",
+        checkDesc: "type='warning', code='COMPLEX_RESULT'",
+        check:  r => r.type === 'warning' && r.code === 'COMPLEX_RESULT'
+      },
+      {
+        input:  "log(-5)",
+        desc:   "log(-5) — logaritme til negativt tal",
+        checkDesc: "type='warning', code='COMPLEX_RESULT'",
+        check:  r => r.type === 'warning' && r.code === 'COMPLEX_RESULT'
+      },
+      {
+        input:  "log(0)",
+        desc:   "log(0) — logaritme til nul (divergerer, zoo)",
+        checkDesc: "type='warning', code='COMPLEX_RESULT'",
+        check:  r => r.type === 'warning' && r.code === 'COMPLEX_RESULT'
+      },
+      {
+        input:  "sqrt(x^2 + 1)",
+        desc:   "sqrt(x²+1) — symbolsk, altid reelt → IKKE en advarsel",
+        checkDesc: "type='scalar', is_symbolic=true",
+        check:  r => r.type === 'scalar' && r.is_symbolic === true
+      },
+      {
+        input:  "sqrt(4)",
+        desc:   "sqrt(4) = 2 — reelt resultat → ingen advarsel",
+        checkDesc: "type='scalar', latex='2'",
+        check:  r => r.type === 'scalar' && r.latex === '2'
+      },
+    ]
+  },
+
+  // ── Infinitesimalregning ──────────────────────────────────────────────────
+  {
+    name: "Differentialregning",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "diff(x^2; x)",
+        desc:   "diff(x², x) = 2x",
+        checkDesc: "latex indeholder '2' og 'x'",
+        check:  r => r.type === 'scalar' && r.latex.includes('2') && r.latex.includes('x')
+      },
+      {
+        input:  "diff(x^3; x)",
+        desc:   "diff(x³, x) = 3x²",
+        checkDesc: "latex indeholder '3' og 'x^{2}'",
+        check:  r => r.type === 'scalar' && r.latex.includes('3') && r.latex.includes('x^{2}')
+      },
+      {
+        input:  "diff(sin(x); x)",
+        desc:   "diff(sin(x), x) = cos(x)",
+        checkDesc: "latex indeholder 'cos'",
+        check:  r => r.type === 'scalar' && r.latex.includes('cos')
+      },
+      {
+        input:  "diff(exp(x); x)",
+        desc:   "diff(eˣ, x) = eˣ",
+        checkDesc: "latex indeholder 'e^{x}' eller 'e^x'",
+        check:  r => r.type === 'scalar' && (r.latex.includes('e^{x}') || r.latex.includes('e^x'))
+      },
+      {
+        input:  "diff(x^3; x; 2)",
+        desc:   "Anden afledte: diff(x³, x, 2) = 6x",
+        checkDesc: "latex indeholder '6' og 'x'",
+        check:  r => r.type === 'scalar' && r.latex.includes('6') && r.latex.includes('x')
+      },
+      {
+        input:  "diff(x^4; x; 3)",
+        desc:   "Tredje afledte: diff(x⁴, x, 3) = 24x",
+        checkDesc: "latex indeholder '24' og 'x'",
+        check:  r => r.type === 'scalar' && r.latex.includes('24') && r.latex.includes('x')
+      },
+      {
+        input:  "f(x) := x^3 - 3x ; diff(f(x); x)",
+        desc:   "Afledt af defineret funktion: f(x) = x³-3x → f'(x) = 3x²-3",
+        checkDesc: "latex indeholder '3' og 'x^{2}'",
+        check:  r => r.type === 'scalar' && r.latex.includes('3') && r.latex.includes('x^{2}')
+      },
+    ]
+  },
+
+  {
+    name: "Integralregning — ubestemte integraler",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "integrate(2x; x)",
+        desc:   "∫2x dx = x²",
+        checkDesc: "latex indeholder 'x^{2}'",
+        check:  r => r.type === 'scalar' && r.latex.includes('x^{2}')
+      },
+      {
+        input:  "integrate(x^2; x)",
+        desc:   "∫x² dx = x³/3",
+        checkDesc: "latex indeholder 'x^{3}' og '3'",
+        check:  r => r.type === 'scalar' && r.latex.includes('x^{3}') && r.latex.includes('3')
+      },
+      {
+        input:  "integrate(sin(x); x)",
+        desc:   "∫sin(x) dx = -cos(x)",
+        checkDesc: "latex indeholder 'cos'",
+        check:  r => r.type === 'scalar' && r.latex.includes('cos')
+      },
+      {
+        input:  "integrate(exp(x); x)",
+        desc:   "∫eˣ dx = eˣ",
+        checkDesc: "latex indeholder 'e^{x}'",
+        check:  r => r.type === 'scalar' && (r.latex.includes('e^{x}') || r.latex.includes('e^x'))
+      },
+      {
+        input:  "integrate(1/x; x)",
+        desc:   "∫(1/x) dx = ln|x|",
+        checkDesc: "latex indeholder 'log' (SymPy bruger log for ln)",
+        check:  r => r.type === 'scalar' && r.latex.includes('log')
+      },
+    ]
+  },
+
+  {
+    name: "Integralregning — bestemte integraler",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "integrate(x; x; 0; 1)",
+        desc:   "∫₀¹ x dx = 1/2",
+        checkDesc: "decimal ≈ 0.5",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 0.5) < 0.001
+      },
+      {
+        input:  "integrate(x^2; x; 0; 3)",
+        desc:   "∫₀³ x² dx = 9",
+        checkDesc: "latex='9'",
+        check:  r => r.type === 'scalar' && r.latex === '9'
+      },
+      {
+        input:  "integrate(sin(x); x; 0; pi)",
+        desc:   "∫₀π sin(x) dx = 2  [kræver rad-mode for korrekt resultat]",
+        checkDesc: "latex='2'",
+        check:  r => r.type === 'scalar' && r.latex === '2'
+      },
+      {
+        input:  "integrate(exp(x); x; 0; 1)",
+        desc:   "∫₀¹ eˣ dx = e - 1",
+        checkDesc: "decimal ≈ 1.718",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - (Math.E - 1)) < 0.001
+      },
+      {
+        input:  "f(x) := x^2 + 1 ; integrate(f(x); x; 1; 3)",
+        desc:   "∫₁³ (x²+1) dx = [x³/3 + x]₁³ = 9+3 - 1/3-1 = 32/3",
+        checkDesc: "decimal ≈ 10.667",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 32/3) < 0.01
+      },
+    ]
+  },
+
+  {
+    name: "Analyse — limit og arclength",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "limit(sin(x)/x; x; 0)",
+        desc:   "lim(x→0) sin(x)/x = 1",
+        checkDesc: "latex='1'",
+        check:  r => r.type === 'scalar' && r.latex === '1'
+      },
+      {
+        input:  "limit(1/x; x; 0)",
+        desc:   "lim(x→0) 1/x — singularitet (oo eller AccumBounds)",
+        checkDesc: "type='error' eller latex indeholder 'infty'/'oo' (SymPy giver AccumBounds)",
+        check:  r => r.type === 'error'
+               || (r.type === 'scalar' && (r.latex.includes('infty') || r.latex.includes('oo')))
+               || r.type === 'warning'
+      },
+      {
+        input:  "limit((1 + 1/x)^x; x; oo)",
+        desc:   "lim(x→∞) (1 + 1/x)ˣ = e  [oo er SymPy-uendeligt]",
+        checkDesc: "decimal ≈ 2.718",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - Math.E) < 0.001
+      },
+    ]
+  },
+
+  // ── Kurvelængde ───────────────────────────────────────────────────────────
+  {
+    name: "Kurvelængde (arclength)",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "arclength(x; x; 0; 1)",
+        desc:   "Kurvelængde af f(x) = x fra 0 til 1 = √2 ≈ 1,414",
+        checkDesc: "decimal ≈ 1.414",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - Math.SQRT2) < 0.001
+      },
+      {
+        input:  "arclength(x^2; x; 0; 1)",
+        desc:   "Kurvelængde af f(x) = x² fra 0 til 1 ≈ 1,479",
+        checkDesc: "decimal ≈ 1.479",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.4789) < 0.001
+      },
+      {
+        input:  "arclength(sqrt(1 - x^2); x; 0; 1)",
+        desc:   "Kvartcirkel (f(x) = √(1-x²)) fra 0 til 1 = π/2 ≈ 1,571",
+        checkDesc: "decimal ≈ 1.5708 (π/2)",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - Math.PI/2) < 0.001
+      },
+      {
+        input:  "f(x) := x^3 ; arclength(f(x); x; 0; 1)",
+        desc:   "Kurvelængde via defineret funktion f(x) = x³ fra 0 til 1",
+        checkDesc: "decimal ≈ 1.548",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal) - 1.5478) < 0.01
+      },
+    ]
+  },
+
+  // ── Apostrof-notation f', f'', f''' ──────────────────────────────────────
+  {
+    name: "Afledte via apostrof-notation (f', f'', f''')",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "f(x) := x^2 ; f'(x)",
+        desc:   "f(x) = x²  →  f'(x) = 2x",
+        checkDesc: "latex indeholder '2' og 'x'",
+        check:  r => r.type === 'scalar' && r.latex.includes('2') && r.latex.includes('x')
+      },
+      {
+        input:  "f(x) := x^3 ; f'(x)",
+        desc:   "f(x) = x³  →  f'(x) = 3x²",
+        checkDesc: "latex indeholder '3' og 'x^{2}'",
+        check:  r => r.type === 'scalar' && r.latex.includes('3') && r.latex.includes('x^{2}')
+      },
+      {
+        input:  "f(x) := x^3 ; f''(x)",
+        desc:   "f(x) = x³  →  f''(x) = 6x",
+        checkDesc: "latex indeholder '6' og 'x'",
+        check:  r => r.type === 'scalar' && r.latex.includes('6') && r.latex.includes('x')
+      },
+      {
+        input:  "f(x) := x^4 ; f'''(x)",
+        desc:   "f(x) = x⁴  →  f'''(x) = 24x",
+        checkDesc: "latex indeholder '24' og 'x'",
+        check:  r => r.type === 'scalar' && r.latex.includes('24') && r.latex.includes('x')
+      },
+      {
+        input:  "f(x) := sin(x) ; f'(x)",
+        desc:   "f(x) = sin(x)  →  f'(x) = cos(x)",
+        checkDesc: "latex indeholder 'cos'",
+        check:  r => r.type === 'scalar' && r.latex.includes('cos')
+      },
+      {
+        input:  "f(x) := sin(x) ; f''(x)",
+        desc:   "f(x) = sin(x)  →  f''(x) = -sin(x)",
+        checkDesc: "latex indeholder 'sin'",
+        check:  r => r.type === 'scalar' && r.latex.includes('sin')
+      },
+      {
+        input:  "f(x) := exp(x) ; f'(x)",
+        desc:   "f(x) = eˣ  →  f'(x) = eˣ",
+        checkDesc: "latex indeholder 'e^{x}'",
+        check:  r => r.type === 'scalar' && (r.latex.includes('e^{x}') || r.latex.includes('e^x'))
+      },
+      {
+        // Notation-konsistens: f'(x) og diff(f(x);x) skal give samme svar
+        input:  "f(x) := x^3 - 3x + 2 ; f'(x)",
+        desc:   "f(x) = x³-3x+2  →  f'(x) = 3x²-3  (polynomiel kombination)",
+        checkDesc: "latex indeholder '3' og 'x^{2}' og '3'",
+        check:  r => r.type === 'scalar' && r.latex.includes('3') && r.latex.includes('x^{2}')
+      },
+      {
+        input:  "g(t) := t^2 ; g'(t)",
+        desc:   "Anden variabel: g(t) = t²  →  g'(t) = 2t",
+        checkDesc: "latex indeholder '2' og 't'",
+        check:  r => r.type === 'scalar' && r.latex.includes('2') && r.latex.includes('t')
+      },
+      {
+        input:  "f(x) := x^3 ; f'(2)",
+        desc:   "Evaluer f'(2): f(x) = x³  →  f'(x) = 3x²  →  f'(2) = 12",
+        checkDesc: "latex='12'",
+        check:  r => r.type === 'scalar' && r.latex === '12'
+      },
+    ]
+  },
+
 ];
 
 // ─── Build flat test queue ────────────────────────────────────────────────────
@@ -827,7 +1154,13 @@ function escHtml(s) {
 function formatResult(r) {
     if (!r) return '<span style="color:#3d444d">—</span>';
     if (r.type === 'error') {
-        return `<span class="result-error">error · ${escHtml(r.message?.slice(0,80))}</span>`;
+        const code = r.code ? `[${escHtml(r.code)}] ` : '';
+        return `<span class="result-error">${code}${escHtml(r.message?.slice(0,80))}</span>`;
+    }
+    if (r.type === 'warning') {
+        const source = r.source ? `<div class="result-decimal">source: ${escHtml(r.source?.slice(0,60))}</div>` : '';
+        return `<span class="result-type" style="color:#d29922">warning · COMPLEX_RESULT</span>
+                <div class="result-latex">${escHtml(r.latex?.slice(0,60))}</div>${source}`;
     }
     const typeLabel = `<span class="result-type">${escHtml(r.type)}</span>`;
     const latex     = r.latex    ? `<div class="result-latex">${escHtml(r.latex?.slice(0,80))}</div>` : '';

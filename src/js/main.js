@@ -1,97 +1,80 @@
 /**
- * main.js - Opdateret til Notebook/Cell struktur
+ * main.js
+ * UI-lag: event-handling, celle-administration og opstart.
+ * Al præsentationslogik er delegeret til renderer.js.
  */
-import { parse } from './parser.mjs';
-import { Transformer } from './transformer.js';
-import { CASEngine } from './cas-engine.js';
-import { settings } from './settings.js';
 
-// 1. Initialisér maskinerne
+import { parse }           from './parser.mjs';
+import { Transformer }     from './transformer.js';
+import { CASEngine }       from './cas-engine.js';
+import { settings }        from './settings.js';
+import { renderResult,
+         renderParseError } from './renderer.js';
+
+// ─── Initialisering ──────────────────────────────────────────────────────────
+
 const transformer = new Transformer(settings);
-const engine = new CASEngine(transformer);
+const engine      = new CASEngine(transformer);
+const sdot        = document.getElementById('sdot');
 
-// Vi har ikke én knap længere, så vi bruger status-dotten til feedback
-const sdot = document.getElementById('sdot');
-
-// 2. Initialisér motoren
 engine.init().then(() => {
     if (sdot) sdot.classList.add('ready');
-    console.log("Systemet er klar - CAS er indlæst i Notebook-mode!");
+    console.log('newCAS klar.');
+}).catch(err => {
+    console.error('Motor-initialisering fejlede:', err);
+    if (sdot) sdot.classList.add('error');
 });
 
-// 3. Event Listener: Lyt efter Enter i ALLE matematik-felter
-document.addEventListener('keydown', async (e) => {
-    // Tjek om det er Enter (uden Shift) og om vi er i et matematik-felt
-    if (e.key === 'Enter' && !e.shiftKey && e.target.classList.contains('math-input')) {
-        e.preventDefault(); // Stop linjeskift i feltet
+// ─── Celleberegning ──────────────────────────────────────────────────────────
 
-        const inputField = e.target;
-        const cell = inputField.closest('.cell');
-        const input = inputField.value.trim();
+async function evaluateCell(cell) {
+    const inputField = cell.querySelector('.math-input');
+    const latexDiv   = cell.querySelector('.latex-output');
+    const decimalDiv = cell.querySelector('.decimal-output');
+    const input      = inputField.value.trim();
 
-        if (!input) return;
+    if (!input) return;
 
-        // Find output-områderne i netop denne celle
-        const latexDiv = cell.querySelector('.latex-output');
-        const decimalDiv = cell.querySelector('.decimal-output');
+    // Hent task-id fra den nærmeste opgaveblok (scope-isolering)
+    const assignment = cell.closest('.assignment');
+    const taskId     = assignment?.id ?? 'default';
 
-        // Vis at vi arbejder (valgfrit - kræver CSS klasse .working)
-        cell.classList.add('working');
-
-        try {
-            // A. Parse input til AST
-            const ast = parse(input);
-            
-            // B. Kør beregning via engine
-            const result = await engine.calculate(ast);
-            console.log("Celle Resultat:", result);
-
-            // C. Vis resultat med KaTeX
-            if (result.type !== "error") {
-                let displayLatex = result.latex;
-
-                if (result.type === "list") {
-                    displayLatex = `\\left\\{ ${result.latex} \\right\\}`;
-                }
-
-                // Render det primære resultat i denne celles latex-felt
-                window.katex.render(displayLatex, latexDiv, {
-                    throwOnError: false,
-                    displayMode: false // false ser ofte bedre ud inde i celler
-                });
-
-                // D. Vis decimal-visning
-                if (result.decimal) {
-                    const sep = settings.user.decimalSeparator || ',';
-                    decimalDiv.innerHTML = `&asymp; ${result.decimal.replace('.', sep)}`;
-                } else {
-                    decimalDiv.innerHTML = "";
-                }
-            } else {
-                latexDiv.innerHTML = `<span style="color:var(--accent2)">Fejl: ${result.message}</span>`;
-                decimalDiv.innerHTML = "";
-            }
-
-        } catch (err) {
-            console.error("Fejl under beregning:", err);
-            latexDiv.innerHTML = `<span style="color:var(--accent2)">Syntaksfejl: ${err.message}</span>`;
-        } finally {
-            cell.classList.remove('working');
-        }
+    cell.classList.add('working');
+    try {
+        const ast    = parse(input);
+        const result = await engine.calculate(ast, taskId);
+        renderResult(result, latexDiv, decimalDiv, settings);
+    } catch (err) {
+        renderParseError(err, latexDiv, decimalDiv);
+    } finally {
+        cell.classList.remove('working');
     }
+}
+
+// ─── Event listeners ─────────────────────────────────────────────────────────
+
+document.addEventListener('keydown', async (e) => {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    if (!e.target.classList.contains('math-input')) return;
+
+    e.preventDefault();
+    await evaluateCell(e.target.closest('.cell'));
 });
 
-// 4. Knappen "Tilføj felt" (Hvis du vil have den til at virke med det samme)
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('add-cell-btn')) {
-        addNewCell();
+        addNewCell(e.target.closest('.assignment'));
     }
 });
 
-function addNewCell() {
-    const container = document.querySelector('.cells-container');
+// ─── Celle-administration ────────────────────────────────────────────────────
+
+function addNewCell(assignment) {
+    const container = (assignment ?? document).querySelector('.cells-container');
+    if (!container) return;
+
     const newId = document.querySelectorAll('.cell').length + 1;
-    
+
     const cellHtml = `
         <div class="cell math-cell" id="cell-${newId}">
             <div class="cell-input-wrapper">
@@ -104,6 +87,7 @@ function addNewCell() {
             </div>
         </div>
     `;
+
     container.insertAdjacentHTML('beforeend', cellHtml);
     container.lastElementChild.querySelector('.math-input').focus();
 }
