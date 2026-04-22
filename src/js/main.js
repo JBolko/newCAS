@@ -6,7 +6,7 @@
 
 import { parse }           from './parser.mjs';
 import { Transformer }     from './transformer.js';
-import { CASEngine }       from './cas-engine.js';
+import { CASEngine }       from './cas-engine_old.js';
 import { settings }        from './settings.js';
 import { renderResult,
          renderParseError } from './renderer.js';

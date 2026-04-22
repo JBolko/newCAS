@@ -6,12 +6,6 @@
  * andre indstillinger kan påvirke output uden global state.
  */
 
-// Trig-funktioner der skal have deres argument konverteret grad → radian
-const TRIG_FUNCS = new Set(['sin', 'cos', 'tan', 'sec', 'csc', 'cot']);
-
-// Inverse trig-funktioner hvis RESULTAT skal konverteres radian → grad
-const ARC_FUNCS  = new Set(['asin', 'acos', 'atan', 'acot', 'asec', 'acsc']);
-
 // Binære operatorer — ^ håndteres via PowerExpression-noden, ikke her
 const OPS = { '+': '+', '-': '-', '*': '*', '/': '/' };
 
@@ -86,30 +80,13 @@ export class Transformer {
             case 'Assignment':
                 return `${node.name} = ${this.translate(node.value)}`;
 
-            case 'Derivative': {
-                // 1. Find ud af hvilken variabel vi differentierer mht. (standard er 'x')
-                // Vi kigger på navnet på det første argument, hvis det er et symbol, ellers 'x'.
-                const wrt = (node.args[0]?.type === 'Identifier') ? node.args[0].name : 'x';
-                
-                // 2. Skab det symbolske kald, f.eks. "f(x)"
-                const symbolicCall = `${node.name}(${wrt})`;
-                
-                // 3. Basis-koden for differentiation: diff(f(x), x, 1)
-                let code = `diff(${symbolicCall}, ${wrt}, ${node.order})`;
-                
-                // 4. Hvis argumentet IKKE er variablen selv (f.eks. f'(2)), 
-                // så skal vi indsætte værdien efter differentiationen.
-                const argTranslated = this.translate(node.args[0]);
-                if (argTranslated !== wrt) {
-                    code += `.subs(${wrt}, ${argTranslated})`;
-                }
-                
-                return code;
-            }
-            
             case 'FunctionDefinition': {
+                // Bruger Python 'def' i stedet for SymPy Lambda.
+                // Lambda er symbolsk og bypasser wrappers i base_context (fx deg-aware sin).
+                // 'def' slår navne op i globalt scope ved kaldstidspunkt — korrekt adfærd.
                 const params = node.params.join(', ');
-                return `${node.name} = Lambda((${params}), ${this.translate(node.body)})`;
+                const body   = this.translate(node.body);
+                return `def ${node.name}(${params}):\n    return ${body}`;
             }
 
             case 'List':
@@ -143,6 +120,24 @@ export class Transformer {
                 return `convert_to_unit(${this.translate(node.expr)}, "${targetClean}")`;
             }
 
+            case 'Derivative': {
+                // DerivativeCall fra grammatikken: f'(x), f''(x), f'(2) osv.
+                // To tilfælde:
+                //   f'(x) — argument er variabel: diff(f(x), x, n)
+                //   f'(2) — argument er tal/udtryk: diff(f(x), x, n).subs(x, 2)
+                const argNode = node.args[0];
+                const argStr  = this.translate(argNode);
+                const isVar   = argNode?.type === 'Variable';
+                const wrt     = isVar ? argStr : (argNode?.name ?? 'x');
+
+                if (isVar) {
+                    return `diff(${node.name}(${argStr}), ${wrt}, ${node.order})`;
+                } else {
+                    // Symbolsk differentier, substituer derefter
+                    return `diff(${node.name}(_x_), _x_, ${node.order}).subs(_x_, ${argStr})`;
+                }
+            }
+
             default:
                 console.warn('Ukendt AST-node:', node.type);
                 return '';
@@ -152,17 +147,9 @@ export class Transformer {
     // ─── Private helper ─────────────────────────────────────────────────────
 
     translateFunctionCall(node) {
-        const isDeg = this.settings?.user?.angleMode === 'deg';
-        const args  = node.args.map(arg => this.translate(arg));
-
-        if (isDeg && TRIG_FUNCS.has(node.name)) {
-            args[0] = `((${args[0]}) * pi / 180)`;
-        }
-
-        if (isDeg && ARC_FUNCS.has(node.name)) {
-            return `((${node.name}(${args.join(', ')})) * 180 / pi)`;
-        }
-
+        // Vinkelkonvertering (deg↔rad) håndteres nu af Python-laget (context.py).
+        // Transformer er angle-agnostisk og sender argumenter uændret.
+        const args = node.args.map(arg => this.translate(arg));
         return `${node.name}(${args.join(', ')})`;
     }
 }

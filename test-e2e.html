@@ -279,15 +279,35 @@ async function initEngine() {
     s.innerHTML = '✓ SymPy klar';
 
     try {
-        s = addStage('Henter og kører setup.py...');
-        const resp = await fetch('src/python/setup.py');
-        if (!resp.ok) {
-            s.className = 'stage-line error';
-            s.innerHTML = `✗ Kunne ikke hente setup.py (${resp.status}) — er du på Live Server?`;
-            throw new Error('setup.py ikke fundet');
-        }
-        const pyCode = await resp.text();
-        await pyodide.runPythonAsync(pyCode);
+        s = addStage('Loader Python-pakke...');
+        // Python-pakken er nu opdelt i flere filer — skriv dem til Pyodide-FS
+        const PYTHON_FILES = [
+            '__init__.py', 'bootstrap.py',
+            'cas_math/__init__.py', 'cas_math/calculus.py',
+            'cas_math/registry.py', 'cas_math/statistics.py',
+            'core/__init__.py', 'core/context.py', 'core/executor.py', 'core/scope.py',
+            'output/__init__.py', 'output/errors.py', 'output/result.py',
+            'units/__init__.py', 'units/convert.py', 'units/definitions.py',
+        ];
+        const CAS_ROOT = '/cas';
+        try { pyodide.FS.mkdir(CAS_ROOT); } catch(_) {}
+        const subdirs = [...new Set(PYTHON_FILES.filter(f=>f.includes('/')).map(f=>`${CAS_ROOT}/${f.split('/')[0]}`))];
+        for (const d of subdirs) { try { pyodide.FS.mkdir(d); } catch(_) {} }
+
+        await Promise.all(PYTHON_FILES.map(async f => {
+            const r = await fetch(`src/python/${f}`);
+            if (!r.ok) throw new Error(`Kunne ikke hente ${f} (${r.status})`);
+            pyodide.FS.writeFile(`${CAS_ROOT}/${f}`, await r.text());
+        }));
+
+        await pyodide.runPythonAsync(`
+import sys
+if '${CAS_ROOT}' not in sys.path:
+    sys.path.insert(0, '${CAS_ROOT}')
+from bootstrap import run_in_task
+import __main__
+__main__.run_in_task = run_in_task
+`);
         
         s.className = 'stage-line done';
         s.innerHTML = '✓ Python-miljø klar';
@@ -631,7 +651,7 @@ const suites = [
         checkDesc: "type='scalar', decimal indeholder '5'",
         check:  r => r.type === 'scalar' && r.decimal.includes('5')
       },
-      ,{
+      {
         input:  "5[m] -> [cm]",
         desc:   "5 m → cm = 500 cm",
         checkDesc: "latex indeholder '500'",
@@ -673,7 +693,7 @@ const suites = [
   // ── 9 ────────────────────────────────────────────────────────────────────
   {
     name: "Trigonometri — grader (angleMode: 'deg')",
-    transformer: transformerDeg,
+    // Vinkelkonvertering sker nu i Python (context.py) — transformer er angle-agnostisk
     tests: [
       {
         input:  "sin(30)",
@@ -810,8 +830,8 @@ const suites = [
       },
       {
         input:  "udefineretVariabel",
-        desc:   "Udefineret variabel — men auto-symbol oprettes, så vi ser symbolsk resultat",
-        checkDesc: "type='scalar' med is_symbolic=true (auto-symbol)",
+        desc:   "Udefineret variabel → auto-symbol oprettes → symbolsk resultat",
+        checkDesc: "type='scalar', is_symbolic=true",
         check:  r => r.type === 'scalar' && r.is_symbolic === true
       },
       {
@@ -1120,6 +1140,52 @@ const suites = [
         desc:   "Evaluer f'(2): f(x) = x³  →  f'(x) = 3x²  →  f'(2) = 12",
         checkDesc: "latex='12'",
         check:  r => r.type === 'scalar' && r.latex === '12'
+      },
+    ]
+  },
+
+  // ── Ensidede grænseværdier ────────────────────────────────────────────────
+  {
+    name: "Grænseværdier — ensidet fra højre og venstre",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "limit(1/x; x; 0; højre)",
+        desc:   "lim(x→0⁺) 1/x = +∞",
+        checkDesc: "latex indeholder 'infty'",
+        check:  r => r.type === 'scalar' && r.latex.includes('infty')
+      },
+      {
+        input:  "limit(1/x; x; 0; venstre)",
+        desc:   "lim(x→0⁻) 1/x = -∞",
+        checkDesc: "latex indeholder 'infty' og '-'",
+        check:  r => r.type === 'scalar' && r.latex.includes('infty') && r.latex.includes('-')
+      },
+      {
+        input:  "limit(abs(x)/x; x; 0; højre)",
+        desc:   "lim(x→0⁺) |x|/x = 1",
+        checkDesc: "latex='1'",
+        check:  r => r.type === 'scalar' && r.latex === '1'
+      },
+      {
+        input:  "limit(abs(x)/x; x; 0; venstre)",
+        desc:   "lim(x→0⁻) |x|/x = -1",
+        checkDesc: "latex='-1'",
+        check:  r => r.type === 'scalar' && r.latex === '-1'
+      },
+      {
+        input:  "limit(sqrt(x); x; 0; højre)",
+        desc:   "lim(x→0⁺) √x = 0  (kun defineret fra højre)",
+        checkDesc: "latex='0'",
+        check:  r => r.type === 'scalar' && r.latex === '0'
+      },
+      {
+        input:  "limit(1/x; x; 0)",
+        desc:   "lim(x→0) 1/x — tvetydig (ingen retning) → oo eller error",
+        checkDesc: "oo/infty eller error (ikke et endeligt tal)",
+        check:  r => r.type === 'error'
+               || (r.type === 'scalar' && (r.latex.includes('infty') || r.latex.includes('oo')))
+               || r.type === 'warning'
       },
     ]
   },
