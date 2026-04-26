@@ -2,13 +2,12 @@
 import sympy as sp
 import sympy.physics.units as spu
 from typing import Dict, Any, Tuple, Set
+
+# VIGTIG: Import BARE registry - den håndterer ALLE moduler selv
+# Ingen direkte import af calculus, statistics, distributions!
 from cas_math.registry import build_context
 from units.definitions import UNITS
 from units.convert import convert_to_unit
-
-# ⚠️ Disse imports eksekverer @register-decoratorerne
-import cas_math.statistics
-import cas_math.calculus
 
 def build_base_context() -> Tuple[Dict[str, Any], frozenset]:
     """
@@ -23,7 +22,7 @@ def build_base_context() -> Tuple[Dict[str, Any], frozenset]:
             ctx[name] = obj
 
     # ② Registry functions (overskriver evt. sympy-navne)
-    reg_ctx, _ = build_context()
+    reg_ctx, forbidden_symbols = build_context()
     ctx.update(reg_ctx)
 
     # ③ Enheder
@@ -50,7 +49,6 @@ def build_base_context() -> Tuple[Dict[str, Any], frozenset]:
     
     if angle_mode == 'deg':
         # Forward trig: konverter KUN numeriske argumenter fra grader til radianer
-        # Symbolske udtryk (f.eks. sin(x)) forbliver i radianer → nødvendigt for calculus
         def _deg_aware(func):
             def wrapper(arg):
                 if isinstance(arg, (int, float, sp.Integer, sp.Float, sp.Rational)):
@@ -82,4 +80,9 @@ def build_base_context() -> Tuple[Dict[str, Any], frozenset]:
     # ─────────────────────────────────────────────────────────────────────
     
     # Gør ALLE nøgler forbudte at redefinere (sikkerhedsmodel)
-    return ctx, frozenset(ctx.keys())
+    all_forbidden = forbidden_symbols | frozenset([
+        'Eq', 'Lambda', 'sqrt', 'log', 'exp', 'integrate', 'arclength', 'limit',
+        'diff', 'linReg', 'expReg', 'powReg', 'logReg',
+        'mean', 'median', 'Q1', 'Q3', 'min', 'max',
+    ])
+    return ctx, all_forbidden

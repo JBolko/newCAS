@@ -17,8 +17,8 @@ const PYTHON_FILES = [
     'bootstrap.py',
     'cas_math/__init__.py',
     'cas_math/calculus.py',
-    'cas_math/registry.py',
     'cas_math/statistics.py',
+    'cas_math/distributions.py',
     'core/__init__.py',
     'core/context.py',
     'core/executor.py',
@@ -41,7 +41,6 @@ export class CASEngine {
         try {
             console.log('Initialiserer Pyodide...');
             this.pyodide = await loadPyodide({ indexURL: PYODIDE_BASE });
-
             console.log('Henter SymPy...');
             await this.pyodide.loadPackage('sympy');
 

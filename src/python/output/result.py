@@ -43,9 +43,13 @@ def wrap_result(res: Any, source_code: Optional[str] = None) -> str:
                 'decimal': str(f),
             })
 
+        # Regression-resultat — returneres som-er (FØR simplify!)
+        if isinstance(res, dict) and res.get('type') == 'regression':
+            return json.dumps(res)
+
         # Symbolsk SymPy-udtryk
         simplified = simplify(res)
-
+        
         # Uendelige værdier
         if getattr(simplified, 'is_infinite', False):
             # zoo = kompleks uendelighed (log(0), tan(π/2)) → domænefejl

@@ -314,7 +314,7 @@ __main__.run_in_task = run_in_task
     } catch (err) {
         if (s) {
             s.className = 'stage-line error';
-            s.innerHTML = `✗ Fejl i setup.py: ${err.message}`;
+            s.innerHTML = `✗ Fejl under Python-opsætning: ${err.message}`;
         }
         throw err;
     }
@@ -651,7 +651,7 @@ const suites = [
         checkDesc: "type='scalar', decimal indeholder '5'",
         check:  r => r.type === 'scalar' && r.decimal.includes('5')
       },
-      {
+      ,{
         input:  "5[m] -> [cm]",
         desc:   "5 m → cm = 500 cm",
         checkDesc: "latex indeholder '500'",
@@ -1186,6 +1186,210 @@ const suites = [
         check:  r => r.type === 'error'
                || (r.type === 'scalar' && (r.latex.includes('infty') || r.latex.includes('oo')))
                || r.type === 'warning'
+      },
+    ]
+  },
+
+  // ── Regression ──────────────────────────────────────────────────────────
+  {
+    name: "Regression — linReg, expReg, powReg, logReg",
+    transformer: transformerRad,
+    tests: [
+      {
+        input:  "linReg([1, 2, 3, 4]; [2, 4, 6, 8])",
+        desc:   "Lineær regression: perfecte data y=2x",
+        checkDesc: "type='regression', model='linReg', a≈2, b≈0",
+        check:  r => r.type === 'regression' 
+               && r.model === 'linReg'
+               && Math.abs(r.params.a - 2) < 0.01
+               && Math.abs(r.params.b) < 0.1
+      },
+      {
+        input:  "linReg([1, 2, 3]; [3, 5, 7])",
+        desc:   "Lineær: y = 2x + 1",
+        checkDesc: "a≈2, b≈1",
+        check:  r => r.type === 'regression'
+               && Math.abs(r.params.a - 2) < 0.1
+               && Math.abs(r.params.b - 1) < 0.2
+      },
+      {
+        input:  "expReg([0, 1, 2, 3]; [1, 2.718, 7.389, 20.086])",
+        desc:   "Eksponentiel: y ≈ e^x",
+        checkDesc: "type='regression', model='expReg', a≈1, b≈1",
+        check:  r => r.type === 'regression'
+               && r.model === 'expReg'
+               && Math.abs(r.params.a - 1) < 0.2
+               && Math.abs(r.params.b - 1) < 0.2
+      },
+      {
+        input:  "powReg([1, 2, 3, 4]; [1, 4, 9, 16])",
+        desc:   "Potens: y = x² (perfecte data)",
+        checkDesc: "a≈1, b≈2",
+        check:  r => r.type === 'regression'
+               && r.model === 'powReg'
+               && Math.abs(r.params.a - 1) < 0.05
+               && Math.abs(r.params.b - 2) < 0.1
+      },
+      {
+        input:  "logReg([1, 2, 4, 8]; [1, 1.693, 2.386, 3.079])",
+        desc:   "Logaritmisk: y ≈ 0.693·ln(x) + 1",
+        checkDesc: "type='regression', model='logReg'",
+        check:  r => r.type === 'regression'
+               && r.model === 'logReg'
+               && r.params.hasOwnProperty('a')
+               && r.params.hasOwnProperty('b')
+      },
+      {
+        input:  "linReg([0, 1, 2, 3]; [1, 3, 5, 7])",
+        desc:   "Lineær: r_squared skal være tæt på 1 for perfecte data",
+        checkDesc: "r_squared > 0.99",
+        check:  r => r.type === 'regression'
+               && r.r_squared > 0.99
+      },
+    ]
+  },
+
+  // ── Sandsynlighedsfordelinger ────────────────────────────────────────
+  {
+    name: "Binomial distribution — pdf og cdf",
+    tests: [
+      {
+        input:  "binompdf(5; 10; 0.5)",
+        desc:   "P(X=5) for X~B(10, 0.5)",
+        checkDesc: "type='scalar', decimal ≈ 0.2461",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.2461) < 0.01
+      },
+      {
+        input:  "binomcdf(5; 10; 0.5)",
+        desc:   "P(X≤5) for X~B(10, 0.5)",
+        checkDesc: "≈ 0.6230",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.6230) < 0.01
+      },
+      {
+        input:  "binompdf(0; 5; 0.2)",
+        desc:   "P(X=0) for X~B(5, 0.2)",
+        checkDesc: "≈ 0.3277",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.3277) < 0.01
+      },
+      {
+        input:  "binomcdf(3; 5; 0.2)",
+        desc:   "P(X≤3) for X~B(5, 0.2)",
+        checkDesc: "≈ 0.9933",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.9933) < 0.01
+      },
+    ]
+  },
+
+  {
+    name: "Poisson distribution — pdf og cdf",
+    tests: [
+      {
+        input:  "poissonpdf(3; 2)",
+        desc:   "P(X=3) for X~Po(2)",
+        checkDesc: "≈ 0.1804",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.1804) < 0.01
+      },
+      {
+        input:  "poissoncdf(2; 2)",
+        desc:   "P(X≤2) for X~Po(2)",
+        checkDesc: "≈ 0.6767",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.6767) < 0.01
+      },
+      {
+        input:  "poissonpdf(0; 1)",
+        desc:   "P(X=0) for X~Po(1)",
+        checkDesc: "≈ 0.3679 (e^-1)",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.3679) < 0.01
+      },
+    ]
+  },
+
+  {
+    name: "Normal distribution — pdf, cdf, invnorm",
+    tests: [
+      {
+        input:  "normpdf(0; 0; 1)",
+        desc:   "f(0) for standard normal",
+        checkDesc: "≈ 0.3989",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.3989) < 0.01
+      },
+      {
+        input:  "normcdf(0; 0; 1)",
+        desc:   "P(X≤0) for standard normal = 0.5",
+        checkDesc: "= 0.5",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.5) < 0.01
+      },
+      {
+        input:  "normcdf(1; 0; 1)",
+        desc:   "P(X≤1) for N(0,1)",
+        checkDesc: "≈ 0.8413",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.8413) < 0.01
+      },
+      {
+        input:  "normcdf(-1; 0; 1)",
+        desc:   "P(X≤-1) for N(0,1)",
+        checkDesc: "≈ 0.1587",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 0.1587) < 0.01
+      },
+      {
+        input:  "invnorm(0.5; 0; 1)",
+        desc:   "Invers normal: find x hvor P(X≤x)=0.5",
+        checkDesc: "≈ 0 (medianen)",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0])) < 0.01
+      },
+      {
+        input:  "invnorm(0.8413; 0; 1)",
+        desc:   "Invers normal: find x hvor P(X≤x)=0.8413",
+        checkDesc: "≈ 1",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 1) < 0.05
+      },
+    ]
+  },
+
+  {
+    name: "Karakteristika — mean, var, std",
+    tests: [
+      {
+        input:  "mean_B(10; 0.5)",
+        desc:   "E(X) for X~B(10, 0.5)",
+        checkDesc: "= 5",
+        check:  r => r.type === 'scalar' && parseFloat(r.decimal.match(/[\d.]+/)[0]) === 5
+      },
+      {
+        input:  "var_B(10; 0.5)",
+        desc:   "Var(X) for X~B(10, 0.5)",
+        checkDesc: "= 2.5",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 2.5) < 0.01
+      },
+      {
+        input:  "std_B(10; 0.5)",
+        desc:   "Std(X) for X~B(10, 0.5)",
+        checkDesc: "≈ 1.581",
+        check:  r => r.type === 'scalar' && Math.abs(parseFloat(r.decimal.match(/[\d.]+/)[0]) - 1.581) < 0.01
+      },
+      {
+        input:  "mean_Po(3)",
+        desc:   "E(X) for X~Po(3) = λ",
+        checkDesc: "= 3",
+        check:  r => r.type === 'scalar' && parseFloat(r.decimal.match(/[\d.]+/)[0]) === 3
+      },
+      {
+        input:  "std_Po(4)",
+        desc:   "Std(X) for X~Po(4) = √λ",
+        checkDesc: "= 2",
+        check:  r => r.type === 'scalar' && parseFloat(r.decimal.match(/[\d.]+/)[0]) === 2
+      },
+      {
+        input:  "mean_N(5; 2)",
+        desc:   "E(X) for X~N(5, 2²)",
+        checkDesc: "= 5",
+        check:  r => r.type === 'scalar' && parseFloat(r.decimal.match(/[\d.]+/)[0]) === 5
+      },
+      {
+        input:  "std_N(5; 2)",
+        desc:   "Std(X) for X~N(5, 2²)",
+        checkDesc: "= 2",
+        check:  r => r.type === 'scalar' && parseFloat(r.decimal.match(/[\d.]+/)[0]) === 2
       },
     ]
   },
