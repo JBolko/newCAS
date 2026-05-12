@@ -1,0 +1,97 @@
+/* 1. FONTS & VARIABLER */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --bg: #f7f6f2;
+    --surface: #fff;
+    --border: #e0ddd6;
+    --accent: #2c5f8a;
+    --accent2: #c0392b;
+    --text: #1a1a1a;
+    --muted: #888;
+    --code-bg: #f0efe9;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* 2. GLOBAL RESET & BODY */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* 3. APP LAYOUT (Sidebar & Notebook) */
+#app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+#variable-sidebar {
+    width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+#notebook {
+    flex: 1;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+}
+
+/* 4. STATUS DOT & LOADING (Det du spurgte til) */
+#status {
+    font-family: 'Inter', sans-serif;
+    font-size: .78rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+#sdot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background .3s;
+}
+
+#sdot.loading {
+    background: #e8a84a;
+    animation: pulse 1s infinite;
+}
+
+#sdot.ready {
+    background: #4caf7d;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+}
+
+/* 5. OVERLAYS & MODALS */
+#overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}

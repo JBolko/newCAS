@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>newCAS - Matematik Notebook</title>
+    
+    <link rel="stylesheet" href="src/css/style.css">
+    <link rel="stylesheet" href="src/css/components.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+</head>
+<body>
+
+    <div id="app-container">
+        <aside id="variable-sidebar">
+            <h3>Variable</h3>
+            <ul id="variable-list">
+                </ul>
+        </aside>
+
+        <main id="notebook">
+            <header>
+                <h1>Mit Arbejdsark</h1>
+            </header>
+
+            <section class="assignment" id="assignment-1">
+                <div class="assignment-header">
+                    <input type="text" placeholder="Opgave titel..." class="assignment-title">
+                </div>
+
+                <div class="cells-container">
+                    <div class="cell math-cell active" id="cell-1">
+                        <div class="cell-input-wrapper">
+                            <span class="cell-label">In [1]:</span>
+                            <input type="text" class="math-input" placeholder="Skriv matematik her (f.eks. 2x + 5 = 10)">
+                        </div>
+                        <div class="cell-output-wrapper">
+                            <div class="latex-output"></div>
+                            <div class="decimal-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="add-cell-btn">+ Tilføj felt</button>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="src/js/main.js"></script>
+</body>
+</html>

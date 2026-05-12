@@ -1,0 +1,218 @@
+/* Alt der har med indramning af matematik at gøre */
+
+.cell-wrap { position: relative; margin-bottom: .5rem; }
+
+.math-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    box-shadow: var(--shadow);
+}
+
+.math-input {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    border-radius: 7px 7px 0 0;
+    overflow: hidden;
+}
+
+/* Selve tekstfeltet hvor man skriver matematik */
+.math-ta {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .92rem;
+    padding: .7rem .9rem;
+    border: none;
+    background: transparent;
+    outline: none;
+    min-height: 52px;
+}
+
+/* KaTex relateret */
+
+.math-out {
+    padding: .5rem .8rem .6rem 2.8rem;
+    border-radius: 0 0 7px 7px;
+}
+
+.out-row {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    padding: .2rem 0;
+}
+
+.out-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    color: var(--muted);
+}
+
+.out-val {
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+/* Opgavecontaineren */
+
+.assignment {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.assignment-header {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+}
+
+.assignment-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    font-size: 1.2rem;
+    width: 100%;
+}
+
+/* Knapper og Kontroller */
+
+.math-run, .math-approx {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--code-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+}
+
+.math-run:hover { background: var(--accent); color: #fff; }
+/* ─── Hypotesetest-kort ──────────────────────────────────────────────────────
+   Bruges af renderer.js til at vise output fra binomtest() og ttest().
+   Placering: tilføj til components.css.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.hypothesis-test {
+    display:          grid;
+    gap:              0.45rem;
+    padding:          0.75rem 1rem;
+    border-left:      3px solid var(--color-accent, #4a90d9);
+    background:       var(--color-surface-2, #f8f9fb);
+    border-radius:    0 6px 6px 0;
+    font-size:        0.92em;
+    margin-top:       0.4rem;
+    max-width:        480px;
+}
+
+/* Titel + meta (testtype + alpha) */
+.ht-header {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     baseline;
+    gap:             0.5rem;
+}
+.ht-title {
+    font-weight:  600;
+    font-size:    1em;
+    color:        var(--color-text, #1a1a1a);
+}
+.ht-meta {
+    font-size:    0.82em;
+    color:        var(--color-text-muted, #666);
+    white-space:  nowrap;
+}
+
+/* Hypoteser */
+.ht-hypotheses {
+    display:     flex;
+    gap:         0.4rem;
+    flex-wrap:   wrap;
+    font-size:   0.93em;
+}
+.ht-h0 { color: var(--color-text-muted, #555); }
+.ht-h1 { color: var(--color-text-muted, #555); }
+.ht-sep { color: var(--color-text-muted, #aaa); }
+
+/* Observeret */
+.ht-observed {
+    font-size:   0.88em;
+    color:       var(--color-text-muted, #666);
+}
+
+/* Tabel: p-værdi, accept, kritisk */
+.ht-table {
+    border-collapse: collapse;
+    width:           100%;
+}
+.ht-table td {
+    padding:         0.18rem 0.5rem 0.18rem 0;
+    vertical-align:  top;
+}
+.ht-label {
+    color:           var(--color-text-muted, #666);
+    white-space:     nowrap;
+    width:           8rem;
+    font-size:       0.88em;
+}
+.ht-value {
+    font-family:     var(--font-mono, 'Courier New', monospace);
+    font-size:       0.9em;
+    word-break:      break-word;
+}
+.ht-pvalue {
+    font-weight:     600;
+    color:           var(--color-text, #1a1a1a);
+}
+
+/* Konklusionsboks */
+.ht-conclusion {
+    display:         flex;
+    align-items:     flex-start;
+    gap:             0.5rem;
+    padding:         0.5rem 0.65rem;
+    border-radius:   5px;
+    margin-top:      0.2rem;
+    font-size:       0.9em;
+    line-height:     1.45;
+}
+.ht-icon {
+    font-size:       1.1em;
+    flex-shrink:     0;
+    margin-top:      1px;
+}
+.ht-accept {
+    background:      var(--color-success-bg, #e8f5e9);
+    color:           var(--color-success, #2e7d32);
+}
+.ht-reject {
+    background:      var(--color-error-bg, #fdecea);
+    color:           var(--color-error, #c62828);
+}
+.ht-setinfo {
+    font-size:       0.88em;
+    opacity:         0.85;
+}
+
+/* Mørkt tema */
+@media (prefers-color-scheme: dark) {
+    .hypothesis-test {
+        background:  var(--color-surface-2, #1e2229);
+        border-color: var(--color-accent, #5b9dd9);
+    }
+    .ht-accept {
+        background:  #1b3a1f;
+        color:       #81c784;
+    }
+    .ht-reject {
+        background:  #3b1515;
+        color:       #ef9a9a;
+    }
+}
