@@ -9,7 +9,17 @@
   "scripts": {
     "dev": "echo \"Open index.html directly in your browser (no build step needed yet)\"",
     "start": "echo \"Open index.html directly in your browser\"",
-    "test": "echo \"No tests implemented yet\""
+    "test": "echo \"No tests implemented yet\"",
+    
+    "tools:build": "python tools/build/build_docs.py",
+    "tools:graph": "python -m tools.analyze.project_graph",
+    "tools:layer": "python -m tools.analyze.layer_guard",
+    "tools:registry": "python tools/analyze/registry_report.py",
+    "tools:ast": "python tools/analyze/ast_report.py",
+
+    "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
+    "pack:code": "npx repomix --include \"src/**/*,assets/**/*,*.html,package.json\" --ignore \"lib/**,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json\" --output repomix-code.md",
+    "pack:all": "npm run pack:docs && npm run pack:code"
   },
   "keywords": [
     "cas",

@@ -54,7 +54,15 @@ def build_context() -> tuple[dict, set]:
     """
     return _REGISTRY.copy(), _FORBIDDEN.copy()
 
-
+#
+# PUBLIC RUNTIME SYMBOLS
+#
+# Alle funktioner registreret her bliver:
+#   - tilgængelige for brugeren,
+#   - en del af Runtime API,
+#   - beskyttet mod auto-symbol-oprettelse.
+#
+#
 # ─── CALCULUS ─────────────────────────────────────────────────────────────────
 
 _reg('diff',      calculus.diff)

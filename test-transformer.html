@@ -378,12 +378,12 @@ const suites = [
       {
         desc: "f(x) := x^2",
         ast:  FDef('f', ['x'], Pow(Var('x'), Lit(2))),
-        expected: "f = Lambda((x), (x ** 2))"
+        expected: "def f(x):\n    return (x ** 2)"
       },
       {
         desc: "f(x; y) := x^2 + y (to parametre)",
         ast:  FDef('f', ['x', 'y'], Bin('+', Pow(Var('x'), Lit(2)), Var('y'))),
-        expected: "f = Lambda((x, y), ((x ** 2) + y))"
+        expected: "def f(x, y):\n    return ((x ** 2) + y)"
       },
       {
         desc: "Tildeling af udtryk: a := 2x + 1",

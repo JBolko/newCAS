@@ -9,3 +9,10 @@ Thumbs.db
 
 # Pyodide cache (optional)
 .pyodide/
+
+# Repomixer cache (optional)
+repomix-*.md
+
+# Python
+__pycache__/
+*.pyc

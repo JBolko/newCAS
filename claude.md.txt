@@ -1,0 +1,45 @@
+# CLAUDE.md — newCAS Projekthukommelse & Regler
+
+## 1. Projekt-overblik & Domæne
+`newCAS` er et browserbaseret, offline-first CAS- og arbejdsredskab til matematik og fysik på STX/HF (dansk gymnasium).
+- **Målsætning:** Notebook-paradigme (som Jupyter/Mathbook), dansk notation, lokal eksekvering (Pyodide/WebAssembly), ingen server.
+- **Sprog/Tone i UI:** Altid dansk matematiknotation og forklarende danske fejlbeskeder.
+
+## 2. Arkitektur & Pipeline
+Input gennemløber 5 strikse trin (Data flyder NED, resultater flyder UP — ingen lag kalder "op"):
+1. **Parser (`parser.mjs`):** PEG-parser (genereret fra `docs/Grammatik.pegjs`). Bygger AST som JSON.
+2. **Transformer (`src/js/transformer.js`):** Rekursiv AST-traversal → oversætter AST til Python-kode.
+3. **CAS-motor (`cas-engine.js` + Python):** Afvikler Python i Pyodide. Scope isoleres per opgave via `taskId`.
+4. **Resultat-wrapper (`result.py` / `setup.py`):** Konverterer SymPy-resultat til standard JSON-kontrakt.
+5. **UI / Renderer (`main.js` + `renderer.js`):** Renderer LaTeX med KaTeX (`output: 'htmlAndMathml'`), viser numerisk decimal.
+
+## 3. KRITISKE KODE- OG ARBEJDSREGLER
+- **PAG-PARSER REGLER:** `src/js/parser.mjs` er en KUN-GENERERET fil. **Rediger den ALDRIG manuelt.**
+  - Ret kilden i `docs/Grammatik.pegjs`.
+  - Byg derefter med scriptet: `npm run build:parser`.
+- **DANSK NOTATION:**
+  - Decimaltegn er komma (`3,14` → `3.14`).
+  - Argument-separator er semikolon (f.eks. `f(1,5 ; 2,3)`).
+  - Vinkler er som standard grader (`deg`), medmindre `rad` sættes i settings.
+- **FEJLHÅNDTERING:**
+  - Vis ALDRIG Python-tracebacks, `ZeroDivisionError` eller engelske fejlkoder direkte til brugeren.
+  - Python-siden klassificerer fejlkoder (f.eks. `ZERO_DIVISION`), og JS (`errors.js`/`main.js`) oversætter til pædagogisk dansk text.
+- **RESULTAT-KONTRAKT:**
+  - Python returnerer altid JSON: `{ type, latex, decimal, is_symbolic }`.
+  - `decimal`-feltet SKAL altid være en numerisk streng (f.eks. `"0.5"` — ALDRIG brøkstrenge som `"1/2"`).
+
+## 4. Vigtige Filer & Struktur
+- `docs/Grammatik.pegjs` — Kilde til hele parser-syntaksen.
+- `src/js/transformer.js` — Oversætter AST-noder (`Literal`, `Equation`, `Quantity` etc.) til Python-strenge.
+- `src/js/cas-engine.js` — Håndterer Pyodide og kommunikationen til Python-miljøet.
+- `src/python/cas_math/` — Python-moduler (`calculus.py`, `statistics.py`, `distributions.py`, `registry.py`).
+- `test/test-e2e.html` — Sandhedskilden for alle beregninger (120+ automatiserede E2E-tests).
+
+## 5. Nyttige Værktøjer & Commands
+- **Byg parser:** `npm run build:parser`
+- **Kør tests:** Åbn `test/test-e2e.html` i browseren via en lokal webserver (f.eks. Live Server).
+
+## 6. Nuværende Status (Maj 2026)
+- **Fase 1 & 1B (Core & Refactoring):** Gennemført. 120/120 E2E-tests passerer.
+- **Fase 2 (I gang):** Sandsynlighedsfordelinger er klar i Python (`distributions.py`), men mangler parser-støtte i `Grammatik.pegjs` og UI-integration.
+- **Næste større arkitektur-skridt:** Web Worker til Pyodide (skal implementeres inden Plotly-grafik i Fase 3).

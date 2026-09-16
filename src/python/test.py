@@ -1,5 +1,5 @@
 from core.context import build_base_context
-from output.errors import make_error, classify_error
+from output.errors import make_error
 from output.result import wrap_result
 from units.convert import convert_to_unit
 from core.executor import run_in_task
@@ -36,4 +36,3 @@ print("3:", run_in_task("t1", "mean([1, 2, 3, 4, 5])"))
 
 # 4. Fejlhåndtering
 print("4:", run_in_task("t1", "1 / 0"))
-

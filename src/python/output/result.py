@@ -7,7 +7,11 @@ from .errors import make_error
 def wrap_result(res: Any, source_code: Optional[str] = None) -> str:
     """
     Indpakker CAS-resultat i det JSON-format frontend'en forventer.
-    Matcher præcis logikken fra den originale setup.py.
+
+    API-note:
+      Feltet ``decimal`` er historisk navngivet. Det er en displaystreng
+      med numerisk eller tekstlig approksimation - ikke nødvendigvis en
+      streng der kan parses som ét tal.
     """
     try:
         if res is None:
@@ -38,7 +42,7 @@ def wrap_result(res: Any, source_code: Optional[str] = None) -> str:
                 return json.dumps({'type': 'scalar', 'latex': str(v), 'decimal': f"{v}.0"})
 
             # Rene Python-floats (fx fra distributions: binompdf → 0.2335)
-            # vises som decimal, ikke som brøk. Brøker er uegnede til sandsynligheder.
+            # vises som numerisk tekst i det historiske felt ``decimal``.
             if type(res) is float:
                 # Vis op til 6 signifikante cifre — afskær trailing zeros
                 latex_str = f"{f:.6g}".replace('.', '{,}')

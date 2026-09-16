@@ -8,6 +8,12 @@ Program
   = _ head:Statement tail:(_ ";" _ s:Statement { return s; })* _ ";"? _
     { return [head, ...tail]; }
 
+// Function names are intentionally NOT enumerated here.
+// Any Identifier(...) is parsed as a generic FunctionCall.
+// The authoritative list of available CAS functions lives in
+// src/python/cas_math/registry.py. A new CAS function normally
+// requires implementation + registry + tests, not a grammar change.
+
 Statement
   = Conversion 
   / Assignment

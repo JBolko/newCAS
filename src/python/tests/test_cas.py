@@ -9,7 +9,7 @@ def test_expression_with_persistent_scope():
     run_in_task("test2", "a = 3\nb = 4")
     res = run_in_task("test2", "a * b")
     assert '"type": "scalar"' in res
-    assert '"decimal": "12"' in res
+    assert '"decimal": "12.0"' in res
 
 def test_statistics_registry():
     res = run_in_task("test3", "mean([1, 2, 3, 4, 5])")
