@@ -1,0 +1,36 @@
+{
+  "bootstrap": ["core.executor"],
+
+  "core.executor": [
+    "core.context",
+    "core.scope",
+    "output.errors",
+    "output.result"
+  ],
+
+  "core.context": [
+    "cas_math.registry",
+    "units.convert",
+    "units.definitions"
+  ],
+
+  "cas_math.registry": [
+    "cas_math"
+  ],
+
+  "output.result": [
+    "output.errors"
+  ],
+
+  "output.errors": [],
+
+  "core.scope": [],
+
+  "cas_math": [],
+
+  "units.convert": [
+    "units.definitions"
+  ],
+
+  "units.definitions": []
+}

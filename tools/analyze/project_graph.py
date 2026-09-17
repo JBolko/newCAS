@@ -84,21 +84,36 @@ class ProjectGraph:
             )
         )
 
-        def walk(name: str, prefix=""):
-            lines = [prefix + name]
+        def walk(name: str, prefix="", is_last=True):
+
+            connector = "└── " if is_last else "├── "
+
+            lines = []
+
+            if prefix:
+                lines.append(prefix + connector + name)
+            else:
+                lines.append(name)
 
             children = sorted(self.modules[name].internal_imports)
 
+            child_prefix = prefix + ("    " if is_last else "│   ")
+
             for i, child in enumerate(children):
-                branch = "└── " if i == len(children) - 1 else "├── "
-                lines.extend(walk(child, prefix + branch))
+                lines.extend(
+                    walk(
+                        child,
+                        child_prefix,
+                        i == len(children) - 1
+                    )
+                )
 
             return lines
 
         out = ["newCAS Runtime Tree", ""]
 
         for r in roots:
-            out.extend(walk(r))
+            out.extend(walk(r, "", True))
             out.append("")
 
         return "\n".join(out)
@@ -113,8 +128,19 @@ def build_project_graph(root: Path, include_tests=False):
     for py in src.rglob("*.py"):
         rel = py.relative_to(src)
 
-        if not include_tests and rel.parts and rel.parts[0] == "tests":
-            continue
+        if not include_tests:
+
+            if rel.parts and rel.parts[0] == "tests":
+                continue
+
+            if rel.name == "test.py":
+                continue
+
+            if rel.name.startswith("test_"):
+                continue
+
+            if rel.name.endswith("_test.py"):
+                continue
 
         name = module_name_from_path(rel)
         module_names[name] = py

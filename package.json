@@ -16,6 +16,7 @@
     "tools:layer": "python -m tools.analyze.layer_guard",
     "tools:registry": "python tools/analyze/registry_report.py",
     "tools:ast": "python tools/analyze/ast_report.py",
+    "tools:layer": "python -m tools.analyze.layer_guard",
 
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
     "pack:code": "npx repomix --include \"src/**/*,assets/**/*,*.html,package.json\" --ignore \"lib/**,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json\" --output repomix-code.md",
