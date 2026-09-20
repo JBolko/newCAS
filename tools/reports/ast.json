@@ -1,4 +1,196 @@
 {
-  "version": 1,
-  "node_types": []
+  "version": 3,
+  "parser": "src/js/parser.mjs",
+  "transformer": "src/js/transformer.js",
+  "cases": [
+    {
+      "name": "literal",
+      "input": "42",
+      "expect": "Literal",
+      "ok": true,
+      "node_types": [
+        "Literal"
+      ]
+    },
+    {
+      "name": "variable",
+      "input": "x",
+      "expect": "Variable",
+      "ok": true,
+      "node_types": [
+        "Variable"
+      ]
+    },
+    {
+      "name": "binary",
+      "input": "2 + 3",
+      "expect": "BinaryExpression",
+      "ok": true,
+      "node_types": [
+        "BinaryExpression",
+        "Literal"
+      ]
+    },
+    {
+      "name": "unary",
+      "input": "-x",
+      "expect": "UnaryExpression",
+      "ok": true,
+      "node_types": [
+        "UnaryExpression",
+        "Variable"
+      ]
+    },
+    {
+      "name": "power",
+      "input": "x^2",
+      "expect": "PowerExpression",
+      "ok": true,
+      "node_types": [
+        "Literal",
+        "PowerExpression",
+        "Variable"
+      ]
+    },
+    {
+      "name": "function-call",
+      "input": "sin(x)",
+      "expect": "FunctionCall",
+      "ok": true,
+      "node_types": [
+        "FunctionCall",
+        "Variable"
+      ]
+    },
+    {
+      "name": "equation",
+      "input": "x = 2",
+      "expect": "Equation",
+      "ok": true,
+      "node_types": [
+        "Equation",
+        "Literal",
+        "Variable"
+      ]
+    },
+    {
+      "name": "assignment",
+      "input": "a := 5",
+      "expect": "Assignment",
+      "ok": true,
+      "node_types": [
+        "Assignment",
+        "Literal"
+      ]
+    },
+    {
+      "name": "function-definition",
+      "input": "f(x) := x^2",
+      "expect": "FunctionDefinition",
+      "ok": true,
+      "node_types": [
+        "FunctionDefinition",
+        "Literal",
+        "PowerExpression",
+        "Variable"
+      ]
+    },
+    {
+      "name": "list",
+      "input": "{1; 2; 3}",
+      "expect": "List",
+      "ok": true,
+      "node_types": [
+        "List",
+        "Literal"
+      ]
+    },
+    {
+      "name": "vector",
+      "input": "[1; 2; 3]",
+      "expect": "Vector",
+      "ok": true,
+      "node_types": [
+        "Literal",
+        "Vector"
+      ]
+    },
+    {
+      "name": "quantity",
+      "input": "5 [m]",
+      "expect": "Quantity",
+      "ok": true,
+      "node_types": [
+        "Quantity"
+      ]
+    },
+    {
+      "name": "conversion",
+      "input": "5 [m] -> [cm]",
+      "expect": "Conversion",
+      "ok": true,
+      "node_types": [
+        "Conversion",
+        "Quantity"
+      ]
+    },
+    {
+      "name": "access",
+      "input": "v[1]",
+      "expect": "Access",
+      "ok": true,
+      "node_types": [
+        "Access",
+        "Literal"
+      ]
+    },
+    {
+      "name": "derivative",
+      "input": "f'(x)",
+      "expect": "Derivative",
+      "ok": true,
+      "node_types": [
+        "Derivative",
+        "Variable"
+      ]
+    }
+  ],
+  "node_types": [
+    "Access",
+    "Assignment",
+    "BinaryExpression",
+    "Conversion",
+    "Derivative",
+    "Equation",
+    "FunctionCall",
+    "FunctionDefinition",
+    "List",
+    "Literal",
+    "PowerExpression",
+    "Quantity",
+    "UnaryExpression",
+    "Variable",
+    "Vector"
+  ],
+  "transformer_node_types": [
+    "Access",
+    "Assignment",
+    "BinaryExpression",
+    "Conversion",
+    "Derivative",
+    "Equation",
+    "FunctionCall",
+    "FunctionDefinition",
+    "List",
+    "Literal",
+    "PowerExpression",
+    "Quantity",
+    "UnaryExpression",
+    "Variable",
+    "Vector"
+  ],
+  "consistency": {
+    "parser_not_supported_by_transformer": [],
+    "transformer_not_covered_by_parser_cases": []
+  }
 }

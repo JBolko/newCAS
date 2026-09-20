@@ -13,7 +13,7 @@
     
     "tools:build": "python -m tools.build.build_docs",
     "tools:layer": "python -m tools.analyze.layer_guard",
-    "tools:ast": "python -m tools.analyze.ast_report",
+    "tools:ast": "node tools/analyze/ast_report.mjs",
     "tools:runtime": "python -m tools.analyze.runtime_report",
     
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",

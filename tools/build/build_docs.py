@@ -16,8 +16,8 @@ steps = [
     ("Runtime Report",
      ["python", "-m", "tools.analyze.runtime_report", "--root", str(ROOT)]),
 
-    ("AST Report",
-     ["python", "-m", "tools.analyze.ast_report", "--root", str(ROOT)])
+   ("AST Report",
+    ["node", "tools/analyze/ast_report.mjs"])
 ]
 
 for i, (name, command) in enumerate(steps, 1):
