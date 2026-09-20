@@ -18,7 +18,7 @@
     
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
     "pack:code": "npx repomix --include \"src/**/*,assets/**/*,*.html,package.json\" --ignore \"lib/**,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json\" --output repomix-code.md",
-    "pack:handover": "npx repomix --include \"src/**/*,tools/**/*,docs/Styredokumenter/**/*,docs/adr/**/*,Grammatik.pegjs,package.json,README.md\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-handover.md",
+    "pack:handover": "npx repomix --include \"src/**/*,tools/**/*,docs/Styredokumenter/**/*,docs/adr/**/*,docs/Grammatik.pegjs,package.json,README.md\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-handover.md",
     "pack:all": "npm run pack:docs && npm run pack:code"
   },
   "keywords": [
