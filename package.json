@@ -12,6 +12,7 @@
     "test": "echo \"No tests implemented yet\"",
     
     "tools:build": "python -m tools.build.build_docs",
+    "tools:doctor": "python -m tools.doctor",
     "tools:layer": "python -m tools.analyze.layer_guard",
     "tools:ast": "node tools/analyze/ast_report.mjs",
     "tools:runtime": "python -m tools.analyze.runtime_report",
