@@ -11,7 +11,13 @@ steps = [
      ["python", "-m", "tools.analyze.project_graph", "--root", str(ROOT)]),
 
     ("Layer Guard",
-     ["python", "-m", "tools.analyze.layer_guard", "--root", str(ROOT)])
+     ["python", "-m", "tools.analyze.layer_guard", "--root", str(ROOT)]),
+
+    ("Runtime Report",
+     ["python", "-m", "tools.analyze.runtime_report", "--root", str(ROOT)]),
+
+    ("AST Report",
+     ["python", "-m", "tools.analyze.ast_report", "--root", str(ROOT)])
 ]
 
 for i, (name, command) in enumerate(steps, 1):

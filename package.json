@@ -11,15 +11,14 @@
     "start": "echo \"Open index.html directly in your browser\"",
     "test": "echo \"No tests implemented yet\"",
     
-    "tools:build": "python tools/build/build_docs.py",
-    "tools:graph": "python -m tools.analyze.project_graph",
+    "tools:build": "python -m tools.build.build_docs",
     "tools:layer": "python -m tools.analyze.layer_guard",
-    "tools:registry": "python tools/analyze/registry_report.py",
-    "tools:ast": "python tools/analyze/ast_report.py",
-    "tools:layer": "python -m tools.analyze.layer_guard",
-
+    "tools:ast": "python -m tools.analyze.ast_report",
+    "tools:runtime": "python -m tools.analyze.runtime_report",
+    
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
     "pack:code": "npx repomix --include \"src/**/*,assets/**/*,*.html,package.json\" --ignore \"lib/**,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json\" --output repomix-code.md",
+    "pack:handover": "npx repomix --include \"src/**/*,tools/**/*,docs/Styredokumenter/**/*,docs/adr/**/*,Grammatik.pegjs,package.json,README.md\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-handover.md",
     "pack:all": "npm run pack:docs && npm run pack:code"
   },
   "keywords": [

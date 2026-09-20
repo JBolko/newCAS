@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "public_symbols": [
+    {
+      "name": "arclength",
+      "target": "calculus.arclength"
+    },
+    {
+      "name": "binomcdf",
+      "target": "distributions.binomcdf"
+    },
+    {
+      "name": "binompdf",
+      "target": "distributions.binompdf"
+    },
+    {
+      "name": "binomtest",
+      "target": "distributions.binomtest"
+    },
+    {
+      "name": "chi2gof",
+      "target": "distributions.chi2gof"
+    },
+    {
+      "name": "chi2ind",
+      "target": "distributions.chi2ind"
+    },
+    {
+      "name": "diff",
+      "target": "calculus.diff"
+    },
+    {
+      "name": "expReg",
+      "target": "statistics.expReg"
+    },
+    {
+      "name": "integrate",
+      "target": "calculus.integrate_cas"
+    },
+    {
+      "name": "invnorm",
+      "target": "distributions.invnorm"
+    },
+    {
+      "name": "limit",
+      "target": "calculus.limit"
+    },
+    {
+      "name": "linReg",
+      "target": "statistics.linReg"
+    },
+    {
+      "name": "logReg",
+      "target": "statistics.logReg"
+    },
+    {
+      "name": "max",
+      "target": "statistics.max_func"
+    },
+    {
+      "name": "mean",
+      "target": "statistics.mean"
+    },
+    {
+      "name": "mean_B",
+      "target": "distributions.mean_B"
+    },
+    {
+      "name": "mean_N",
+      "target": "distributions.mean_N"
+    },
+    {
+      "name": "mean_Po",
+      "target": "distributions.mean_Po"
+    },
+    {
+      "name": "median",
+      "target": "statistics.median"
+    },
+    {
+      "name": "min",
+      "target": "statistics.min_func"
+    },
+    {
+      "name": "normcdf",
+      "target": "distributions.normcdf"
+    },
+    {
+      "name": "normpdf",
+      "target": "distributions.normpdf"
+    },
+    {
+      "name": "poissoncdf",
+      "target": "distributions.poissoncdf"
+    },
+    {
+      "name": "poissonpdf",
+      "target": "distributions.poissonpdf"
+    },
+    {
+      "name": "powReg",
+      "target": "statistics.powReg"
+    },
+    {
+      "name": "Q1",
+      "target": "statistics.Q1"
+    },
+    {
+      "name": "Q3",
+      "target": "statistics.Q3"
+    },
+    {
+      "name": "std_B",
+      "target": "distributions.std_B"
+    },
+    {
+      "name": "std_N",
+      "target": "distributions.std_N"
+    },
+    {
+      "name": "std_Po",
+      "target": "distributions.std_Po"
+    },
+    {
+      "name": "ttest1",
+      "target": "distributions.ttest1"
+    },
+    {
+      "name": "ttest2",
+      "target": "distributions.ttest2"
+    },
+    {
+      "name": "var_B",
+      "target": "distributions.var_B"
+    },
+    {
+      "name": "var_N",
+      "target": "distributions.var_N"
+    },
+    {
+      "name": "var_Po",
+      "target": "distributions.var_Po"
+    }
+  ]
+}
