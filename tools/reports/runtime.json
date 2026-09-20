@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "public_symbols": [
     {
       "name": "arclength",
@@ -141,5 +141,4799 @@
       "name": "var_Po",
       "target": "distributions.var_Po"
     }
-  ]
+  ],
+  "base_context": {
+    "count": 948,
+    "symbols": [
+      {
+        "name": "__sympy_debug",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "A",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "Abs",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "abundance",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "AccumBounds",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "acos",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "acosh",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "acot",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "acoth",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "acsc",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "acsch",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Add",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "adjoint",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Adjoint",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "airyai",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "airyaiprime",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "airybi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "airybiprime",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "AlgebraicField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "AlgebraicNumber",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "all_roots",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ampere",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "And",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "andre",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "apart",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "apart_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "appellf1",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "AppliedPredicate",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "apply_finite_diff",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "approximants",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "arclength",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "are_similar",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "arg",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "arity",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Array",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "asec",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "asech",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "asin",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "asinh",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "ask",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "assemble_partfrac_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "assoc_laguerre",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "assoc_legendre",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "assuming",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "AssumptionsContext",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "atan",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "atan2",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "atanh",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Atom",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "AtomicExpr",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "banded",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "bar",
+        "callable": false,
+        "python_type": "Mul"
+      },
+      {
+        "name": "BasePolynomialError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Basic",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "bell",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "bernoulli",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "besseli",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "besselj",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "besselk",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "besselsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "bessely",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "beta",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "betainc",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "betainc_regularized",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "binomcdf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "binomial",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "binomial_coefficients",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "binomial_coefficients_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "binompdf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "binomtest",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "block_collapse",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "blockcut",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "BlockDiagMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "BlockMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "bool_map",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "bottom_up",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "bspline_basis",
+        "callable": true,
+        "python_type": "_lru_cache_wrapper"
+      },
+      {
+        "name": "bspline_basis_set",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "C",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "cacheit",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "cancel",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "capture",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "carmichael",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "cartes",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "casoratian",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "catalan",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "cbrt",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "CC",
+        "callable": true,
+        "python_type": "ComplexField"
+      },
+      {
+        "name": "ccode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ceiling",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "celsius",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "centroid",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "chebyshevt",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "chebyshevt_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "chebyshevt_root",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "chebyshevu",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "chebyshevu_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "chebyshevu_root",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "check_assumptions",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "checkodesol",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "checkpdesol",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "checksol",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Chi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "chi2gof",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "chi2ind",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Ci",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Circle",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "classify_ode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "classify_pde",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "closest_points",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "cm",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "CoercionFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "cofactors",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "collect",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "collect_const",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "combsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "comp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Complement",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ComplexField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ComplexRegion",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ComplexRootOf",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "compose",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "composite",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "compositepi",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ComputationFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ConditionSet",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "conjugate",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "construct_domain",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Contains",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "content",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "continued_fraction",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "continued_fraction_convergents",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "continued_fraction_iterator",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "continued_fraction_periodic",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "continued_fraction_reduce",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "convert_to",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "convert_to_unit",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "convex_hull",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "convolution",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "cos",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "cosh",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "cosine_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "CosineTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "cot",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "coth",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "count_ops",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "count_roots",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "covering_product",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "CRootOf",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "csc",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "csch",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "cse",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Curve",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "cxxcode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "cycle_length",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "cyclotomic_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "decompogen",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "decompose",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "default_sort_key",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "DeferredVector",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "deg",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "degree",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "degree_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "denom",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "DenseNDimArray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Derivative",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "derive_by_array",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "det",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "det_quick",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Determinant",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "diag",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "DiagMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "diagonalize_vector",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "DiagonalMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "DiagonalOf",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Dict",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "dict_merge",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "diff",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "difference_delta",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "differentiate_finite",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "digamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "diophantine",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "DiracDelta",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "dirichlet_eta",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "discrete_log",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "discriminant",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "DisjointUnion",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "div",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "divisor_count",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "divisor_sigma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "divisors",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "doctest",
+        "callable": true,
+        "python_type": "LazyFunction"
+      },
+      {
+        "name": "Domain",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "DomainError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "dotprint",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "DotProduct",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "dsolve",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Dummy",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "E",
+        "callable": false,
+        "python_type": "Exp1"
+      },
+      {
+        "name": "E1",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "egyptian_fraction",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Ei",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Eijk",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Ellipse",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "elliptic_e",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "elliptic_f",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "elliptic_k",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "elliptic_pi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "epath",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "EPath",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Eq",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Equality",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Equivalent",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "erf",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "erf2",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "erf2inv",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "erfc",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "erfcinv",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "erfi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "erfinv",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "euler",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "euler_equations",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "evaluate",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "EvaluationFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "EX",
+        "callable": true,
+        "python_type": "ExpressionDomain"
+      },
+      {
+        "name": "ExactQuotientFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "exp",
+        "callable": true,
+        "python_type": "ExpMeta"
+      },
+      {
+        "name": "exp_polar",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "expand",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_complex",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_func",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_log",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_mul",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_multinomial",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_power_base",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_power_exp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expand_trig",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "expint",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Expr",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "expReg",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ExpressionDomain",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "exptrigsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "exquo",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "EXRAW",
+        "callable": true,
+        "python_type": "ExpressionRawDomain"
+      },
+      {
+        "name": "ExtraneousFactors",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "eye",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "factor",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "factor_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "factor_nc",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "factor_system",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "factor_terms",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "factorial",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "factorial2",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "factorint",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "factorrat",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "failing_assumptions",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "FallingFactorial",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "farthest_points",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "fcode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "FF",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ff",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "FF_gmpy",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "FF_python",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "fft",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "fibonacci",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "field",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "field_isomorphism",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "filldedent",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "finite_diff_weights",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "FiniteField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "FiniteSet",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "FlagError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "flatten",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Float",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "floor",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "fourier_series",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "fourier_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "FourierTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "fps",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "frac",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "fraction",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "FractionField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "fresnelc",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "fresnels",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "fu",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Function",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "FunctionClass",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "FunctionMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "fwht",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "g",
+        "callable": false,
+        "python_type": "Mul"
+      },
+      {
+        "name": "galois_group",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "gamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "gammasimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "gcd",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "gcd_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "gcd_terms",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "gcdex",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Ge",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "gegenbauer",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "GeneratorsError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "GeneratorsNeeded",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "genocchi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "GeometryError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "get_contraction_structure",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "get_indices",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "GF",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "gff",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "gff_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "glsl_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "GMPYFiniteField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "GMPYIntegerRing",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "GMPYRationalField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "gram",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "GramSchmidt",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "GreaterThan",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "grevlex",
+        "callable": true,
+        "python_type": "ReversedGradedLexOrder"
+      },
+      {
+        "name": "grlex",
+        "callable": true,
+        "python_type": "GradedLexOrder"
+      },
+      {
+        "name": "groebner",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "GroebnerBasis",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ground_roots",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "group",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "gruntz",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Gt",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "h",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "h_planck",
+        "callable": false,
+        "python_type": "PhysicalConstant"
+      },
+      {
+        "name": "hadamard_product",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "HadamardPower",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "HadamardProduct",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "half_gcdex",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "hankel1",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "hankel2",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "hankel_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "HankelTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "harmonic",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "has_dups",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "has_variety",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Heaviside",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "hermite",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "hermite_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "hermite_prob",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "hermite_prob_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "hessian",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "HeuristicGCDFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "hn1",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "hn2",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "homogeneous_order",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "HomomorphismFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "horner",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "hour",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "hyper",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "hyperexpand",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "hypersimilar",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "hypersimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "I",
+        "callable": false,
+        "python_type": "ImaginaryUnit"
+      },
+      {
+        "name": "Id",
+        "callable": true,
+        "python_type": "IdentityFunction"
+      },
+      {
+        "name": "Identity",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "idiff",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Idx",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ifft",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ifwht",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "igcd",
+        "callable": true,
+        "python_type": "_lru_cache_wrapper"
+      },
+      {
+        "name": "igrevlex",
+        "callable": true,
+        "python_type": "InverseOrder"
+      },
+      {
+        "name": "igrlex",
+        "callable": true,
+        "python_type": "InverseOrder"
+      },
+      {
+        "name": "ilcm",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ilex",
+        "callable": true,
+        "python_type": "InverseOrder"
+      },
+      {
+        "name": "im",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "imageset",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ImageSet",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ImmutableDenseMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ImmutableDenseNDimArray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ImmutableMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ImmutableSparseMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ImmutableSparseNDimArray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Implies",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Indexed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "IndexedBase",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "init_printing",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "init_session",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Integer",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "integer_log",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "integer_nthroot",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "IntegerRing",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Integral",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "integrate",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "interactive_traversal",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "interpolate",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "interpolating_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "interpolating_spline",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "intersecting_product",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Intersection",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "intersection",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Interval",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "intervals",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "intt",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "inv_quick",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Inverse",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "inverse_cosine_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "inverse_fourier_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "inverse_hankel_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "inverse_laplace_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "inverse_mellin_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "inverse_mobius_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "inverse_sine_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "InverseCosineTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "InverseFourierTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "InverseHankelTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "InverseLaplaceTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "InverseMellinTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "InverseSineTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "invert",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "invnorm",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_abundant",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_amicable",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_carmichael",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_convex",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_decreasing",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_deficient",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_increasing",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_mersenne_prime",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_monotonic",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_nthpow_residue",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_perfect",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_primitive_root",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_quad_residue",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_strictly_decreasing",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_strictly_increasing",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "is_zero_dimensional",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "isolate",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "IsomorphismFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "isprime",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ITE",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "itermonomials",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "J",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "jacobi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "jacobi_normalized",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "jacobi_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "jacobi_symbol",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "jn",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "jn_zeros",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "jordan_cell",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "joule",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "jscode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "julia_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "K",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "kelvin",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "kg",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "km",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "km/h",
+        "callable": false,
+        "python_type": "Mul"
+      },
+      {
+        "name": "kronecker_product",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "kronecker_symbol",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "KroneckerDelta",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "KroneckerProduct",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "kroneckersimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "laguerre",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "laguerre_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Lambda",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "lambdify",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "LambertW",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "laplace_correspondence",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "laplace_initial_conds",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "laplace_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "LaplaceTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "latex",
+        "callable": true,
+        "python_type": "_PrintFunction"
+      },
+      {
+        "name": "lazy_function",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "LC",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "lcm",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "lcm_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Le",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "legendre",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "legendre_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "legendre_symbol",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "lerchphi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "LessThan",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "LeviCivita",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "lex",
+        "callable": true,
+        "python_type": "LexOrder"
+      },
+      {
+        "name": "li",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Li",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "limit",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Limit",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "limit_seq",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Line",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Line2D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Line3D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "line_integrate",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "linear_eq_to_matrix",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "linReg",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "linsolve",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "list2numpy",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "LM",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ln",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "log",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "logcombine",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "loggamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "logReg",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "lowergamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Lt",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "LT",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "lucas",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "m",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "m/s",
+        "callable": false,
+        "python_type": "Mul"
+      },
+      {
+        "name": "mA",
+        "callable": false,
+        "python_type": "Mul"
+      },
+      {
+        "name": "maple_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "marcumq",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "MatAdd",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "mathematica_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "mathieuc",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "mathieucprime",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "mathieus",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "mathieusprime",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "mathml",
+        "callable": true,
+        "python_type": "_PrintFunction"
+      },
+      {
+        "name": "MatMul",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MatPow",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Matrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "matrix2numpy",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "matrix_multiply_elementwise",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "matrix_symbols",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "MatrixBase",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MatrixExpr",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MatrixPermute",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MatrixSlice",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MatrixSymbol",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Max",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "max",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "maximum",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "mean",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "mean_B",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "mean_N",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "mean_Po",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "median",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "meijerg",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "mellin_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "MellinTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "memoize_property",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "mersenne_prime_exponent",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "meter",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "mg",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "milliampere",
+        "callable": false,
+        "python_type": "Mul"
+      },
+      {
+        "name": "Min",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "min",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "minimal_polynomial",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "minimum",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "minpoly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "minute",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "mm",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "mobius",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "mobius_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Mod",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "mod_inverse",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "monic",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Monomial",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "motzkin",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Mul",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "multigamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "multiline_latex",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "multinomial_coefficients",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "multiplicity",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "MultivariatePolynomialError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MutableDenseMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MutableDenseNDimArray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MutableMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MutableSparseMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "MutableSparseNDimArray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "N",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "n_order",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nan",
+        "callable": false,
+        "python_type": "NaN"
+      },
+      {
+        "name": "Nand",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "NDimArray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Ne",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "newton",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "nextprime",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nfloat",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nonlinsolve",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "NonSquareMatrixError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Nor",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "normcdf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "normpdf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Not",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "not_empty_in",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "NotAlgebraic",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "NotInvertible",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "NotReversible",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "npartitions",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nroots",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nsimplify",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nsolve",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nth_power_roots_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "nthroot_mod",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ntt",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "num_digits",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Number",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "numbered_symbols",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "NumberSymbol",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "numer",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "O",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "octave_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ode_order",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "OmegaPower",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "OneMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ones",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "oo",
+        "callable": false,
+        "python_type": "Infinity"
+      },
+      {
+        "name": "OperationNotSupported",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "OptionError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Options",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Or",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Order",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ordered",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Ordinal",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Pa",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "pager_print",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Parabola",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "parallel_poly_from_expr",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "parse_expr",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "partition",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "pascal",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "pde_separate",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pde_separate_add",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pde_separate_mul",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pdiv",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pdsolve",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "per",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "perfect_power",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "periodic_argument",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "periodicity",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Permanent",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "PermutationMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "permutedims",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pexquo",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pi",
+        "callable": false,
+        "python_type": "Pi"
+      },
+      {
+        "name": "Piecewise",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "piecewise_exclusive",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "piecewise_fold",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Plane",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "plot",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "plot_implicit",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "plot_parametric",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Point",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Point2D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Point3D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "poissoncdf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "poissonpdf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "polar_lift",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "polarify",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "PoleError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "PolificationFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "pollard_pm1",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pollard_rho",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Poly",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "poly_from_expr",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "polygamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Polygon",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "polylog",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "PolynomialDivisionFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "PolynomialError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "PolynomialRing",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "POSform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "posify",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "postfixes",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "postorder_traversal",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Pow",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "powdenest",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "PowerSet",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "powReg",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "powsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pprint",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pprint_try_use_unicode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pprint_use_unicode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "pquo",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "PrecisionExhausted",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Predicate",
+        "callable": true,
+        "python_type": "PredicateMeta"
+      },
+      {
+        "name": "prefixes",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "prem",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "preorder_traversal",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "pretty",
+        "callable": true,
+        "python_type": "_PrintFunction"
+      },
+      {
+        "name": "pretty_print",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "preview",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "prevprime",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "prime",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "prime_decomp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "prime_valuation",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "primefactors",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "primenu",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "primeomega",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "primepi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "primerange",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "primitive",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "primitive_element",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "primitive_root",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "primorial",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "principal_branch",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "print_ccode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_fcode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_glsl",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_gtk",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_jscode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_latex",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_maple_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_mathml",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_python",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_rcode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "print_tree",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "prod",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "product",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Product",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ProductSet",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "proper_divisor_count",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "proper_divisors",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "public",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "PurePoly",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "pycode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "python",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "PythonFiniteField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "PythonIntegerRing",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "PythonRational",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Q1",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Q3",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "QQ",
+        "callable": true,
+        "python_type": "RationalField"
+      },
+      {
+        "name": "QQ_gmpy",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "QQ_I",
+        "callable": true,
+        "python_type": "GaussianRationalField"
+      },
+      {
+        "name": "QQ_python",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "quadratic_congruence",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "quadratic_residues",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Quaternion",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "quo",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rad",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "radsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "randMatrix",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "random_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "randprime",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Range",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Rational",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "rational_interpolate",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RationalField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ratsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ratsimpmodprime",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Ray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Ray2D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Ray3D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "rcode",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rcollect",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "re",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "real_root",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "real_roots",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RealField",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "RealNumber",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "reduce_abs_inequalities",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "reduce_abs_inequality",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "reduce_inequalities",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "reduced",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "reduced_totient",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "refine",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "refine_root",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RefinementFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "register_handler",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RegularPolygon",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Rel",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "rem",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Rem",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "remove_handler",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "reshape",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "residue",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "resultant",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rf",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "riemann_xi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "ring",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RisingFactorial",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "root",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rootof",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RootOf",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "roots",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RootSum",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "rot_axis1",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rot_axis2",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rot_axis3",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rot_ccw_axis1",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rot_ccw_axis2",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rot_ccw_axis3",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rot_givens",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rotations",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "round_two",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "RR",
+        "callable": true,
+        "python_type": "RealField"
+      },
+      {
+        "name": "rsolve",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rsolve_hyper",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rsolve_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rsolve_ratio",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "rust_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "S",
+        "callable": true,
+        "python_type": "SingletonRegistry"
+      },
+      {
+        "name": "s",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "satisfiable",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sec",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sech",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "second",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "Segment",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Segment2D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Segment3D",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "separatevars",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "SeqAdd",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "SeqFormula",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "SeqMul",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "SeqPer",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "sequence",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "series",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Set",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "seterr",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sfield",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "shape",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ShapeError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Shi",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Si",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Sieve",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "sift",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sign",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "signsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "simplify",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "simplify_logic",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sin",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sinc",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "sine_transform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "SineTransform",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "singularities",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "SingularityFunction",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "singularityintegrate",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sinh",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "smtlib_code",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_linear",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_linear_system",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_linear_system_LU",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_poly_inequality",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_poly_system",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_rational_inequalities",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_triangulated",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_undetermined_coeffs",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solve_univariate_inequality",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "solveset",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "SOPform",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "SparseMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "SparseNDimArray",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "sqf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sqf_list",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sqf_norm",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sqf_part",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sqrt",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sqrt_mod",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sqrt_mod_iter",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sqrtdenest",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "srepr",
+        "callable": true,
+        "python_type": "_PrintFunction"
+      },
+      {
+        "name": "sring",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sstr",
+        "callable": true,
+        "python_type": "_PrintFunction"
+      },
+      {
+        "name": "sstrrepr",
+        "callable": true,
+        "python_type": "_PrintFunction"
+      },
+      {
+        "name": "stationary_points",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "std_B",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "std_N",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "std_Po",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "stieltjes",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "StrictGreaterThan",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "StrictLessThan",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "StrPrinter",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "sturm",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "subfactorial",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "subresultants",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Subs",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "subsets",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "substitution",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Sum",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "summation",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "swinnerton_dyer_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "symarray",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Symbol",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "symbols",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "symmetric_poly",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "SymmetricDifference",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "symmetrize",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "sympify",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "SympifyError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "TableForm",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "take",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "tan",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "tanh",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "tensorcontraction",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "tensordiagonal",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "tensorproduct",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "terms_gcd",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "test",
+        "callable": true,
+        "python_type": "LazyFunction"
+      },
+      {
+        "name": "textplot",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "threaded",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "timed",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "to_cnf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "to_dnf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "to_nnf",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "to_number_field",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "together",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "topological_sort",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "total_degree",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "totient",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Trace",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "trace",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "trailing",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "transpose",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Transpose",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Triangle",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "tribonacci",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "trigamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "trigsimp",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "trunc",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ttest1",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ttest2",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Tuple",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "unbranched_argument",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Unequality",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "UnevaluatedExpr",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "unflatten",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "UnificationFailed",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "Union",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "UnivariatePolynomialError",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "unpolarify",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "uppergamma",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "use",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "var",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "var_B",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "var_N",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "var_Po",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "variations",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "vectorize",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "vfield",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "viete",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "vring",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "W",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "watt",
+        "callable": false,
+        "python_type": "Quantity"
+      },
+      {
+        "name": "Wild",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "WildFunction",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "wronskian",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "xfield",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "Xor",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "xring",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "xthreaded",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "yn",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Ynm",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Ynm_c",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "ZeroMatrix",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "zeros",
+        "callable": true,
+        "python_type": "function"
+      },
+      {
+        "name": "zeta",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "Znm",
+        "callable": true,
+        "python_type": "FunctionClass"
+      },
+      {
+        "name": "zoo",
+        "callable": false,
+        "python_type": "ComplexInfinity"
+      },
+      {
+        "name": "ZZ",
+        "callable": true,
+        "python_type": "IntegerRing"
+      },
+      {
+        "name": "ZZ_gmpy",
+        "callable": true,
+        "python_type": "type"
+      },
+      {
+        "name": "ZZ_I",
+        "callable": true,
+        "python_type": "GaussianIntegerRing"
+      },
+      {
+        "name": "ZZ_python",
+        "callable": true,
+        "python_type": "type"
+      }
+    ]
+  },
+  "forbidden_symbols": {
+    "count": 40,
+    "symbols": [
+      "arclength",
+      "binomcdf",
+      "binompdf",
+      "binomtest",
+      "chi2gof",
+      "chi2ind",
+      "diff",
+      "Eq",
+      "exp",
+      "expReg",
+      "integrate",
+      "invnorm",
+      "Lambda",
+      "limit",
+      "linReg",
+      "log",
+      "logReg",
+      "max",
+      "mean",
+      "mean_B",
+      "mean_N",
+      "mean_Po",
+      "median",
+      "min",
+      "normcdf",
+      "normpdf",
+      "poissoncdf",
+      "poissonpdf",
+      "powReg",
+      "Q1",
+      "Q3",
+      "sqrt",
+      "std_B",
+      "std_N",
+      "std_Po",
+      "ttest1",
+      "ttest2",
+      "var_B",
+      "var_N",
+      "var_Po"
+    ]
+  },
+  "consistency": {
+    "public_missing_from_context": [],
+    "public_not_forbidden": []
+  }
 }
