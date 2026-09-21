@@ -5,7 +5,7 @@ import re
 import sympy as sp
 from typing import Optional
 from .context import build_base_context
-from .scope import task_registry, execute_with_auto_symbols, _NAME_ERROR_RE as _NAME_RE
+from .scope import task_registry, execute_with_auto_symbols, get_task_state, _NAME_ERROR_RE as _NAME_RE
 from output.result import wrap_result
 from output.errors import make_error
 
@@ -134,3 +134,12 @@ def run_in_task(task_id: str, code: str) -> str:
 
     except Exception as exc:
         return make_error(exc)
+    
+def get_task_state_json(task_id: str) -> str:
+    """
+    JSON-interface til task-state.
+
+    Bruges af JS/Document Runtime og holder Python-objekter
+    på Python-siden af grænsen.
+    """
+    return json.dumps(get_task_state(task_id))

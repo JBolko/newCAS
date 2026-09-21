@@ -1,5 +1,5 @@
 import json
-from core.executor import run_in_task
+from core.executor import run_in_task, get_task_state_json
 from cas_math.registry import build_context
 
 
@@ -49,3 +49,23 @@ def test_symbolic_scalar_marks_symbolic_output():
     assert result.get("is_symbolic") is True
     assert isinstance(result["decimal"], str)
     assert result["decimal"] == "x**2 + 1.0"
+    
+
+def test_task_state_contract():
+    task_id = "contract-task-state"
+
+    run_in_task(task_id, "a = 5")
+    run_in_task(task_id, "x = sqrt(2)")
+
+    state = json.loads(get_task_state_json(task_id))
+
+    assert state["type"] == "scope"
+    assert state["task_id"] == task_id
+
+    variables = {
+        item["name"]: item["expr"]
+        for item in state["variables"]
+    }
+
+    assert variables["a"] == "5"
+    assert variables["x"] == "sqrt(2)"

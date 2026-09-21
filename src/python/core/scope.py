@@ -30,3 +30,30 @@ def execute_with_auto_symbols(code: str, globs: Dict[str, Any], locs: Dict[str, 
             else:
                 raise
     raise RuntimeError("Max symbol resolution attempts exceeded for code block.")
+def get_task_state(task_id: str) -> dict:
+    """
+    Returnerer et serialiserbart snapshot af brugerdefinerede navne
+    i et task-scope.
+
+    Funktionen eksponerer ikke selve scope-dictionary'en og returnerer
+    ingen Python/SymPy-objekter direkte.
+    """
+    scope = task_registry.get(task_id, {})
+
+    variables = []
+
+    for name, value in sorted(scope.items()):
+        # Funktionsdefinitioner håndteres senere som en separat kontrakt.
+        if callable(value):
+            continue
+
+        variables.append({
+            "name": name,
+            "expr": str(value),
+        })
+
+    return {
+        "type": "scope",
+        "task_id": task_id,
+        "variables": variables,
+    }
