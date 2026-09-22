@@ -6,6 +6,10 @@
  * DocumentRuntime ejer document/task-identitet, så UI og senere
  * persistence ikke behøver kende CASEngine's globale task namespace.
  */
+
+import { parse } from './parser.mjs';
+import { analyzeDependencies } from './dependency-analyzer.js';
+
 export class DocumentRuntime {
     constructor(engine, documentId) {
         if (!engine) {
@@ -70,6 +74,11 @@ export class DocumentRuntime {
             storedBlock.source ??= '';
             storedBlock.taskId ??= 'default';
 
+            storedBlock.dependencies =
+                storedBlock.source.trim() === ''
+                    ? { reads: [], writes: [] }
+                    : analyzeDependencies(parse(storedBlock.source));
+
             storedBlock.calculation = {
                 status: 'idle',
                 result: null,
@@ -82,7 +91,7 @@ export class DocumentRuntime {
         return storedBlock;
     }
 
-    async calculateBlock(blockId, ast) {
+    async calculateBlock(blockId) {
         const block = this.getBlock(blockId);
 
         if (!block) {
@@ -100,6 +109,8 @@ export class DocumentRuntime {
         };
 
         try {
+            const ast = parse(block.source);
+
             const result = await this.calculate(
                 ast,
                 block.taskId
@@ -147,7 +158,13 @@ export class DocumentRuntime {
             throw new Error(`Block har ingen formula-source: ${blockId}`);
         }
 
+        const dependencies =
+            source.trim() === ''
+                ? { reads: [], writes: [] }
+                : analyzeDependencies(parse(source));
+
         block.source = source;
+        block.dependencies = dependencies;
 
         block.calculation = {
             status: 'idle',

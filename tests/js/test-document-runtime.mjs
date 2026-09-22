@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { DocumentRuntime } from '../../src/js/document-runtime.js';
+import { analyzeDependencies } from '../../src/js/dependency-analyzer.js';
 
 
 function makeFakeEngine() {
@@ -141,6 +142,10 @@ test('DocumentRuntime stores ordered document blocks', () => {
             type: 'formula',
             taskId: 'task-1',
             source: '',
+            dependencies: {
+                reads: [],
+                writes: []
+            },
             calculation: {
                 status: 'idle',
                 result: null,
@@ -177,22 +182,19 @@ test('calculateBlock uses formula block task scope', async () => {
     runtime.addBlock({
         id: 'formula-1',
         type: 'formula',
+        source: '5',
         taskId: 'algebra'
     });
 
-    const ast = {
-        type: 'Literal',
-        value: 5
-    };
+    await runtime.calculateBlock('formula-1');
 
-    await runtime.calculateBlock('formula-1', ast);
+    assert.equal(engine.calculateCalls.length, 1);
 
-    assert.deepEqual(engine.calculateCalls, [
-        {
-            ast,
-            taskId: 'document-17:algebra'
-        }
-    ]);
+    assert.equal(
+        engine.calculateCalls[0].taskId,
+        'document-17:algebra'
+    );
+
 });
 
 
@@ -207,10 +209,7 @@ test('calculateBlock rejects non-formula blocks', async () => {
     });
 
     await assert.rejects(
-        () => runtime.calculateBlock(
-            'text-1',
-            { type: 'Literal', value: 5 }
-        ),
+        () => runtime.calculateBlock('text-1'),
         /kan ikke beregnes/
     );
 });
@@ -246,12 +245,7 @@ test('calculateBlock stores successful result', async () => {
         taskId: 'algebra'
     });
 
-    const ast = {
-        type: 'Literal',
-        value: 5
-    };
-
-    await runtime.calculateBlock('formula-1', ast);
+    await runtime.calculateBlock('formula-1');
 
     const block = runtime.getBlock('formula-1');
 
@@ -261,6 +255,7 @@ test('calculateBlock stores successful result', async () => {
     });
     assert.equal(block.calculation.error, null);
 });
+
 test('changing formula source invalidates previous result', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
@@ -271,10 +266,7 @@ test('changing formula source invalidates previous result', async () => {
         source: '5'
     });
 
-    await runtime.calculateBlock(
-        'formula-1',
-        { type: 'Literal', value: 5 }
-    );
+    await runtime.calculateBlock('formula-1');
 
     runtime.setBlockSource('formula-1', '6');
 
@@ -316,10 +308,7 @@ test('calculateBlock exposes running state while calculation is pending', async 
         source: '5'
     });
 
-    const calculation = runtime.calculateBlock(
-        'formula-1',
-        { type: 'Literal', value: 5 }
-    );
+    const calculation = runtime.calculateBlock('formula-1');
 
     assert.equal(
         runtime.getBlock('formula-1').calculation.status,
@@ -345,17 +334,14 @@ test('calculateBlock stores error state when engine fails', async () => {
     runtime.addBlock({
         id: 'formula-1',
         type: 'formula',
-        source: 'bad input',
+        source: '5',
         taskId: 'algebra'
     });
 
     engine.calculateError = new Error('Testfejl');
 
     await assert.rejects(
-        () => runtime.calculateBlock(
-            'formula-1',
-            { type: 'Invalid' }
-        ),
+        () => runtime.calculateBlock('formula-1'),
         /Testfejl/
     );
 
@@ -377,16 +363,13 @@ test('changing source resets error state to idle', async () => {
     runtime.addBlock({
         id: 'formula-1',
         type: 'formula',
-        source: 'bad input'
+        source: '5'
     });
 
     engine.calculateError = new Error('Testfejl');
 
     await assert.rejects(
-        () => runtime.calculateBlock(
-            'formula-1',
-            { type: 'Invalid' }
-        )
+        () => runtime.calculateBlock('formula-1')
     );
 
     runtime.setBlockSource('formula-1', '5');
@@ -397,6 +380,166 @@ test('changing source resets error state to idle', async () => {
             status: 'idle',
             result: null,
             error: null
+        }
+    );
+});
+
+test('formula block derives dependencies from source', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'b:=2*a'
+    });
+
+    assert.deepEqual(
+        runtime.getBlock('formula-1').dependencies,
+        {
+            reads: ['a'],
+            writes: ['b']
+        }
+    );
+});
+
+test('changing formula source updates dependencies', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'b:=2*a'
+    });
+
+    runtime.setBlockSource(
+        'formula-1',
+        'b:=3*c'
+    );
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.equal(block.source, 'b:=3*c');
+
+    assert.deepEqual(
+        block.dependencies,
+        {
+            reads: ['c'],
+            writes: ['b']
+        }
+    );
+});
+
+test('invalid source does not mutate existing formula state', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'b:=2*a'
+    });
+
+    assert.throws(
+        () => runtime.setBlockSource(
+            'formula-1',
+            'b:=('
+        )
+    );
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.equal(block.source, 'b:=2*a');
+
+    assert.deepEqual(
+        block.dependencies,
+        {
+            reads: ['a'],
+            writes: ['b']
+        }
+    );
+});
+
+test('empty formula source has no dependencies', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula'
+    });
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.equal(block.source, '');
+
+    assert.deepEqual(
+        block.dependencies,
+        {
+            reads: [],
+            writes: []
+        }
+    );
+});
+
+test('clearing formula source resets dependencies', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'b:=2*a'
+    });
+
+    runtime.setBlockSource('formula-1', '');
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.equal(block.source, '');
+
+    assert.deepEqual(
+        block.dependencies,
+        {
+            reads: [],
+            writes: []
+        }
+    );
+
+    assert.equal(
+        block.calculation.status,
+        'idle'
+    );
+});
+
+test('calculateBlock parses AST from formula source', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'b:=2*a',
+        taskId: 'algebra'
+    });
+
+    await runtime.calculateBlock('formula-1');
+
+    assert.equal(engine.calculateCalls.length, 1);
+
+    const call = engine.calculateCalls[0];
+
+    assert.equal(
+        call.taskId,
+        'document-17:algebra'
+    );
+
+    assert.deepEqual(
+        analyzeDependencies(call.ast),
+        {
+            reads: ['a'],
+            writes: ['b']
         }
     );
 });
