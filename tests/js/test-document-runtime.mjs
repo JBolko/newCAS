@@ -7,10 +7,15 @@ import { DocumentRuntime } from '../../src/js/document-runtime.js';
 function makeFakeEngine() {
     return {
         calculateCalls: [],
+        calculateError: null,
         stateCalls: [],
 
         async calculate(ast, taskId) {
             this.calculateCalls.push({ ast, taskId });
+
+            if (this.calculateError) {
+                throw this.calculateError;
+            }
 
             return {
                 type: 'success'
@@ -134,7 +139,13 @@ test('DocumentRuntime stores ordered document blocks', () => {
         {
             id: 'formula-1',
             type: 'formula',
-            taskId: 'task-1'
+            taskId: 'task-1',
+            source: '',
+            calculation: {
+                status: 'idle',
+                result: null,
+                error: null
+            }
         }
     ]);
 });
@@ -201,5 +212,191 @@ test('calculateBlock rejects non-formula blocks', async () => {
             { type: 'Literal', value: 5 }
         ),
         /kan ikke beregnes/
+    );
+});
+
+test('formula block starts with idle calculation state', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'sqrt(2)',
+        taskId: 'algebra'
+    });
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.deepEqual(block.calculation, {
+        status: 'idle',
+        result: null,
+        error: null
+    });
+});
+
+test('calculateBlock stores successful result', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: '5',
+        taskId: 'algebra'
+    });
+
+    const ast = {
+        type: 'Literal',
+        value: 5
+    };
+
+    await runtime.calculateBlock('formula-1', ast);
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.equal(block.calculation.status, 'success');
+    assert.deepEqual(block.calculation.result, {
+        type: 'success'
+    });
+    assert.equal(block.calculation.error, null);
+});
+test('changing formula source invalidates previous result', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: '5'
+    });
+
+    await runtime.calculateBlock(
+        'formula-1',
+        { type: 'Literal', value: 5 }
+    );
+
+    runtime.setBlockSource('formula-1', '6');
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.equal(block.source, '6');
+
+    assert.deepEqual(block.calculation, {
+        status: 'idle',
+        result: null,
+        error: null
+    });
+});
+
+test('calculateBlock exposes running state while calculation is pending', async () => {
+    let resolveCalculation;
+
+    const engine = {
+        calculate(ast, taskId) {
+            return new Promise(resolve => {
+                resolveCalculation = resolve;
+            });
+        },
+
+        async getTaskState() {
+            return {
+                type: 'scope',
+                task_id: 'unused',
+                variables: []
+            };
+        }
+    };
+
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: '5'
+    });
+
+    const calculation = runtime.calculateBlock(
+        'formula-1',
+        { type: 'Literal', value: 5 }
+    );
+
+    assert.equal(
+        runtime.getBlock('formula-1').calculation.status,
+        'running'
+    );
+
+    resolveCalculation({
+        type: 'success'
+    });
+
+    await calculation;
+
+    assert.equal(
+        runtime.getBlock('formula-1').calculation.status,
+        'success'
+    );
+});
+
+test('calculateBlock stores error state when engine fails', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'bad input',
+        taskId: 'algebra'
+    });
+
+    engine.calculateError = new Error('Testfejl');
+
+    await assert.rejects(
+        () => runtime.calculateBlock(
+            'formula-1',
+            { type: 'Invalid' }
+        ),
+        /Testfejl/
+    );
+
+    const block = runtime.getBlock('formula-1');
+
+    assert.deepEqual(block.calculation, {
+        status: 'error',
+        result: null,
+        error: {
+            message: 'Testfejl'
+        }
+    });
+});
+
+test('changing source resets error state to idle', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        source: 'bad input'
+    });
+
+    engine.calculateError = new Error('Testfejl');
+
+    await assert.rejects(
+        () => runtime.calculateBlock(
+            'formula-1',
+            { type: 'Invalid' }
+        )
+    );
+
+    runtime.setBlockSource('formula-1', '5');
+
+    assert.deepEqual(
+        runtime.getBlock('formula-1').calculation,
+        {
+            status: 'idle',
+            result: null,
+            error: null
+        }
     );
 });

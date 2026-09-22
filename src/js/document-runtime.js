@@ -64,9 +64,22 @@ export class DocumentRuntime {
             throw new Error(`Block-id findes allerede: ${block.id}`);
         }
 
-        this.blocks.push({ ...block });
+        const storedBlock = { ...block };
 
-        return this.blocks[this.blocks.length - 1];
+        if (storedBlock.type === 'formula') {
+            storedBlock.source ??= '';
+            storedBlock.taskId ??= 'default';
+
+            storedBlock.calculation = {
+                status: 'idle',
+                result: null,
+                error: null
+            };
+        }
+
+        this.blocks.push(storedBlock);
+
+        return storedBlock;
     }
 
     async calculateBlock(blockId, ast) {
@@ -80,9 +93,37 @@ export class DocumentRuntime {
             throw new Error(`Block kan ikke beregnes: ${blockId}`);
         }
 
-        const taskId = block.taskId ?? 'default';
+        block.calculation = {
+            status: 'running',
+            result: null,
+            error: null
+        };
 
-        return this.calculate(ast, taskId);
+        try {
+            const result = await this.calculate(
+                ast,
+                block.taskId
+            );
+
+            block.calculation = {
+                status: 'success',
+                result,
+                error: null
+            };
+
+            return result;
+
+        } catch (error) {
+            block.calculation = {
+                status: 'error',
+                result: null,
+                error: {
+                    message: error?.message ?? String(error)
+                }
+            };
+
+            throw error;
+        }
     }
 
 
@@ -93,5 +134,25 @@ export class DocumentRuntime {
 
     getBlocks() {
         return this.blocks.map(block => ({ ...block }));
+    }
+
+    setBlockSource(blockId, source) {
+        const block = this.getBlock(blockId);
+
+        if (!block) {
+            throw new Error(`Block findes ikke: ${blockId}`);
+        }
+
+        if (block.type !== 'formula') {
+            throw new Error(`Block har ingen formula-source: ${blockId}`);
+        }
+
+        block.source = source;
+
+        block.calculation = {
+            status: 'idle',
+            result: null,
+            error: null
+        };
     }
 }
