@@ -78,6 +78,18 @@ export class CASEngine {
         return JSON.parse(raw);
     }
 
+    async getTaskState(taskId = 'default') {
+        if (!this.pyodide) {
+            throw new Error('CASEngine er ikke initialiseret.');
+        }
+
+        const raw = await this.pyodide.runPythonAsync(
+            `get_task_state_json(${JSON.stringify(taskId)})`
+        );
+
+        return JSON.parse(raw);
+    }
+
     // ── Settings-integration ──────────────────────────────────────────────────
 
     /**
@@ -132,9 +144,12 @@ executor.FORBIDDEN_SYMBOLS = new_forbidden
 import sys
 if '${CAS_ROOT}' not in sys.path:
     sys.path.insert(0, '${CAS_ROOT}')
-from bootstrap import run_in_task
+    
+from bootstrap import run_in_task, get_task_state_json
 import __main__
+
 __main__.run_in_task = run_in_task
+__main__.get_task_state_json = get_task_state_json
 `);
     }
 

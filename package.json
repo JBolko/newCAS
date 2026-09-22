@@ -16,6 +16,7 @@
     "tools:layer": "python -m tools.analyze.layer_guard",
     "tools:ast": "node tools/analyze/ast_report.mjs",
     "tools:runtime": "python -m tools.analyze.runtime_report",
+    "test:js": "node --test tests/js/*.mjs",
     
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
     "pack:tools": "npx repomix --include \"tools/**/*,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,tools/reports/*.json,repomix-*.md\" --output repomix-tools.md",

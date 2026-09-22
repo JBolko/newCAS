@@ -24,6 +24,7 @@ engine.init()
         // Kobl settings.angleMode → engine.setAngleMode.
         // Fra nu af er vinkeltilstanden altid synkroniseret: ændres settings.user.angleMode
         // via settings.set('angleMode', ...) opdateres motoren automatisk.
+
         settings.onChange('angleMode', mode => engine.setAngleMode(mode));
     })
     .catch(err => {
