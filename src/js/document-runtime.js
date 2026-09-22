@@ -18,6 +18,7 @@ export class DocumentRuntime {
 
         this.engine = engine;
         this.documentId = documentId;
+        this.blocks = [];
     }
 
     /**
@@ -44,5 +45,53 @@ export class DocumentRuntime {
         return this.engine.getTaskState(
             this.taskKey(taskId)
         );
+    }
+
+    addBlock(block) {
+        if (!block || typeof block !== 'object') {
+            throw new Error('Block skal være et objekt.');
+        }
+
+        if (!block.id || typeof block.id !== 'string') {
+            throw new Error('Block kræver et id.');
+        }
+
+        if (!['text', 'formula'].includes(block.type)) {
+            throw new Error(`Ukendt block-type: ${block.type}`);
+        }
+
+        if (this.blocks.some(existing => existing.id === block.id)) {
+            throw new Error(`Block-id findes allerede: ${block.id}`);
+        }
+
+        this.blocks.push({ ...block });
+
+        return this.blocks[this.blocks.length - 1];
+    }
+
+    async calculateBlock(blockId, ast) {
+        const block = this.getBlock(blockId);
+
+        if (!block) {
+            throw new Error(`Block findes ikke: ${blockId}`);
+        }
+
+        if (block.type !== 'formula') {
+            throw new Error(`Block kan ikke beregnes: ${blockId}`);
+        }
+
+        const taskId = block.taskId ?? 'default';
+
+        return this.calculate(ast, taskId);
+    }
+
+
+    getBlock(blockId) {
+        return this.blocks.find(block => block.id === blockId) ?? null;
+    }
+
+
+    getBlocks() {
+        return this.blocks.map(block => ({ ...block }));
     }
 }

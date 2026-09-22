@@ -108,3 +108,98 @@ test('DocumentRuntime validates constructor arguments', () => {
         /documentId/
     );
 });
+
+test('DocumentRuntime stores ordered document blocks', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'text-1',
+        type: 'text',
+        text: 'Beregn følgende:'
+    });
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        taskId: 'task-1'
+    });
+
+    assert.deepEqual(runtime.getBlocks(), [
+        {
+            id: 'text-1',
+            type: 'text',
+            text: 'Beregn følgende:'
+        },
+        {
+            id: 'formula-1',
+            type: 'formula',
+            taskId: 'task-1'
+        }
+    ]);
+});
+
+
+test('DocumentRuntime rejects duplicate block ids', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula'
+    });
+
+    assert.throws(
+        () => runtime.addBlock({
+            id: 'formula-1',
+            type: 'formula'
+        }),
+        /findes allerede/
+    );
+});
+
+
+test('calculateBlock uses formula block task scope', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'formula-1',
+        type: 'formula',
+        taskId: 'algebra'
+    });
+
+    const ast = {
+        type: 'Literal',
+        value: 5
+    };
+
+    await runtime.calculateBlock('formula-1', ast);
+
+    assert.deepEqual(engine.calculateCalls, [
+        {
+            ast,
+            taskId: 'document-17:algebra'
+        }
+    ]);
+});
+
+
+test('calculateBlock rejects non-formula blocks', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'text-1',
+        type: 'text',
+        text: 'Hej'
+    });
+
+    await assert.rejects(
+        () => runtime.calculateBlock(
+            'text-1',
+            { type: 'Literal', value: 5 }
+        ),
+        /kan ikke beregnes/
+    );
+});
