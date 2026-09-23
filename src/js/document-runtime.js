@@ -9,8 +9,10 @@
 
 import { parse } from './parser.mjs';
 import { analyzeDependencies } from './dependency-analyzer.js';
-import { buildDocumentDependencyGraphs } from './document-dependency-graph.js';
-
+import {
+    buildDocumentDependencyAnalysis,
+    findBlocksWithChangedBindings
+} from './document-dependency-graph.js';
 export class DocumentRuntime {
     constructor(engine, documentId) {
         if (!engine) {
@@ -24,7 +26,7 @@ export class DocumentRuntime {
         this.engine = engine;
         this.documentId = documentId;
         this.blocks = [];
-        this.dependencyGraphs = new Map();
+        this.dependencyAnalysis = new Map();
     }
 
     /**
@@ -53,7 +55,7 @@ export class DocumentRuntime {
         );
     }
 
-    addBlock(block) {
+    prepareBlock(block) {
         if (!block || typeof block !== 'object') {
             throw new Error('Block skal være et objekt.');
         }
@@ -89,8 +91,14 @@ export class DocumentRuntime {
             };
         }
 
+        return storedBlock;
+    }
+    
+    addBlock(block) {
+        const storedBlock = this.prepareBlock(block);
+
         this.blocks.push(storedBlock);
-        this.rebuildDependencyGraphs();
+        this.rebuildDependencyAnalysis();
 
         return storedBlock;
     }
@@ -259,7 +267,7 @@ export class DocumentRuntime {
         };
 
         // Den nye source kan have ændret graph-strukturen.
-        this.rebuildDependencyGraphs();
+        this.rebuildDependencyAnalysis();
 
         const newGraph = this.getDependencyGraph(block.taskId);
         const newDownstream =
@@ -276,13 +284,13 @@ export class DocumentRuntime {
         }
     }
 
-    rebuildDependencyGraphs() {
-        this.dependencyGraphs =
-            buildDocumentDependencyGraphs(this.blocks);
+    rebuildDependencyAnalysis() {
+        this.dependencyAnalysis =
+            buildDocumentDependencyAnalysis(this.blocks);
     }
 
     getDependencyGraph(taskId = 'default') {
-        return this.dependencyGraphs.get(taskId) ?? null;
+        return this.dependencyAnalysis.get(taskId)?.graph ?? null;
     }
 
     markBlockDirty(blockId) {
@@ -300,5 +308,103 @@ export class DocumentRuntime {
 
         block.calculation.generation++;
         block.calculation.status = 'dirty';
+    }
+
+    invalidateStructuralChanges(oldAnalysis) {
+    const changedBlocks = findBlocksWithChangedBindings(
+        oldAnalysis,
+        this.dependencyAnalysis
+    );
+
+    const affectedBlocks = new Set(changedBlocks);
+
+    for (const blockId of changedBlocks) {
+        const block = this.getBlock(blockId);
+
+        if (!block || block.type !== 'formula') {
+            continue;
+        }
+
+        const graph = this.getDependencyGraph(block.taskId);
+
+        for (
+            const downstreamId of
+            graph?.getAllDownstream(blockId) ?? []
+        ) {
+            affectedBlocks.add(downstreamId);
+        }
+    }
+
+    for (const blockId of affectedBlocks) {
+        this.markBlockDirty(blockId);
+    }
+
+    return affectedBlocks;
+    }
+
+    moveBlock(blockId, newIndex) {
+        const oldIndex =
+            this.blocks.findIndex(block => block.id === blockId);
+
+        if (oldIndex === -1) {
+            throw new Error(`Block '${blockId}' findes ikke`);
+        }
+
+        if (
+            !Number.isInteger(newIndex) ||
+            newIndex < 0 ||
+            newIndex >= this.blocks.length
+        ) {
+            throw new Error(`Ugyldigt block index: ${newIndex}`);
+        }
+
+        if (oldIndex === newIndex) {
+            return new Set();
+        }
+
+        const oldAnalysis = this.dependencyAnalysis;
+
+        const [block] = this.blocks.splice(oldIndex, 1);
+        this.blocks.splice(newIndex, 0, block);
+
+        this.rebuildDependencyAnalysis();
+
+        return this.invalidateStructuralChanges(oldAnalysis);
+    }
+
+    removeBlock(blockId) {
+        const index =
+            this.blocks.findIndex(block => block.id === blockId);
+
+        if (index === -1) {
+            throw new Error(`Block '${blockId}' findes ikke`);
+        }
+
+        const oldAnalysis = this.dependencyAnalysis;
+
+        this.blocks.splice(index, 1);
+
+        this.rebuildDependencyAnalysis();
+
+        return this.invalidateStructuralChanges(oldAnalysis);
+    }
+
+    insertBlock(block, index) {
+        if (
+            !Number.isInteger(index) ||
+            index < 0 ||
+            index > this.blocks.length
+        ) {
+            throw new Error(`Ugyldigt block index: ${index}`);
+        }
+
+        const storedBlock = this.prepareBlock(block);
+        const oldAnalysis = this.dependencyAnalysis;
+
+        this.blocks.splice(index, 0, storedBlock);
+
+        this.rebuildDependencyAnalysis();
+
+        return this.invalidateStructuralChanges(oldAnalysis);
     }
 }

@@ -2,7 +2,7 @@
 
 **Status:** Accepted\
 **Dato:** 2026-09\
-**Revision:** 1
+**Revision:** 2
 
 ## Beslutning
 
@@ -213,12 +213,15 @@ standardvisning andre steder i dokumentet.
 
 ## Dependencies
 
+newCAS skal skelne mellem beregningsdependencies og præsentationsdependencies. Den konkrete implementerede semantik for dokumentorden, provider-bindings og strukturelle mutationer er fastlagt i **ADR-0006 -- Document Order, Dependency Bindings og Structural Mutations**.
+
+Document Runtime ejer block-level dependency analysis og dirty/recalculation-semantikken. Python Task Scope ejer den faktiske runtime-tilstand og variable. UI'et må ikke rekonstruere eller reparere disse relationer selv.
+
 newCAS skal skelne mellem to dependency-grafer.
 
 ### Beregningsdependencies
 
-Runtime håndterer matematiske afhængigheder mellem variable og
-beregninger.
+Document Runtime analyserer matematiske afhængigheder mellem formelblokke ud fra dokumentorden og task. Selve de matematiske værdier og scopes håndteres fortsat af Executor/Task Scope.
 
 Eksempel:
 
@@ -262,7 +265,7 @@ berørte blokke markeres dirty
 målrettet re-render/recalculation
 ```
 
-Hele dokumentet bør ikke genberegnes eller renderes unødvendigt.
+Hele dokumentet bør ikke genberegnes eller renderes unødvendigt. Den implementerede v1-model markerer berørte formelblokke dirty og genberegner målrettet i dokumentorden. Strukturelle ændringer rebuild'er dependency analysis fuldt, men genberegner stadig kun berørte blokke.
 
 ## Bloktyper
 

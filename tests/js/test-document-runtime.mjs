@@ -843,6 +843,200 @@ test('source change only dirties blocks in the same task', () => {
     assert.equal(runtime.getBlock('Y').calculation.status, 'success');
 });
 
+test('structural invalidation dirties block with changed binding', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-25');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'a:=10',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'success';
+
+    const oldAnalysis = runtime.dependencyAnalysis;
+
+    // A, B, C  ->  A, C, B
+    // B skifter provider for a fra A til C.
+    runtime.blocks = [
+        runtime.getBlock('A'),
+        runtime.getBlock('C'),
+        runtime.getBlock('B')
+    ];
+
+    runtime.rebuildDependencyAnalysis();
+
+    const affected =
+        runtime.invalidateStructuralChanges(oldAnalysis);
+
+    assert.deepEqual(affected, new Set(['B']));
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'dirty'
+    );
+});
+
+test('structural invalidation dirties downstream blocks', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-26');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'D',
+        type: 'formula',
+        source: 'a:=10',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'success';
+    runtime.getBlock('C').calculation.status = 'success';
+
+    const oldAnalysis = runtime.dependencyAnalysis;
+
+    // A, B, C, D  ->  A, D, B, C
+    //
+    // B: a -> A bliver a -> D.
+    // C: b -> B er uændret.
+    //
+    // B skal derfor findes via bindings,
+    // mens C skal findes via downstream.
+    runtime.blocks = [
+        runtime.getBlock('A'),
+        runtime.getBlock('D'),
+        runtime.getBlock('B'),
+        runtime.getBlock('C')
+    ];
+
+    runtime.rebuildDependencyAnalysis();
+
+    const affected =
+        runtime.invalidateStructuralChanges(oldAnalysis);
+
+    assert.deepEqual(
+        affected,
+        new Set(['B', 'C'])
+    );
+
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'dirty'
+    );
+
+    assert.equal(
+        runtime.getBlock('C').calculation.status,
+        'dirty'
+    );
+});
+
+test('structural invalidation stays within task boundaries', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-27');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'a:=10',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'X',
+        type: 'formula',
+        source: 'a:=100',
+        taskId: 'task-2'
+    });
+
+    runtime.addBlock({
+        id: 'Y',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-2'
+    });
+
+    runtime.getBlock('B').calculation.status = 'success';
+    runtime.getBlock('Y').calculation.status = 'success';
+
+    const oldAnalysis = runtime.dependencyAnalysis;
+
+    // Kun task-1 ændrer semantik:
+    // A, B, C -> A, C, B
+    runtime.blocks = [
+        runtime.getBlock('A'),
+        runtime.getBlock('C'),
+        runtime.getBlock('B'),
+        runtime.getBlock('X'),
+        runtime.getBlock('Y')
+    ];
+
+    runtime.rebuildDependencyAnalysis();
+
+    const affected =
+        runtime.invalidateStructuralChanges(oldAnalysis);
+
+    assert.deepEqual(affected, new Set(['B']));
+
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'dirty'
+    );
+
+    assert.equal(
+        runtime.getBlock('Y').calculation.status,
+        'success'
+    );
+});
+
+
 test('formula block starts with generation zero', () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
@@ -1563,4 +1757,730 @@ test('recalculateFrom does not recalculate dirty blocks in another task', async 
 
     assert.equal(runtime.getBlock('B').calculation.status, 'success');
     assert.equal(runtime.getBlock('Y').calculation.status, 'dirty');
+});
+
+test('moveBlock moves block to final document index', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-28');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=2'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=3'
+    });
+
+    runtime.moveBlock('B', 2);
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'C', 'B']
+    );
+});
+
+test('moveBlock dirties block when effective provider changes', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-29');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'a:=10',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'success';
+
+    // A, B, C -> A, C, B
+    // B's provider for a changes from A to C.
+    const affected = runtime.moveBlock('C', 1);
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'C', 'B']
+    );
+
+    assert.deepEqual(
+        affected,
+        new Set(['B'])
+    );
+
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'dirty'
+    );
+});
+
+test('moveBlock preserves calculation state when bindings do not change', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-30');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'X',
+        type: 'formula',
+        source: 'x:=100',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'success';
+
+    // A, B, X -> A, X, B
+    //
+    // B still reads a from A.
+    const affected = runtime.moveBlock('X', 1);
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'X', 'B']
+    );
+
+    assert.deepEqual(
+        affected,
+        new Set()
+    );
+
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'success'
+    );
+});
+
+test('moveBlock rejects invalid moves without mutating document', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-31');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=2'
+    });
+
+    const originalOrder =
+        runtime.getBlocks().map(block => block.id);
+
+    assert.throws(
+        () => runtime.moveBlock('missing', 0),
+        /findes ikke/
+    );
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        originalOrder
+    );
+
+    assert.throws(
+        () => runtime.moveBlock('A', 99),
+        /Ugyldigt block index/
+    );
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        originalOrder
+    );
+});
+
+test('removeBlock removes block from document', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-32');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=2'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=3'
+    });
+
+    const affected = runtime.removeBlock('B');
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'C']
+    );
+
+    assert.deepEqual(
+        affected,
+        new Set()
+    );
+});
+
+test('removeBlock dirties block when provider falls back to earlier definition', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-33');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('C').calculation.status = 'success';
+
+    // Før:
+    // C: a -> B
+    //
+    // Efter remove B:
+    // C: a -> A
+    const affected = runtime.removeBlock('B');
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'C']
+    );
+
+    assert.deepEqual(
+        affected,
+        new Set(['C'])
+    );
+
+    assert.equal(
+        runtime.getBlock('C').calculation.status,
+        'dirty'
+    );
+});
+
+test('removeBlock dirties transitive downstream blocks', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-34');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'D',
+        type: 'formula',
+        source: 'd:=c+1',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('C').calculation.status = 'success';
+    runtime.getBlock('D').calculation.status = 'success';
+
+    // C ændrer binding: a -> B bliver a -> A.
+    // D beholder bindingen c -> C,
+    // men skal invalides som downstream af C.
+    const affected = runtime.removeBlock('B');
+
+    assert.deepEqual(
+        affected,
+        new Set(['C', 'D'])
+    );
+
+    assert.equal(
+        runtime.getBlock('C').calculation.status,
+        'dirty'
+    );
+
+    assert.equal(
+        runtime.getBlock('D').calculation.status,
+        'dirty'
+    );
+});
+
+test('removeBlock preserves calculation state when removed block is semantically irrelevant', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-35');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'X',
+        type: 'formula',
+        source: 'x:=100',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'success';
+
+    const affected = runtime.removeBlock('X');
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'B']
+    );
+
+    assert.deepEqual(
+        affected,
+        new Set()
+    );
+
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'success'
+    );
+});
+
+test('removeBlock rejects unknown block without mutating document', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-36');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=2'
+    });
+
+    const originalOrder =
+        runtime.getBlocks().map(block => block.id);
+
+    assert.throws(
+        () => runtime.removeBlock('missing'),
+        /findes ikke/
+    );
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        originalOrder
+    );
+});
+
+test('insertBlock inserts block at requested document index', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a'
+    });
+
+    const affected = runtime.insertBlock(
+        {
+            id: 'B',
+            type: 'formula',
+            source: 'b:=2'
+        },
+        1
+    );
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'B', 'C']
+    );
+
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'idle'
+    );
+
+    assert.deepEqual([...affected], []);
+});
+
+test('insertBlock dirties existing block when inserted writer becomes its provider', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a'
+    });
+
+    runtime.getBlock('C').calculation.status = 'success';
+
+    const affected = runtime.insertBlock(
+        {
+            id: 'B',
+            type: 'formula',
+            source: 'a:=10'
+        },
+        1
+    );
+
+    assert.equal(
+        runtime.getBlock('B').calculation.status,
+        'idle'
+    );
+
+    assert.equal(
+        runtime.getBlock('C').calculation.status,
+        'dirty'
+    );
+
+    assert.deepEqual(
+        new Set(affected),
+        new Set(['C'])
+    );
+});
+
+
+test('insertBlock dirties transitive downstream blocks', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a'
+    });
+
+    runtime.addBlock({
+        id: 'D',
+        type: 'formula',
+        source: 'd:=c+1'
+    });
+
+    runtime.getBlock('C').calculation.status = 'success';
+    runtime.getBlock('D').calculation.status = 'success';
+
+    const affected = runtime.insertBlock(
+        {
+            id: 'B',
+            type: 'formula',
+            source: 'a:=10'
+        },
+        1
+    );
+
+    assert.equal(
+        runtime.getBlock('C').calculation.status,
+        'dirty'
+    );
+
+    assert.equal(
+        runtime.getBlock('D').calculation.status,
+        'dirty'
+    );
+
+    assert.deepEqual(
+        new Set(affected),
+        new Set(['C', 'D'])
+    );
+});
+
+
+test('insertBlock preserves calculation state when insertion is semantically irrelevant', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a'
+    });
+
+    runtime.getBlock('C').calculation.status = 'success';
+
+    const affected = runtime.insertBlock(
+        {
+            id: 'X',
+            type: 'formula',
+            source: 'x:=100'
+        },
+        1
+    );
+
+    assert.equal(
+        runtime.getBlock('X').calculation.status,
+        'idle'
+    );
+
+    assert.equal(
+        runtime.getBlock('C').calculation.status,
+        'success'
+    );
+
+    assert.deepEqual([...affected], []);
+});
+
+
+test('insertBlock allows insertion at end of document', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a'
+    });
+
+    const affected = runtime.insertBlock(
+        {
+            id: 'C',
+            type: 'formula',
+            source: 'c:=b'
+        },
+        runtime.getBlocks().length
+    );
+
+    assert.deepEqual(
+        runtime.getBlocks().map(block => block.id),
+        ['A', 'B', 'C']
+    );
+
+    assert.equal(
+        runtime.getBlock('C').calculation.status,
+        'idle'
+    );
+
+    assert.deepEqual([...affected], []);
+});
+
+
+test('insertBlock rejects invalid insertion without mutating document', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    const before = runtime.getBlocks();
+
+    assert.throws(
+        () => runtime.insertBlock(
+            {
+                id: 'B',
+                type: 'formula',
+                source: 'b:=2'
+            },
+            2
+        ),
+        /Ugyldigt block index/
+    );
+
+    assert.deepEqual(runtime.getBlocks(), before);
+    assert.equal(runtime.getBlock('B'), null);
+});
+
+test('insertBlock rejects invalid formula source without mutating document', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a'
+    });
+
+    const beforeBlocks = runtime.getBlocks();
+    const beforeGraph = runtime.getDependencyGraph('default');
+
+    assert.throws(
+        () => runtime.insertBlock(
+            {
+                id: 'B',
+                type: 'formula',
+                source: 'a:='
+            },
+            1
+        )
+    );
+
+    assert.deepEqual(
+        runtime.getBlocks(),
+        beforeBlocks
+    );
+
+    assert.equal(
+        runtime.getBlock('B'),
+        null
+    );
+
+    assert.equal(
+        runtime.getDependencyGraph('default'),
+        beforeGraph
+    );
+});
+
+test('insertBlock rejects duplicate id without mutating document', () => {
+    const runtime = new DocumentRuntime(
+        makeFakeEngine(),
+        'doc-1'
+    );
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=a'
+    });
+
+    const beforeBlocks = runtime.getBlocks();
+    const beforeGraph = runtime.getDependencyGraph('default');
+
+    assert.throws(
+        () => runtime.insertBlock(
+            {
+                id: 'A',
+                type: 'formula',
+                source: 'a:=100'
+            },
+            1
+        ),
+        /Block-id findes allerede/
+    );
+
+    assert.deepEqual(
+        runtime.getBlocks(),
+        beforeBlocks
+    );
+
+    assert.equal(
+        runtime.getDependencyGraph('default'),
+        beforeGraph
+    );
 });
