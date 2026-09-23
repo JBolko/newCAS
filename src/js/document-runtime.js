@@ -154,7 +154,64 @@ export class DocumentRuntime {
         }
     }
 
+    async recalculateDirty(taskId = 'default', skip = new Set()) {
+        const graph = this.getDependencyGraph(taskId);
+        const skipped = new Set(skip);
 
+        for (const block of this.blocks) {
+            if (
+                block.type !== 'formula' ||
+                block.taskId !== taskId ||
+                block.calculation.status !== 'dirty' ||
+                skipped.has(block.id)
+            ) {
+                continue;
+            }
+
+            try {
+                await this.calculateBlock(block.id);
+            } catch {
+                for (
+                    const downstreamId of
+                    graph?.getAllDownstream(block.id) ?? []
+                ) {
+                    skipped.add(downstreamId);
+                }
+            }
+        }
+    }
+
+    async recalculateFrom(blockId) {
+        const block = this.getBlock(blockId);
+
+        if (!block) {
+            throw new Error(`Block findes ikke: ${blockId}`);
+        }
+
+        if (block.type !== 'formula') {
+            throw new Error(`Block kan ikke beregnes: ${blockId}`);
+        }
+
+        try {
+            await this.calculateBlock(blockId);
+        } catch (error) {
+            const graph = this.getDependencyGraph(block.taskId);
+
+            const skipped = new Set(
+                graph?.getAllDownstream(blockId) ?? []
+            );
+
+            await this.recalculateDirty(
+                block.taskId,
+                skipped
+            );
+
+            throw error;
+        }
+
+        await this.recalculateDirty(block.taskId);
+    }
+    
     getBlock(blockId) {
         return this.blocks.find(block => block.id === blockId) ?? null;
     }

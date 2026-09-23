@@ -1031,3 +1031,536 @@ test('dirty block can be recalculated into error state', async () => {
         'Ny beregningsfejl'
     );
 });
+
+test('recalculateDirty recalculates dirty dependency chain', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'dirty';
+    runtime.getBlock('C').calculation.status = 'dirty';
+
+    await runtime.recalculateDirty('task-1');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'success');
+    assert.equal(runtime.getBlock('C').calculation.status, 'success');
+});
+
+test('recalculateDirty follows document order', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'D',
+        type: 'formula',
+        source: 'd:=a-4',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    for (const id of ['B', 'D', 'C']) {
+        runtime.getBlock(id).calculation.status = 'dirty';
+    }
+
+    const order = [];
+    const originalCalculateBlock =
+        runtime.calculateBlock.bind(runtime);
+
+    runtime.calculateBlock = async blockId => {
+        order.push(blockId);
+        return originalCalculateBlock(blockId);
+    };
+
+    await runtime.recalculateDirty('task-1');
+
+    assert.deepEqual(order, ['B', 'D', 'C']);
+});
+
+test('recalculateDirty only recalculates requested task', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'X',
+        type: 'formula',
+        source: 'x:=100',
+        taskId: 'task-2'
+    });
+
+    runtime.getBlock('A').calculation.status = 'dirty';
+    runtime.getBlock('X').calculation.status = 'dirty';
+
+    await runtime.recalculateDirty('task-1');
+
+    assert.equal(
+        runtime.getBlock('A').calculation.status,
+        'success'
+    );
+
+    assert.equal(
+        runtime.getBlock('X').calculation.status,
+        'dirty'
+    );
+});
+
+test('recalculateDirty skips clean formula blocks', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=3',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('A').calculation.status = 'success';
+    runtime.getBlock('B').calculation.status = 'dirty';
+
+    await runtime.recalculateDirty('task-1');
+
+    assert.equal(engine.calculateCalls.length, 1);
+    assert.equal(runtime.getBlock('A').calculation.status, 'success');
+    assert.equal(runtime.getBlock('B').calculation.status, 'success');
+});
+
+test('recalculateDirty skips downstream blocks after calculation error', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-18');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'dirty';
+    runtime.getBlock('C').calculation.status = 'dirty';
+
+    const originalCalculateBlock =
+        runtime.calculateBlock.bind(runtime);
+
+    runtime.calculateBlock = async blockId => {
+        if (blockId === 'B') {
+            const block = runtime.getBlock('B');
+
+            block.calculation = {
+                ...block.calculation,
+                status: 'error',
+                result: null,
+                error: {
+                    message: 'B failed'
+                }
+            };
+
+            throw new Error('B failed');
+        }
+
+        return originalCalculateBlock(blockId);
+    };
+
+    await runtime.recalculateDirty('task-1');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'error');
+    assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
+});
+
+test('recalculateDirty continues with independent branch after calculation error', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-19');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'D',
+        type: 'formula',
+        source: 'd:=a-4',
+        taskId: 'task-1'
+    });
+
+    for (const id of ['B', 'C', 'D']) {
+        runtime.getBlock(id).calculation.status = 'dirty';
+    }
+
+    const originalCalculateBlock =
+        runtime.calculateBlock.bind(runtime);
+
+    runtime.calculateBlock = async blockId => {
+        if (blockId === 'B') {
+            const block = runtime.getBlock('B');
+
+            block.calculation = {
+                ...block.calculation,
+                status: 'error',
+                result: null,
+                error: {
+                    message: 'B failed'
+                }
+            };
+
+            throw new Error('B failed');
+        }
+
+        return originalCalculateBlock(blockId);
+    };
+
+    await runtime.recalculateDirty('task-1');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'error');
+    assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
+    assert.equal(runtime.getBlock('D').calculation.status, 'success');
+});
+
+test('recalculateDirty skips all transitive downstream blocks after calculation error', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-20');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'E',
+        type: 'formula',
+        source: 'e:=c+5',
+        taskId: 'task-1'
+    });
+
+    for (const id of ['B', 'C', 'E']) {
+        runtime.getBlock(id).calculation.status = 'dirty';
+    }
+
+    const originalCalculateBlock =
+        runtime.calculateBlock.bind(runtime);
+
+    runtime.calculateBlock = async blockId => {
+        if (blockId === 'B') {
+            const block = runtime.getBlock('B');
+
+            block.calculation = {
+                ...block.calculation,
+                status: 'error',
+                result: null,
+                error: {
+                    message: 'B failed'
+                }
+            };
+
+            throw new Error('B failed');
+        }
+
+        return originalCalculateBlock(blockId);
+        
+    };
+
+    await runtime.recalculateDirty('task-1');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'error');
+    assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
+    assert.equal(runtime.getBlock('E').calculation.status, 'dirty');
+});
+
+test('recalculateFrom calculates source block before dirty downstream blocks', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-21');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('B').calculation.status = 'idle';
+    runtime.getBlock('C').calculation.status = 'dirty';
+
+    const order = [];
+    const originalCalculateBlock =
+        runtime.calculateBlock.bind(runtime);
+
+    runtime.calculateBlock = async blockId => {
+        order.push(blockId);
+        return originalCalculateBlock(blockId);
+    };
+
+    await runtime.recalculateFrom('B');
+
+    assert.deepEqual(order, ['B', 'C']);
+    assert.equal(runtime.getBlock('B').calculation.status, 'success');
+    assert.equal(runtime.getBlock('C').calculation.status, 'success');
+});
+
+test('recalculateFrom recalculates other dirty branches in the same task', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-22');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'X',
+        type: 'formula',
+        source: 'x:=100',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'Y',
+        type: 'formula',
+        source: 'y:=x+1',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('C').calculation.status = 'dirty';
+    runtime.getBlock('Y').calculation.status = 'dirty';
+
+    await runtime.recalculateFrom('B');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'success');
+    assert.equal(runtime.getBlock('C').calculation.status, 'success');
+    assert.equal(runtime.getBlock('Y').calculation.status, 'success');
+});
+
+test('recalculateFrom skips failed downstream but continues independent dirty branches', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-23');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'c:=b*10',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'D',
+        type: 'formula',
+        source: 'd:=a-4',
+        taskId: 'task-1'
+    });
+
+    runtime.getBlock('C').calculation.status = 'dirty';
+    runtime.getBlock('D').calculation.status = 'dirty';
+
+    const originalCalculateBlock =
+        runtime.calculateBlock.bind(runtime);
+
+    runtime.calculateBlock = async blockId => {
+        if (blockId === 'B') {
+            const block = runtime.getBlock('B');
+
+            block.calculation = {
+                ...block.calculation,
+                status: 'error',
+                result: null,
+                error: {
+                    message: 'B failed'
+                }
+            };
+
+            throw new Error('B failed');
+        }
+
+        return originalCalculateBlock(blockId);
+    };
+
+    await assert.rejects(
+        runtime.recalculateFrom('B'),
+        /B failed/
+    );
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'error');
+    assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
+    assert.equal(runtime.getBlock('D').calculation.status, 'success');
+});
+
+test('recalculateFrom does not recalculate dirty blocks in another task', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-24');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'X',
+        type: 'formula',
+        source: 'x:=100',
+        taskId: 'task-2'
+    });
+
+    runtime.addBlock({
+        id: 'Y',
+        type: 'formula',
+        source: 'y:=x+1',
+        taskId: 'task-2'
+    });
+
+    runtime.getBlock('Y').calculation.status = 'dirty';
+
+    await runtime.recalculateFrom('B');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'success');
+    assert.equal(runtime.getBlock('Y').calculation.status, 'dirty');
+});
