@@ -1,3 +1,168 @@
 Enhedskonvertering: jeg tænker at vi i udgangspunktet anvender SI enheder og at vi samtidig reducere maksimalt muligt, så kg m2 s-2 bliver J og N m, W s og N m i udgangspunktet gemmes som J (joules). Hvis eleven ønsker det, kan man højreklikke og få en popup hvor man kan vælge en anden energienhed (i dette eksempel: aJ, nJ, ..., keV, MeV, ..., cal, kcal, ...). Der er en del af dette, der skal ligge i UI, men vi skal vel gemme de valgte enheder i selve variabeltabellen, så det retableres umiddelbart når dokumentet genindlæses fra en fil?
 
+__________________________________
+
+
 Jeg forudser at newCAS aldrig bliver "færdigt", men at det skal udvikles/vedligeholdes og patches løbende. Er det ikke en ide, at der i vores filer bliver gemt et versionsnummer, så man kan lave en evt. konvertering til et andet format senere ...
+
+_______________________________
+
+
+#newCAS – Projektstatus (Handover)
+##Projekt
+*newCAS* – browserbaseret CAS med Pyodide/SymPy, moderne dokumentmodel og stærk udviklerinfrastruktur.
+##Grundprincipper
+- Parser (Peggy.js)
+- Transformer
+- Executor (Python/SymPy)
+- JSON-kontrakter mellem runtime og UI
+- Dokumentmodel med reaktive blokke
+- Stram lagdeling
+
+#Arkitekturbeslutninger
+##Dokumentmodel
+Dokumentet er den primære model.
+    Editor/UI
+        ↓
+    Document Runtime
+        ↓
+    Executor
+        ↓
+    Task Scope
+
+##Vigtige principper
+- UI ser aldrig SymPy-objekter.
+- Variabler gemmes med fuld præcision.
+- Afrunding er altid en visningsregel.
+- Document Runtime holder dependency-grafen.
+- Executor holder beregningsgrafen.
+
+#Tekstblokke
+
+JSON repræsenteres som segmenter.
+    text
+    variable
+
+Derudover er besluttet:
+- style på blokke.
+- marks på segmenter.
+- show (value eller name_value) på variable.
+- Segmentets formatering har forrang over variablens default.
+
+##Persistens
+Dokumenttilstande:
+- Editing
+- Submitted
+
+Submitted gemmer bl.a.
+- engine_version
+- variabeltabel
+- renderede blokke
+
+#PDF genereres fra snapshot.
+-##Udviklerværktøjer
+###P01 – Module Graph
+Virker.
+    Output:
+    Python modules: 19
+    Internal edges: 12
+    External imports: 25
+
+ASCII-træ virker nu.
+
+###P02 – Layer Guard
+Virker.
+Output:
+    Modules: 19
+    Internal edges: 12
+    Warnings: 2
+
+Legacy-advarsler:
+    cas_math.distributions_old
+    output.result_old
+
+Ingen arkitekturfejl.
+
+###Build Driver
+Virker.
+Output:
+    [1/2] Module Graph... OK
+    [2/2] Layer Guard... OK
+Windows Unicode-fejl er rettet ([OK] i stedet for ✓).
+
+#Aktuelle scripts
+
+Virker:
+- tools:graph
+- tools:layer
+- tools:build
+- tools:runtime (allerede tilføjet)
+
+#P03 – Runtime Introspection
+Vigtigt:
+Projektet indeholder allerede:
+    ```bash
+    tools/analyze/runtime_report.py
+    ```
+
+Vi skal **ikke** oprette den igen.
+Vi skal arbejde ud fra den eksisterende implementering.
+
+##Næste opgave
+###P03.1 fortsætter herfra
+Første skridt bliver at gennemgå den eksisterende:
+    ```bash
+    tools/analyze/runtime_report.py
+    ```
+og udvide den i stedet for at starte forfra.
+
+Målet er, at den skal generere den kanoniske runtime-model (runtime.json) med:
+- public symbols
+- BASE_CONTEXT
+- FORBIDDEN_SYMBOLS
+- senere TaskScope-kontrakten.
+
+##Filer der skal laves først i denne overførsel
+
+Der er to dokumenter, som **ikke** lykkedes som downloadfiler i den forrige tråd.
+
+De skal genereres som rigtige Markdown-filer:
+- docs/adr/ADR-0004-document-runtime.md (Revision 1)
+- docs/adr/ADR-0005-document-persistence-and-submission.md
+
+De skal laves som egentlige filer – ikke blot gengives i chatten.
+
+Repomix
+
+Jeg vil foreslå, at du laver et nyt repomix-code (ikke nødvendigvis all endnu), så vi får den aktuelle version med:
+
+de nye tools,
+
+Layer Guard,
+
+Runtime Report,
+
+Build Driver,
+
+de seneste ændringer i project_graph.py.
+
+Så arbejder vi ud fra et helt friskt snapshot.
+
+Arbejdsform: små passes med en struktur som: 
+
+    **Pass P03.1**
+
+    Mål
+    Berørte filer
+    Handling (Erstat/Tilføj)
+    Test
+    Forventet output
+    Commit-navn
+
+Det svarer næsten til en lille Pull Request, for hver pass.
+#Roadmap 
+    P01 Module Graph
+    P02 Layer Guard
+    P03 Runtime Report (så småt påbegyndt)
+    P04 AST Report
+    P05 Documentation Generator

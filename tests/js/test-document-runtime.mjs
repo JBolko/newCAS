@@ -148,6 +148,7 @@ test('DocumentRuntime stores ordered document blocks', () => {
             },
             calculation: {
                 status: 'idle',
+                generation: 0,
                 result: null,
                 error: null
             }
@@ -197,7 +198,6 @@ test('calculateBlock uses formula block task scope', async () => {
 
 });
 
-
 test('calculateBlock rejects non-formula blocks', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
@@ -229,6 +229,7 @@ test('formula block starts with idle calculation state', () => {
 
     assert.deepEqual(block.calculation, {
         status: 'idle',
+        generation: 0,
         result: null,
         error: null
     });
@@ -276,6 +277,7 @@ test('changing formula source invalidates previous result', async () => {
 
     assert.deepEqual(block.calculation, {
         status: 'idle',
+        generation: 1,
         result: null,
         error: null
     });
@@ -349,6 +351,7 @@ test('calculateBlock stores error state when engine fails', async () => {
 
     assert.deepEqual(block.calculation, {
         status: 'error',
+        generation: 0,
         result: null,
         error: {
             message: 'Testfejl'
@@ -378,6 +381,7 @@ test('changing source resets error state to idle', async () => {
         runtime.getBlock('formula-1').calculation,
         {
             status: 'idle',
+            generation: 1,
             result: null,
             error: null
         }
@@ -541,5 +545,489 @@ test('calculateBlock parses AST from formula source', async () => {
             reads: ['a'],
             writes: ['b']
         }
+    );
+});
+
+test('DocumentRuntime builds dependency graph from formula blocks', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    const graph = runtime.getDependencyGraph('task-1');
+
+    assert.equal(graph.hasEdge('A', 'B'), true);
+});
+
+test('DocumentRuntime respects document position when building dependencies', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'D',
+        type: 'formula',
+        source: 'c:=a-4',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'C',
+        type: 'formula',
+        source: 'a:=3*b',
+        taskId: 'task-1'
+    });
+
+    const graph = runtime.getDependencyGraph('task-1');
+
+    assert.equal(graph.hasEdge('A', 'B'), true);
+    assert.equal(graph.hasEdge('A', 'D'), true);
+    assert.equal(graph.hasEdge('B', 'C'), true);
+
+    assert.equal(graph.hasEdge('C', 'D'), false);
+});
+
+test('changing formula source rebuilds dependency graph', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=3',
+        taskId: 'task-1'
+    });
+
+    assert.equal(
+        runtime.getDependencyGraph('task-1').hasEdge('A', 'B'),
+        false
+    );
+
+    runtime.setBlockSource('B', 'b:=a+1');
+
+    assert.equal(
+        runtime.getDependencyGraph('task-1').hasEdge('A', 'B'),
+        true
+    );
+});
+
+test('DocumentRuntime keeps task dependency graphs isolated', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'X',
+        type: 'formula',
+        source: 'a:=100',
+        taskId: 'task-2'
+    });
+
+    runtime.addBlock({
+        id: 'B',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-1'
+    });
+
+    runtime.addBlock({
+        id: 'Y',
+        type: 'formula',
+        source: 'b:=a+1',
+        taskId: 'task-2'
+    });
+
+    const graph1 = runtime.getDependencyGraph('task-1');
+    const graph2 = runtime.getDependencyGraph('task-2');
+
+    assert.equal(graph1.hasEdge('A', 'B'), true);
+    assert.equal(graph2.hasEdge('X', 'Y'), true);
+    assert.equal(graph1.hasEdge('X', 'B'), false);
+    assert.equal(graph2.hasEdge('A', 'Y'), false);
+});
+
+test('markBlockDirty marks successful formula block dirty', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    const block = runtime.getBlock('A');
+
+    block.calculation.status = 'success';
+    block.calculation.result = { type: 'scalar', value: '2' };
+
+    runtime.markBlockDirty('A');
+
+    assert.equal(block.calculation.status, 'dirty');
+});
+
+
+test('markBlockDirty preserves previous result', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    const block = runtime.getBlock('A');
+    const result = { type: 'scalar', value: '2' };
+
+    block.calculation.status = 'success';
+    block.calculation.result = result;
+
+    runtime.markBlockDirty('A');
+
+    assert.equal(block.calculation.result, result);
+});
+
+
+test('markBlockDirty keeps idle formula block idle', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    runtime.markBlockDirty('A');
+
+    assert.equal(
+        runtime.getBlock('A').calculation.status,
+        'idle'
+    );
+});
+
+test('markBlockDirty ignores text block', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'T',
+        type: 'text',
+        content: 'Hej'
+    });
+
+    assert.doesNotThrow(() => {
+        runtime.markBlockDirty('T');
+    });
+});
+
+test('changing source marks downstream block dirty', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({ id:'A', type:'formula', source:'a:=2', taskId:'task-1' });
+    runtime.addBlock({ id:'B', type:'formula', source:'b:=a+1', taskId:'task-1' });
+
+    runtime.getBlock('B').calculation.status = 'success';
+
+    runtime.setBlockSource('A', 'a:=3');
+
+    assert.equal(runtime.getBlock('A').calculation.status, 'idle');
+    assert.equal(runtime.getBlock('B').calculation.status, 'dirty');
+});
+
+test('changing source marks transitive downstream blocks dirty', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({ id:'A', type:'formula', source:'a:=2', taskId:'task-1' });
+    runtime.addBlock({ id:'B', type:'formula', source:'b:=a+1', taskId:'task-1' });
+    runtime.addBlock({ id:'C', type:'formula', source:'c:=b*10', taskId:'task-1' });
+
+    runtime.getBlock('B').calculation.status = 'success';
+    runtime.getBlock('C').calculation.status = 'success';
+
+    runtime.setBlockSource('A', 'a:=3');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'dirty');
+    assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
+});
+
+test('changing dependencies dirties blocks from old dependency graph', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({ id:'A', type:'formula', source:'a:=2', taskId:'task-1' });
+    runtime.addBlock({ id:'B', type:'formula', source:'b:=a+1', taskId:'task-1' });
+    runtime.addBlock({ id:'C', type:'formula', source:'c:=b*10', taskId:'task-1' });
+
+    runtime.getBlock('C').calculation.status = 'success';
+
+    // B skriver ikke længere b, så B -> C forsvinder fra den nye graph.
+    runtime.setBlockSource('B', 'd:=a+1');
+
+    assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
+});
+
+test('changing dependencies dirties blocks from new dependency graph', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({ id:'A', type:'formula', source:'a:=2', taskId:'task-1' });
+    runtime.addBlock({ id:'B', type:'formula', source:'b:=3', taskId:'task-1' });
+    runtime.addBlock({ id:'C', type:'formula', source:'c:=a+1', taskId:'task-1' });
+
+    runtime.getBlock('C').calculation.status = 'success';
+
+    // B bliver nu nearest preceding writer af a for C.
+    runtime.setBlockSource('B', 'a:=3');
+
+    assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
+});
+
+test('source change only dirties blocks in the same task', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({ id:'A', type:'formula', source:'a:=2', taskId:'task-1' });
+    runtime.addBlock({ id:'B', type:'formula', source:'b:=a+1', taskId:'task-1' });
+
+    runtime.addBlock({ id:'X', type:'formula', source:'a:=100', taskId:'task-2' });
+    runtime.addBlock({ id:'Y', type:'formula', source:'b:=a+1', taskId:'task-2' });
+
+    runtime.getBlock('B').calculation.status = 'success';
+    runtime.getBlock('Y').calculation.status = 'success';
+
+    runtime.setBlockSource('A', 'a:=3');
+
+    assert.equal(runtime.getBlock('B').calculation.status, 'dirty');
+    assert.equal(runtime.getBlock('Y').calculation.status, 'success');
+});
+
+test('formula block starts with generation zero', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    assert.equal(
+        runtime.getBlock('A').calculation.generation,
+        0
+    );
+});
+
+test('changing formula source increments generation', () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    runtime.setBlockSource('A', 'a:=3');
+
+    assert.equal(
+        runtime.getBlock('A').calculation.generation,
+        1
+    );
+});
+
+test('stale calculation result does not overwrite dirty state', async () => {
+    let resolveCalculation;
+
+    const engine = {
+        calculate() {
+            return new Promise(resolve => {
+                resolveCalculation = resolve;
+            });
+        },
+
+        async getTaskState() {
+            return {
+                type: 'scope',
+                task_id: 'unused',
+                variables: []
+            };
+        }
+    };
+
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    const calculation = runtime.calculateBlock('A');
+
+    assert.equal(
+        runtime.getBlock('A').calculation.status,
+        'running'
+    );
+
+    runtime.markBlockDirty('A');
+
+    assert.equal(
+        runtime.getBlock('A').calculation.status,
+        'dirty'
+    );
+
+    resolveCalculation({
+        type: 'success'
+    });
+
+    const result = await calculation;
+
+    assert.equal(result, null);
+
+    assert.equal(
+        runtime.getBlock('A').calculation.status,
+        'dirty'
+    );
+});
+
+test('stale calculation error does not overwrite dirty state', async () => {
+    let rejectCalculation;
+
+    const engine = {
+        calculate() {
+            return new Promise((resolve, reject) => {
+                rejectCalculation = reject;
+            });
+        },
+
+        async getTaskState() {
+            return {
+                type: 'scope',
+                task_id: 'unused',
+                variables: []
+            };
+        }
+    };
+
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    const calculation = runtime.calculateBlock('A');
+
+    runtime.markBlockDirty('A');
+
+    rejectCalculation(new Error('Gammel fejl'));
+
+    const result = await calculation;
+
+    assert.equal(result, null);
+
+    const block = runtime.getBlock('A');
+
+    assert.equal(block.calculation.status, 'dirty');
+    assert.equal(block.calculation.generation, 1);
+});
+
+test('dirty block can be recalculated successfully', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    const block = runtime.getBlock('A');
+
+    block.calculation.status = 'success';
+    block.calculation.result = { type: 'scalar', value: '2' };
+
+    runtime.markBlockDirty('A');
+
+    assert.equal(block.calculation.status, 'dirty');
+    assert.equal(block.calculation.generation, 1);
+
+    const result = await runtime.calculateBlock('A');
+
+    assert.equal(block.calculation.status, 'success');
+    assert.equal(block.calculation.generation, 1);
+    assert.equal(block.calculation.result, result);
+});
+
+test('dirty block can be recalculated into error state', async () => {
+    const engine = makeFakeEngine();
+    const runtime = new DocumentRuntime(engine, 'document-17');
+
+    runtime.addBlock({
+        id: 'A',
+        type: 'formula',
+        source: 'a:=2'
+    });
+
+    const block = runtime.getBlock('A');
+
+    block.calculation.status = 'success';
+    runtime.markBlockDirty('A');
+
+    engine.calculateError = new Error('Ny beregningsfejl');
+
+    await assert.rejects(
+        () => runtime.calculateBlock('A'),
+        /Ny beregningsfejl/
+    );
+
+    assert.equal(block.calculation.status, 'error');
+    assert.equal(block.calculation.generation, 1);
+    assert.equal(
+        block.calculation.error.message,
+        'Ny beregningsfejl'
     );
 });

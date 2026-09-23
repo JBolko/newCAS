@@ -9,6 +9,7 @@
 
 import { parse } from './parser.mjs';
 import { analyzeDependencies } from './dependency-analyzer.js';
+import { buildDocumentDependencyGraphs } from './document-dependency-graph.js';
 
 export class DocumentRuntime {
     constructor(engine, documentId) {
@@ -23,6 +24,7 @@ export class DocumentRuntime {
         this.engine = engine;
         this.documentId = documentId;
         this.blocks = [];
+        this.dependencyGraphs = new Map();
     }
 
     /**
@@ -81,12 +83,14 @@ export class DocumentRuntime {
 
             storedBlock.calculation = {
                 status: 'idle',
+                generation: 0,
                 result: null,
                 error: null
             };
         }
 
         this.blocks.push(storedBlock);
+        this.rebuildDependencyGraphs();
 
         return storedBlock;
     }
@@ -102,8 +106,11 @@ export class DocumentRuntime {
             throw new Error(`Block kan ikke beregnes: ${blockId}`);
         }
 
+        const generation = block.calculation.generation;
+
         block.calculation = {
             status: 'running',
+            generation,
             result: null,
             error: null
         };
@@ -116,8 +123,13 @@ export class DocumentRuntime {
                 block.taskId
             );
 
+            if (block.calculation.generation !== generation) {
+                return null;
+            }
+
             block.calculation = {
                 status: 'success',
+                generation,
                 result,
                 error: null
             };
@@ -125,8 +137,13 @@ export class DocumentRuntime {
             return result;
 
         } catch (error) {
+            if (block.calculation.generation !== generation) {
+                return null;
+            }
+
             block.calculation = {
                 status: 'error',
+                generation,
                 result: null,
                 error: {
                     message: error?.message ?? String(error)
@@ -141,7 +158,6 @@ export class DocumentRuntime {
     getBlock(blockId) {
         return this.blocks.find(block => block.id === blockId) ?? null;
     }
-
 
     getBlocks() {
         return this.blocks.map(block => ({ ...block }));
@@ -158,18 +174,74 @@ export class DocumentRuntime {
             throw new Error(`Block har ingen formula-source: ${blockId}`);
         }
 
+        // Parse og dependency-analyse sker før mutation.
+        // Ved ugyldig source forbliver block og graph uændret.
         const dependencies =
             source.trim() === ''
                 ? { reads: [], writes: [] }
                 : analyzeDependencies(parse(source));
 
+        // Gem downstream fra den gamle graph før dependencies ændres.
+        const oldGraph = this.getDependencyGraph(block.taskId);
+        const oldDownstream =
+            oldGraph?.getAllDownstream(blockId) ?? [];
+
+        // Ny source invaliderer enhver beregning af denne block.
+        const nextGeneration =
+            block.calculation.generation + 1;
+
+        // Commit den nye source.
         block.source = source;
         block.dependencies = dependencies;
 
         block.calculation = {
             status: 'idle',
+            generation: nextGeneration,
             result: null,
             error: null
         };
+
+        // Den nye source kan have ændret graph-strukturen.
+        this.rebuildDependencyGraphs();
+
+        const newGraph = this.getDependencyGraph(block.taskId);
+        const newDownstream =
+            newGraph?.getAllDownstream(blockId) ?? [];
+
+        // Både tidligere og nye downstream blocks er nu potentielt ugyldige.
+        const affected = new Set([
+            ...oldDownstream,
+            ...newDownstream
+        ]);
+
+        for (const affectedBlockId of affected) {
+            this.markBlockDirty(affectedBlockId);
+        }
+    }
+
+    rebuildDependencyGraphs() {
+        this.dependencyGraphs =
+            buildDocumentDependencyGraphs(this.blocks);
+    }
+
+    getDependencyGraph(taskId = 'default') {
+        return this.dependencyGraphs.get(taskId) ?? null;
+    }
+
+    markBlockDirty(blockId) {
+        const block = this.getBlock(blockId);
+
+        if (!block || block.type !== 'formula') {
+            return;
+        }
+
+        const status = block.calculation.status;
+
+        if (status === 'idle' || status === 'dirty') {
+            return;
+        }
+
+        block.calculation.generation++;
+        block.calculation.status = 'dirty';
     }
 }
