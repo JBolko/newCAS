@@ -78,6 +78,16 @@ export class CASEngine {
         return JSON.parse(raw);
     }
 
+    async resetTask(taskId = 'default') {
+    if (!this.pyodide) {
+        throw new Error('CASEngine er ikke initialiseret.');
+    }
+
+    await this.pyodide.runPythonAsync(
+        `reset_task_state(${JSON.stringify(taskId)})`
+    );
+}
+
     async getTaskState(taskId = 'default') {
         if (!this.pyodide) {
             throw new Error('CASEngine er ikke initialiseret.');
@@ -145,11 +155,12 @@ import sys
 if '${CAS_ROOT}' not in sys.path:
     sys.path.insert(0, '${CAS_ROOT}')
     
-from bootstrap import run_in_task, get_task_state_json
+from bootstrap import run_in_task, get_task_state_json, reset_task_state
 import __main__
 
 __main__.run_in_task = run_in_task
 __main__.get_task_state_json = get_task_state_json
+__main__.reset_task_state = reset_task_state
 `);
     }
 

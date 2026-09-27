@@ -76,4 +76,53 @@ test('getTaskState rejects use before initialization', async () => {
         () => engine.getTaskState('task-1'),
         /ikke initialiseret/
     );
+
+test('resetTask resets requested task', async () => {
+    const engine = new CASEngine({});
+
+    let receivedCode = null;
+
+    engine.pyodide = {
+        async runPythonAsync(code) {
+            receivedCode = code;
+        }
+    };
+
+    await engine.resetTask('task-1');
+
+    assert.equal(
+        receivedCode,
+        'reset_task_state("task-1")'
+    );
+});
+
+
+test('resetTask uses default task', async () => {
+    const engine = new CASEngine({});
+
+    let receivedCode = null;
+
+    engine.pyodide = {
+        async runPythonAsync(code) {
+            receivedCode = code;
+        }
+    };
+
+    await engine.resetTask();
+
+    assert.equal(
+        receivedCode,
+        'reset_task_state("default")'
+    );
+    });
+
+
+    test('resetTask rejects use before initialization', async () => {
+    const engine = new CASEngine({});
+
+    await assert.rejects(
+        () => engine.resetTask('task-1'),
+        /ikke initialiseret/
+    );
+    });
 });

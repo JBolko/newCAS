@@ -69,3 +69,25 @@ def test_task_state_contract():
 
     assert variables["a"] == "5"
     assert variables["x"] == "sqrt(2)"
+
+def test_reset_task_removes_existing_task_scope():
+    from core.scope import task_registry, reset_task
+
+    task_registry["reset-test"] = {
+        "a": 42,
+        "h": 6.626,
+    }
+
+    reset_task("reset-test")
+
+    assert "reset-test" not in task_registry
+
+
+def test_reset_task_accepts_unknown_task_id():
+    from core.scope import task_registry, reset_task
+
+    task_registry.pop("missing-reset-test", None)
+
+    reset_task("missing-reset-test")
+
+    assert "missing-reset-test" not in task_registry

@@ -55,6 +55,12 @@ export class DocumentRuntime {
         );
     }
 
+    async resetTask(taskId = 'default') {
+        await this.engine.resetTask(
+            this.taskKey(taskId)
+        );
+    }
+
     prepareBlock(block) {
         if (!block || typeof block !== 'object') {
             throw new Error('Block skal være et objekt.');

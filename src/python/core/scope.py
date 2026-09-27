@@ -30,6 +30,16 @@ def execute_with_auto_symbols(code: str, globs: Dict[str, Any], locs: Dict[str, 
             else:
                 raise
     raise RuntimeError("Max symbol resolution attempts exceeded for code block.")
+
+def reset_task(task_id: str) -> None:
+    """
+    Fjerner den materialiserede runtime-state for ét task-scope.
+
+    Task-scope er afledt state. Efter reset oprettes scope igen
+    af run_in_task(), når tasken næste gang eksekveres.
+    """
+    task_registry.pop(task_id, None)
+    
 def get_task_state(task_id: str) -> dict:
     """
     Returnerer et serialiserbart snapshot af brugerdefinerede navne
