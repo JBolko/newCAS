@@ -10,14 +10,12 @@
     "dev": "echo \"Open index.html directly in your browser (no build step needed yet)\"",
     "start": "echo \"Open index.html directly in your browser\"",
     "test": "echo \"No tests implemented yet\"",
-    
     "tools:build": "python -m tools.build.build_docs",
     "tools:doctor": "python -m tools.doctor",
     "tools:layer": "python -m tools.analyze.layer_guard",
     "tools:ast": "node tools/analyze/ast_report.mjs",
     "tools:runtime": "python -m tools.analyze.runtime_report",
     "test:js": "node --test tests/js/*.mjs",
-    
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
     "pack:tools": "npx repomix --include \"tools/**/*,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,tools/reports/*.json,repomix-*.md\" --output repomix-tools.md",
     "pack:engine": "npx repomix --include \"src/python/**/*,src/js/cas-engine.js,src/js/transformer.js,docs/Grammatik.pegjs,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,src/js/parser.mjs,repomix-*.md\" --output repomix-engine.md",
@@ -43,5 +41,12 @@
   },
   "bugs": {
     "url": "https://github.com/JBolko/newCAS/issues"
+  },
+  "devDependencies": {
+    "peggy": "5.1.0"
+  },
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11"
   }
 }

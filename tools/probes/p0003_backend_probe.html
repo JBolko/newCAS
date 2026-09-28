@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>newCAS P0003 backend capability probe</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+    button, select { font: inherit; padding: .45rem .7rem; margin-right: .5rem; }
+    pre { white-space: pre-wrap; background: #f4f4f4; padding: 1rem; overflow: auto; }
+    .note { max-width: 80ch; }
+  </style>
+</head>
+<body>
+  <h1>newCAS P0003 backend capability probe</h1>
+  <p class="note">
+    Development probe only. It does not use the newCAS parser, transformer, CASEngine,
+    DocumentRuntime or legacy task scope. It observes raw Pyodide/SymPy behaviour.
+  </p>
+
+  <label for="target">Target:</label>
+  <select id="target">
+    <option value="0.26.1">A — Pyodide 0.26.1 (legacy reference)</option>
+    <option value="314.0.7">B — Pyodide 314.0.7 (candidate)</option>
+  </select>
+  <button id="run">Run probe</button>
+  <button id="download" disabled>Download JSON</button>
+
+  <p id="status">Idle.</p>
+  <pre id="output"></pre>
+
+<script>
+const statusEl = document.getElementById("status");
+const outputEl = document.getElementById("output");
+const runButton = document.getElementById("run");
+const downloadButton = document.getElementById("download");
+let lastResult = null;
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error(`Could not load ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function loadProbeSource() {
+  const response = await fetch(
+    `./p0003_backend_probe.py?v=${Date.now()}`,
+    { cache: "no-store" }
+  );
+  if (!response.ok) throw new Error(`Could not fetch probe source: HTTP ${response.status}`);
+  return response.text();
+}
+
+runButton.addEventListener("click", async () => {
+  const version = document.getElementById("target").value;
+  const base = `https://cdn.jsdelivr.net/pyodide/v${version}/full/`;
+
+  runButton.disabled = true;
+  downloadButton.disabled = true;
+  outputEl.textContent = "";
+  lastResult = null;
+
+  try {
+    statusEl.textContent = `Loading Pyodide ${version}…`;
+    delete globalThis.loadPyodide;
+    await loadScript(`${base}pyodide.js`);
+
+    statusEl.textContent = `Initializing Pyodide ${version}…`;
+    const pyodide = await globalThis.loadPyodide({ indexURL: base });
+
+    statusEl.textContent = "Loading SymPy…";
+    await pyodide.loadPackage("sympy");
+
+    statusEl.textContent = "Running raw backend probes…";
+    const source = await loadProbeSource();
+    const raw = await pyodide.runPythonAsync(source);
+    const parsed = JSON.parse(raw);
+
+    lastResult = {
+      target: version,
+      pyodide_version: version,
+      observed_at: new Date().toISOString(),
+      ...parsed
+    };
+
+    outputEl.textContent = JSON.stringify(lastResult, null, 2);
+    statusEl.textContent = `Done — ${lastResult.cases.length} cases.`;
+    downloadButton.disabled = false;
+  } catch (error) {
+    statusEl.textContent = "Probe failed.";
+    outputEl.textContent = error?.stack ?? String(error);
+  } finally {
+    runButton.disabled = false;
+  }
+});
+
+downloadButton.addEventListener("click", () => {
+  if (!lastResult) return;
+  const blob = new Blob([JSON.stringify(lastResult, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `p0003-pyodide-${lastResult.pyodide_version}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>

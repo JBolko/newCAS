@@ -15,7 +15,7 @@ requires it. A roadmap change does not change architecture. Any
 implementation discovery that would change frozen mathematical semantics
 requires an explicit architecture decision/ADR before coding proceeds.
 
-## Phase A --- Freeze and capability gate
+## Phase A --- Freeze and capability gate — COMPLETE
 
 ### P0001 --- Architecture freeze — COMPLETE
 
@@ -30,7 +30,7 @@ Completed 2026-09-27.
 
 **Exit:** one unambiguous normative architecture baseline. **GREEN**
 
-### P0002 --- Dependency/version inventory
+### P0002 --- Dependency/version inventory — COMPLETE
 
 -   Inventory actual versions and browser/offline constraints.
 -   Pyodide, SymPy, NumPy, Plotly.js, KaTeX, Peggy.js and actual runtime
@@ -38,7 +38,7 @@ Completed 2026-09-27.
 
 **Exit:** candidate compatible version set.
 
-### P0003 --- Backend capability probes
+### P0003 --- Backend capability probes — COMPLETE
 
 Probe only capabilities required by newCAS contracts: - symbols/Dummy
 identity and capture; - functions/substitution; - solve
@@ -47,7 +47,7 @@ numeric/statistical paths; - serialization-relevant objects.
 
 **Exit:** documented capability matrix and known limitations.
 
-### P0004 --- Version lock and developer baseline
+### P0004 --- Version lock and developer baseline — COMPLETE
 
 -   Lock selected dependency versions.
 -   Confirm Python/Node/npm developer baseline.
