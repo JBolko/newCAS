@@ -1,3 +1,5 @@
+import { isSemanticIdentity } from '../semantics/identity.js';
+
 /**
  * P0005 — Value Contract v1, first implementation slice.
  *
@@ -98,9 +100,8 @@ function validateExprNode(node) {
 
     case 'symbolRef':
       assertKeys(node, new Set(['op', 'identity']), 'symbolRef node');
-      // P0006 defines the identity format. P0005 only preserves the reference.
-      if (typeof node.identity !== 'string' || node.identity === '') {
-        fail('symbolRef identity must be a non-empty placeholder/reference');
+      if (!isSemanticIdentity(node.identity)) {
+        fail('symbolRef identity must be a SemanticIdentity');
       }
       return;
 
@@ -145,9 +146,8 @@ function validateExpressionData(data) {
 
 
 function validateIdentityReference(identity, context) {
-  // P0006 owns the identity schema/semantics; P0005 only transports it.
-  if (typeof identity !== 'string' || identity === '') {
-    fail(`${context} identity must be a non-empty placeholder/reference`);
+  if (!isSemanticIdentity(identity)) {
+    fail(`${context} identity must be a SemanticIdentity`);
   }
 }
 
@@ -245,13 +245,13 @@ function validateValue(value) {
 }
 
 function make(kind, data) {
-  const value = {
+  const value = deepFreeze({
     valueVersion: VALUE_VERSION,
     kind,
     data: cloneJson(data),
-  };
+  });
   validateValue(value);
-  return deepFreeze(value);
+  return value;
 }
 
 export function expression(expr) {
@@ -312,8 +312,9 @@ export function decodeValue(serialized) {
     fail('encoded Value must be valid JSON');
   }
 
-  validateValue(parsed);
-  return deepFreeze(cloneJson(parsed));
+  const value = deepFreeze(cloneJson(parsed));
+  validateValue(value);
+  return value;
 }
 
 export function isValue(value) {

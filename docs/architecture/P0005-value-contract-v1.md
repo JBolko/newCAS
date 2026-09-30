@@ -1,6 +1,6 @@
 # P0005 --- Value Contract v1
 
-**Status:** Draft contract for implementation\
+**Status:** COMPLETE / GREEN\
 **Series:** newCAS post-freeze implementation\
 **Normative basis:** Frozen Architecture v1.0, especially §§14--16\
 **Scope:** Public mathematical Values and their stable transport
@@ -128,16 +128,16 @@ Example shape:
       "op": "add",
       "args": [
         {"op": "integer", "value": "2"},
-        {"op": "symbolRef", "identity": "P0006:placeholder-x"}
+        {"op": "symbolRef", "identity": {"identityVersion": 1, "kind": "free-symbol", "taskScopeId": "task-A", "name": "x"}}
       ]
     }
   }
 }
 ```
 
-The exact identity encoding is intentionally deferred to P0006. P0005
-only requires expression serialization to reference semantic identities
-rather than rely on display names alone.
+P0006 subsequently fixed the identity reference as a versioned immutable
+`SemanticIdentity`. Expression serialization therefore references
+semantic identity objects rather than display names alone.
 
 The transport tree must not expose SymPy class names or `srepr`.
 
@@ -156,7 +156,8 @@ FunctionValue {
 }
 ```
 
-Exact binder/free-symbol identity is P0006 work.
+Binder/free-symbol identity is supplied by the P0006 Semantic Identity
+contract.
 
 A FunctionValue must be reconstructible after backend disposal without
 re-resolving captured document names against current document state.
@@ -265,11 +266,13 @@ QuantityValue {
 }
 ```
 
-P0005 refines this into three deliberately separated concerns:
+P0005 separates two mathematical transport concerns:
 
 1.  **canonical mathematical quantity**;
-2.  **canonical unit representation**;
-3.  **optional presentation preference**.
+2.  **canonical unit representation**.
+
+Presentation preference is deliberately outside `QuantityValue`
+transport.
 
 The mathematical Value must not depend on how the quantity was
 originally displayed.
@@ -287,10 +290,9 @@ Examples:
 20 degC    → 293.15 K
 ```
 
-A preferred display unit may allow the UI to show `5 cm`, `72 km/h` or
-`20 °C` without changing the canonical mathematical Value.
-
-Display preference is not itself authoritative mathematical state.
+The UI may independently choose to show `5 cm`, `72 km/h` or `20 °C`
+without changing the canonical mathematical Value. Such presentation
+preference is not carried by `QuantityValue`.
 
 ### 10.2 Backend delegation
 
@@ -421,7 +423,7 @@ The initial fixture suite should include at least:
 -   one parameter;
 -   multiple parameters;
 -   captured resolved value;
--   same display name with distinct identity placeholders.
+-   same display name with distinct SemanticIdentity references.
 
 ### Relation/set
 
@@ -465,8 +467,8 @@ Required tests:
 5.  malformed-payload rejection;
 6.  presentation preference does not alter mathematical Value;
 7.  Quantity canonical/display separation;
-8.  identity placeholders survive transport without falling back to
-    names.
+8.  SemanticIdentity references survive transport without falling back
+    to names.
 
 SymPy conversion tests belong primarily to P0011.
 
@@ -513,10 +515,10 @@ Recommended small-green sequence:
 3.  Add expression transport primitives only as demanded by fixtures.
 4.  Add List/Vector/Matrix fixtures.
 5.  Add Quantity/Unit transport forms and canonical/display separation.
-6.  Add Function/Relation/Set fixtures using temporary
-    identity-reference placeholders.
+6.  Add Function/Relation/Set fixtures using semantic identity
+    references.
 7.  Run serialization tests.
-8.  Replace temporary identity placeholder contract in P0006 without
-    changing Value-category semantics.
+8.  Integrate the P0006 SemanticIdentity contract without changing
+    Value-category semantics.
 
 No backend adapter should be introduced merely to make P0005 tests pass.

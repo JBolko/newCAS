@@ -15,22 +15,19 @@ requires it. A roadmap change does not change architecture. Any
 implementation discovery that would change frozen mathematical semantics
 requires an explicit architecture decision/ADR before coding proceeds.
 
-## Phase A --- Freeze and capability gate — COMPLETE
+## Phase A --- Freeze and capability gate
 
-### P0001 --- Architecture freeze — COMPLETE
+### P0001 --- Architecture freeze --- COMPLETE / GREEN
 
-Completed 2026-09-27.
+-   Final consistency pass across specification, stress tests and review
+    resolution.
+-   Remove contradictory legacy wording.
+-   Mark normative documents `FROZEN`.
+-   Record freeze date/version and superseded assumptions.
 
--   Final consistency pass completed across specification, stress tests
-    and review resolution.
--   Contradictory legacy pre-freeze wording removed.
--   Normative architecture documents marked `FROZEN v1.0`.
--   Freeze date/version recorded.
--   No semantic contradiction found during the final consistency pass.
+**Exit:** one unambiguous normative architecture baseline.
 
-**Exit:** one unambiguous normative architecture baseline. **GREEN**
-
-### P0002 --- Dependency/version inventory — COMPLETE
+### P0002 --- Dependency/version inventory --- COMPLETE / GREEN
 
 -   Inventory actual versions and browser/offline constraints.
 -   Pyodide, SymPy, NumPy, Plotly.js, KaTeX, Peggy.js and actual runtime
@@ -38,7 +35,7 @@ Completed 2026-09-27.
 
 **Exit:** candidate compatible version set.
 
-### P0003 --- Backend capability probes — COMPLETE
+### P0003 --- Backend capability probes --- COMPLETE / GREEN
 
 Probe only capabilities required by newCAS contracts: - symbols/Dummy
 identity and capture; - functions/substitution; - solve
@@ -47,7 +44,7 @@ numeric/statistical paths; - serialization-relevant objects.
 
 **Exit:** documented capability matrix and known limitations.
 
-### P0004 --- Version lock and developer baseline — COMPLETE
+### P0004 --- Version lock and developer baseline --- COMPLETE / GREEN
 
 -   Lock selected dependency versions.
 -   Confirm Python/Node/npm developer baseline.
@@ -57,7 +54,7 @@ numeric/statistical paths; - serialization-relevant objects.
 
 ## Phase B --- Contracts before migration
 
-### P0005 --- Value contract v1
+### P0005 --- Value contract v1 --- COMPLETE / GREEN
 
 Define backend-independent immutable public Values: -
 scalar/expression; - function; - relation/set as required; -
@@ -66,7 +63,7 @@ Release 1.
 
 **Exit:** Value fixtures and serialization tests.
 
-### P0006 --- Semantic identity contract
+### P0006 --- Semantic identity contract --- COMPLETE / GREEN
 
 -   FreeSymbolIdentity.
 -   Binder identity.
@@ -75,7 +72,7 @@ Release 1.
 
 **Exit:** identity/capture stress tests green without DocumentRuntime.
 
-### P0007 --- Semantic IR v1
+### P0007 --- Semantic IR v1 --- CURRENT
 
 Define the smallest resolved IR needed by the frozen semantics.
 

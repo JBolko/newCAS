@@ -1,3 +1,4 @@
+import { binderIdentity, freeSymbolIdentity, operationLocalIdentity } from '../../src/js/semantics/identity.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -26,7 +27,7 @@ test('ExpressionValue round-trips and is deeply immutable', () => {
     op: 'add',
     args: [
       { op: 'integer', value: '2' },
-      { op: 'symbolRef', identity: 'P0006:placeholder-x' },
+      { op: 'symbolRef', identity: freeSymbolIdentity('task-A', 'x') },
     ],
   });
 
@@ -93,40 +94,40 @@ test('QuantityValue contains mathematical quantity only, not display preference'
 });
 
 test('symbol identity reference survives transport without falling back to display name', () => {
-  const x = sym('P0006:placeholder-x');
+  const x = sym(freeSymbolIdentity('task-A', 'x'));
   const restored = decodeValue(encodeValue(x));
-  assert.equal(restored.data.expr.identity, 'P0006:placeholder-x');
+  assert.deepEqual(restored.data.expr.identity, freeSymbolIdentity('task-A', 'x'));
 });
 
 
 test('ExpressionValue covers approximate, nested arithmetic and calls', () => {
   const fixtures = [
     expression({op:'approx', value:'3.14159'}),
-    expression({op:'mul', args:[{op:'integer',value:'2'},{op:'add',args:[{op:'symbolRef',identity:'P0006:x'},{op:'integer',value:'1'}]}]}),
-    expression({op:'call', name:'sin', args:[{op:'symbolRef',identity:'P0006:x'}]}),
+    expression({op:'mul', args:[{op:'integer',value:'2'},{op:'add',args:[{op:'symbolRef',identity:freeSymbolIdentity('task-A', 'x')},{op:'integer',value:'1'}]}]}),
+    expression({op:'call', name:'sin', args:[{op:'symbolRef',identity:freeSymbolIdentity('task-A', 'x')}]}),
   ];
   fixtures.forEach(v => assert.deepEqual(decodeValue(encodeValue(v)), v));
 });
 
 test('FunctionValue transports binders, body and resolved captures', () => {
-  const one = functionValue([{identity:'P0006:binder-x'}], sym('P0006:binder-x'));
-  const two = functionValue([{identity:'P0006:binder-x'},{identity:'P0006:binder-y'}],
-    expression({op:'add',args:[{op:'symbolRef',identity:'P0006:binder-x'},{op:'symbolRef',identity:'P0006:binder-y'}]}));
-  const captured = functionValue([{identity:'P0006:binder-x'}],
-    expression({op:'add',args:[{op:'symbolRef',identity:'P0006:binder-x'},{op:'symbolRef',identity:'P0006:free-a'}]}),
-    [{identity:'P0006:free-a', value:int(7)}]);
+  const one = functionValue([{identity:binderIdentity('binder-x', 'x')}], sym(binderIdentity('binder-x', 'x')));
+  const two = functionValue([{identity:binderIdentity('binder-x', 'x')},{identity:binderIdentity('binder-y', 'y')}],
+    expression({op:'add',args:[{op:'symbolRef',identity:binderIdentity('binder-x', 'x')},{op:'symbolRef',identity:binderIdentity('binder-y', 'y')}]}));
+  const captured = functionValue([{identity:binderIdentity('binder-x', 'x')}],
+    expression({op:'add',args:[{op:'symbolRef',identity:binderIdentity('binder-x', 'x')},{op:'symbolRef',identity:freeSymbolIdentity('task-A', 'a')}]}),
+    [{identity:freeSymbolIdentity('task-A', 'a'), value:int(7)}]);
   [one,two,captured].forEach(v => assert.deepEqual(decodeValue(encodeValue(v)), v));
   assert.equal(captured.data.capturedValues[0].value.data.expr.value, '7');
 });
 
 test('FunctionValue preserves distinct placeholder identities', () => {
-  const a=functionValue([{identity:'P0006:binder-A'}],sym('P0006:binder-A'));
-  const b=functionValue([{identity:'P0006:binder-B'}],sym('P0006:binder-B'));
+  const a=functionValue([{identity:binderIdentity('binder-A', 'x')}],sym(binderIdentity('binder-A', 'x')));
+  const b=functionValue([{identity:binderIdentity('binder-B', 'x')}],sym(binderIdentity('binder-B', 'x')));
   assert.notEqual(encodeValue(a),encodeValue(b));
 });
 
 test('RelationValue and SetValue round-trip with finite sets canonicalized', () => {
-  const rel=relation('le',sym('P0006:x'),int(5));
+  const rel=relation('le',sym(freeSymbolIdentity('task-A', 'x')),int(5));
   const empty=emptySet();
   const finiteA=finiteSet([int(3),int(1),int(2)]);
   const finiteB=finiteSet([int(2),int(3),int(1)]);
@@ -137,8 +138,8 @@ test('RelationValue and SetValue round-trip with finite sets canonicalized', () 
 });
 
 test('remaining container and quantity fixtures round-trip', () => {
-  const heterogeneous=list([int(1),expression({op:'constant',name:'pi'}),relation('eq',sym('P0006:x'),int(2))]);
-  const symbolicMatrix=matrix([[sym('P0006:x'),int(1)],[int(0),sym('P0006:y')]]);
+  const heterogeneous=list([int(1),expression({op:'constant',name:'pi'}),relation('eq',sym(freeSymbolIdentity('task-A', 'x')),int(2))]);
+  const symbolicMatrix=matrix([[sym(freeSymbolIdentity('task-A', 'x')),int(1)],[int(0),sym(freeSymbolIdentity('task-A', 'y'))]]);
   const qs=[
     quantity(int(5),'m'),
     quantity(int(20),'m/s'),
@@ -147,6 +148,27 @@ test('remaining container and quantity fixtures round-trip', () => {
     quantity(int(20),'K'),
   ];
   [heterogeneous,symbolicMatrix,...qs].forEach(v=>assert.deepEqual(decodeValue(encodeValue(v)),v));
+});
+
+
+test('FunctionValue binder does not capture materialized free symbol with same display name', () => {
+  const freeX = freeSymbolIdentity('task-A', 'x');
+  const localX = binderIdentity('function-f:x', 'x');
+  const materializedFreeX = sym(freeX);
+  const fn = functionValue(
+    [{ identity: localX }],
+    materializedFreeX,
+    [{ identity: freeX, value: materializedFreeX }],
+  );
+  const restored = decodeValue(encodeValue(fn));
+  assert.deepEqual(restored.data.parameters[0].identity, localX);
+  assert.deepEqual(restored.data.body.data.expr.identity, freeX);
+  assert.notDeepEqual(restored.data.body.data.expr.identity, localX);
+});
+
+test('Value contract rejects display-name strings where SemanticIdentity is required', () => {
+  assert.throws(() => expression({ op: 'symbolRef', identity: 'x' }), /SemanticIdentity/);
+  assert.throws(() => functionValue([{ identity: 'x' }], int(1)), /SemanticIdentity/);
 });
 
 test('malformed or unknown Values are rejected', () => {
@@ -172,4 +194,88 @@ test('encoding is deterministic for canonicalized unordered Values', () => {
     encodeValue(decodeValue(encodeValue(first))),
     encodeValue(first),
   );
+});
+
+
+test('nested FunctionValue binders with same display name retain distinct identities', () => {
+  const outerX = binderIdentity('outer-function:x', 'x');
+  const innerX = binderIdentity('inner-function:x', 'x');
+
+  const inner = functionValue(
+    [{ identity: innerX }],
+    sym(innerX),
+  );
+  const outer = functionValue(
+    [{ identity: outerX }],
+    inner,
+  );
+
+  const restored = decodeValue(encodeValue(outer));
+  const restoredOuter = restored.data.parameters[0].identity;
+  const restoredInner = restored.data.body.data.parameters[0].identity;
+  const restoredInnerBody = restored.data.body.data.body.data.expr.identity;
+
+  assert.deepEqual(restoredOuter, outerX);
+  assert.deepEqual(restoredInner, innerX);
+  assert.deepEqual(restoredInnerBody, innerX);
+  assert.notDeepEqual(restoredOuter, restoredInner);
+});
+
+test('FunctionValue preserves free symbol distinct from same-spelled nested binders', () => {
+  const freeX = freeSymbolIdentity('task-A', 'x');
+  const outerX = binderIdentity('outer:x', 'x');
+  const innerX = binderIdentity('inner:x', 'x');
+  const materializedFreeX = sym(freeX);
+
+  const inner = functionValue(
+    [{ identity: innerX }],
+    materializedFreeX,
+    [{ identity: freeX, value: materializedFreeX }],
+  );
+  const outer = functionValue(
+    [{ identity: outerX }],
+    inner,
+  );
+
+  const restored = decodeValue(encodeValue(outer));
+  const innerRestored = restored.data.body;
+
+  assert.deepEqual(innerRestored.data.body.data.expr.identity, freeX);
+  assert.notDeepEqual(innerRestored.data.body.data.expr.identity, outerX);
+  assert.notDeepEqual(innerRestored.data.body.data.expr.identity, innerX);
+});
+
+test('FunctionValue transport preserves operation-local identity distinct from lexical binder', () => {
+  const localX = binderIdentity('function:x', 'x');
+  const targetX = operationLocalIdentity('diff:x', 'x');
+  const body = sym(targetX);
+
+  const fn = functionValue([{ identity: localX }], body);
+  const restored = decodeValue(encodeValue(fn));
+
+  assert.deepEqual(restored.data.parameters[0].identity, localX);
+  assert.deepEqual(restored.data.body.data.expr.identity, targetX);
+  assert.notDeepEqual(
+    restored.data.parameters[0].identity,
+    restored.data.body.data.expr.identity,
+  );
+});
+
+
+test('decoded SemanticIdentity references are frozen before Value validation', () => {
+  const original = sym(freeSymbolIdentity('task-A', 'x'));
+  const restored = decodeValue(encodeValue(original));
+  const identity = restored.data.expr.identity;
+
+  assert.equal(Object.isFrozen(identity), true);
+  assert.deepEqual(identity, freeSymbolIdentity('task-A', 'x'));
+});
+
+test('Value constructors detach and freeze caller-owned SemanticIdentity payloads', () => {
+  const identity = freeSymbolIdentity('task-A', 'x');
+  const value = sym(identity);
+
+  assert.notEqual(value.data.expr.identity, identity);
+  assert.equal(Object.isFrozen(value.data.expr.identity), true);
+  assert.deepEqual(value.data.expr.identity, identity);
 });
