@@ -17,7 +17,7 @@ requires an explicit architecture decision/ADR before coding proceeds.
 
 ## Phase A --- Freeze and capability gate
 
-### P0001 --- Architecture freeze --- COMPLETE / GREEN
+### P0001 --- Architecture freeze
 
 -   Final consistency pass across specification, stress tests and review
     resolution.
@@ -27,7 +27,7 @@ requires an explicit architecture decision/ADR before coding proceeds.
 
 **Exit:** one unambiguous normative architecture baseline.
 
-### P0002 --- Dependency/version inventory --- COMPLETE / GREEN
+### P0002 --- Dependency/version inventory
 
 -   Inventory actual versions and browser/offline constraints.
 -   Pyodide, SymPy, NumPy, Plotly.js, KaTeX, Peggy.js and actual runtime
@@ -35,7 +35,7 @@ requires an explicit architecture decision/ADR before coding proceeds.
 
 **Exit:** candidate compatible version set.
 
-### P0003 --- Backend capability probes --- COMPLETE / GREEN
+### P0003 --- Backend capability probes
 
 Probe only capabilities required by newCAS contracts: - symbols/Dummy
 identity and capture; - functions/substitution; - solve
@@ -44,7 +44,7 @@ numeric/statistical paths; - serialization-relevant objects.
 
 **Exit:** documented capability matrix and known limitations.
 
-### P0004 --- Version lock and developer baseline --- COMPLETE / GREEN
+### P0004 --- Version lock and developer baseline
 
 -   Lock selected dependency versions.
 -   Confirm Python/Node/npm developer baseline.
@@ -54,7 +54,7 @@ numeric/statistical paths; - serialization-relevant objects.
 
 ## Phase B --- Contracts before migration
 
-### P0005 --- Value contract v1 --- COMPLETE / GREEN
+### P0005 --- Value contract v1
 
 Define backend-independent immutable public Values: -
 scalar/expression; - function; - relation/set as required; -
@@ -63,7 +63,7 @@ Release 1.
 
 **Exit:** Value fixtures and serialization tests.
 
-### P0006 --- Semantic identity contract --- COMPLETE / GREEN
+### P0006 --- Semantic identity contract
 
 -   FreeSymbolIdentity.
 -   Binder identity.
@@ -72,11 +72,13 @@ Release 1.
 
 **Exit:** identity/capture stress tests green without DocumentRuntime.
 
-### P0007 --- Semantic IR v1 --- CURRENT
+### P0007 --- Semantic IR v1
+
+**Status:** COMPLETE / GREEN --- 172/172 full JS suite at closure.
 
 Define the smallest resolved IR needed by the frozen semantics.
 
-**Exit:** source-independent IR fixtures for normative cases.
+**Exit:** source-independent IR fixtures for normative cases. **MET.**
 
 ### P0008 --- OperationSpec v1
 
