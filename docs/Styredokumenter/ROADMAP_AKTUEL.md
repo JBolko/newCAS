@@ -82,12 +82,32 @@ Define the smallest resolved IR needed by the frozen semantics.
 
 ### P0008 --- OperationSpec v1
 
+**Status:** COMPLETE / GREEN --- 220/220 full JS suite at closure.
+
 Define declarative public-operation metadata: - argument roles; -
 symbolic scopes; - evaluator dispatch; - purity/volatility; - diagnostic
 adaptation hooks.
 
+The v1 contract keeps operation policy declarative. In particular,
+`scopeOver` describes which arguments are governed by an
+operation-introduced scope; it does not allocate semantic identities or
+perform resolution. P0019 must consume `role` / `scopeOver` generically
+and record the resolved result using the P0006 identity and P0007
+Semantic IR contracts. It must not introduce a second scope mechanism or
+permanent operation-name special cases for operations such as `diff` or
+`integrate`.
+
+For integration, the integration variable is a symbolic target while
+bounds are ordinary Values. Thus variable bounds such as
+`integrate(f(x), x, 1, x)` require no integration-specific resolution
+rule.
+
+P0014 owns symbolic mathematical evaluation after resolution. P0009 owns
+structured diagnostic codes; `diagnosticAdapterId` remains an opaque
+declarative adaptation identity in OperationSpec.
+
 **Exit:** representative operations described without DocumentRuntime
-special cases.
+special cases. **MET.**
 
 ### P0009 --- Diagnostic contract v1
 
