@@ -109,7 +109,7 @@ declarative adaptation identity in OperationSpec.
 **Exit:** representative operations described without DocumentRuntime
 special cases. **MET.**
 
-### P0009 --- Diagnostic contract v1
+### P0009 --- Diagnostic contract v1 - COMPLETE/GREEN
 
 Structured codes/parameters for parse, resolution, unsupported, arity,
 type/dimension, backend and blocked states.
@@ -354,3 +354,4 @@ concrete.
 The old P07 work remains valuable prototype evidence and regression
 knowledge. It is not the numbering authority for the new implementation
 series.
+
