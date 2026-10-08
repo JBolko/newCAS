@@ -92,9 +92,14 @@ function validateExprNode(node) {
       return;
 
     case 'approx':
-      assertKeys(node, new Set(['op', 'value']), 'approx node');
-      if (typeof node.value !== 'string' || node.value.trim() === '') {
-        fail('approx value must be a non-empty decimal string');
+      assertKeys(node, new Set(['op', 'value', 'precisionBits']), 'approx node');
+      if (typeof node.value !== 'string' ||
+          !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(node.value)) {
+        fail('approx value must be a finite decimal string');
+      }
+      if (node.precisionBits !== undefined &&
+          (!Number.isSafeInteger(node.precisionBits) || node.precisionBits < 1)) {
+        fail('approx precisionBits must be a positive safe integer');
       }
       return;
 

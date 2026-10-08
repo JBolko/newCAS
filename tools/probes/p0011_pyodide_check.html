@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><title>P0011 – Pyodide-adapterkontrol</title>
+<style>body{font:16px system-ui,sans-serif;max-width:920px;margin:2rem auto;padding:0 1rem}button{font:inherit;padding:.6rem 1rem}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f3f5;padding:1rem;border-radius:6px}#status{font-weight:bold}</style></head>
+<body><h1>P0011 – Pyodide 314.0.7</h1>
+<p>Indlæser <strong>den faktiske adapter og de fem P0011-testfiler fra dit repository</strong> via lokal HTTP. Ændrer ikke projektfiler. Kræver internet til første indlæsning af Pyodide/SymPy.</p>
+<button id="run">Kør P0011 i Pyodide</button><p id="status">Klar.</p><pre id="report"></pre>
+<script>
+'use strict';
+const root = '../../'; // HTML lives in tools/probes/, two directories below repository root.
+const files = [
+  'src/python/adapters/__init__.py',
+  'src/python/adapters/sympy_value_adapter.py',
+  'tests/python/test_p0011_identity_adapter_red.py',
+  'tests/python/test_p0011_expression_adapter_red.py',
+  'tests/python/test_p0011_foreign_symbols_pressure.py',
+  'tests/python/test_p0011_rewrite_pressure.py',
+  'tests/python/test_p0011_precision_pressure.py'
+];
+const btn=document.querySelector('#run'), status=document.querySelector('#status'), report=document.querySelector('#report');
+function script(url){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=url;s.onload=resolve;s.onerror=()=>reject(new Error('Script kan ikke indlæses: '+url));document.head.appendChild(s);});}
+btn.addEventListener('click',async()=>{
+ btn.disabled=true;report.textContent='';
+ try {
+  status.textContent='Indlæser projektets aktuelle Python-filer …';
+  const entries=await Promise.all(files.map(async path=>{
+    const resp=await fetch(root+path+'?p0011='+Date.now(),{cache:'no-store'});
+    if(!resp.ok)throw new Error(`${path}: HTTP ${resp.status}. Kontrollér filplacering og lokal server.`);
+    return [path,await resp.text()];
+  }));
+  const base='https://cdn.jsdelivr.net/pyodide/v314.0.7/full/';
+  status.textContent='Indlæser Pyodide 314.0.7 …';
+  if(typeof globalThis.loadPyodide!=='function')await script(base+'pyodide.js');
+  const py=await globalThis.loadPyodide({indexURL:base});
+  status.textContent='Indlæser SymPy …';
+  await py.loadPackage('sympy');
+  const manifest=[];
+  for(const [path,contents] of entries){
+    const absolute='/home/pyodide/newcas/'+path;
+    py.FS.mkdirTree(absolute.substring(0,absolute.lastIndexOf('/')));
+    py.FS.writeFile(absolute,contents,{encoding:'utf8'});
+    manifest.push(path);
+  }
+  status.textContent='Kører P0011-testene i browserens Python …';
+  const raw=await py.runPythonAsync(`
+import io, json, sys, unittest, platform
+import sympy
+sys.path.insert(0, '/home/pyodide/newcas')
+stream = io.StringIO()
+suite = unittest.defaultTestLoader.discover('/home/pyodide/newcas/tests/python', pattern='test_p0011_*.py')
+result = unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
+json.dumps({'ok': result.wasSuccessful(), 'run': result.testsRun, 'failures':len(result.failures), 'errors':len(result.errors), 'python':sys.version, 'sympy':sympy.__version__, 'details':stream.getvalue()})
+`);
+  const result=JSON.parse(raw);
+  report.textContent='Pyodide: 314.0.7\nPython: '+result.python+'\nSymPy: '+result.sympy+'\nKilde-filer: '+manifest.join(', ')+'\n\n'+result.details;
+  status.textContent=(result.ok && result.run===29) ? 'PASS: 29/29 i Pyodide' : `KONTROLLÉR: ${result.run} tests, ${result.failures} failures, ${result.errors} errors (forventet 29)`;
+ }catch(error){status.textContent='Kontrol ikke fuldført';report.textContent=String(error.stack||error);}
+ finally{btn.disabled=false;}
+});
+</script></body></html>

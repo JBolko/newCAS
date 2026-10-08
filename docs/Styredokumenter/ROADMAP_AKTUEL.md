@@ -1,9 +1,9 @@
 # newCAS Frozen-Architecture Implementation Roadmap
 
-**Status:** Preliminary roadmap --- intentionally changeable during
-implementation\
-**Numbering:** New implementation series begins at `P0001`\
-**Rule:** Architecture is normative; roadmap sequencing is not.
+**Status:** Living implementation roadmap (sequencing may change).  
+**Numbering:** Implementation series `P0001` onward.  
+**Rule:** Frozen architecture is normative; roadmap sequencing is not.  
+**Progress:** P0001–P0011 complete; P0012 next. Test totals are snapshots, not exit conditions.
 
 ## Purpose
 
@@ -19,6 +19,8 @@ requires an explicit architecture decision/ADR before coding proceeds.
 
 ### P0001 --- Architecture freeze
 
+**Status:** COMPLETE / GREEN
+
 -   Final consistency pass across specification, stress tests and review
     resolution.
 -   Remove contradictory legacy wording.
@@ -29,6 +31,8 @@ requires an explicit architecture decision/ADR before coding proceeds.
 
 ### P0002 --- Dependency/version inventory
 
+**Status:** COMPLETE / GREEN
+
 -   Inventory actual versions and browser/offline constraints.
 -   Pyodide, SymPy, NumPy, Plotly.js, KaTeX, Peggy.js and actual runtime
     dependencies.
@@ -37,14 +41,23 @@ requires an explicit architecture decision/ADR before coding proceeds.
 
 ### P0003 --- Backend capability probes
 
-Probe only capabilities required by newCAS contracts: - symbols/Dummy
-identity and capture; - functions/substitution; - solve
-sets/ConditionSet; - limits/special values; - matrices; - units; -
-numeric/statistical paths; - serialization-relevant objects.
+**Status:** COMPLETE / GREEN
+
+Probe only capabilities required by newCAS contracts:
+
+- Symbols/Dummy identity and capture.
+- Functions/substitution.
+- Solve sets/ConditionSet.
+- Limits/special values.
+- Matrices and units.
+- Numeric/statistical paths.
+- Serialization-relevant objects.
 
 **Exit:** documented capability matrix and known limitations.
 
 ### P0004 --- Version lock and developer baseline
+
+**Status:** COMPLETE / GREEN
 
 -   Lock selected dependency versions.
 -   Confirm Python/Node/npm developer baseline.
@@ -56,14 +69,19 @@ numeric/statistical paths; - serialization-relevant objects.
 
 ### P0005 --- Value contract v1
 
-Define backend-independent immutable public Values: -
-scalar/expression; - function; - relation/set as required; -
-list/vector/matrix; - quantity; - structured rich results needed by
-Release 1.
+**Status:** COMPLETE / GREEN
+
+Define backend-independent immutable public Values:
+
+- Scalar/expression, function and relation/set as required.
+- List, vector, matrix and quantity.
+- Structured rich results where Release 1 demonstrates a need.
 
 **Exit:** Value fixtures and serialization tests.
 
 ### P0006 --- Semantic identity contract
+
+**Status:** COMPLETE / GREEN
 
 -   FreeSymbolIdentity.
 -   Binder identity.
@@ -74,7 +92,7 @@ Release 1.
 
 ### P0007 --- Semantic IR v1
 
-**Status:** COMPLETE / GREEN --- 172/172 full JS suite at closure.
+**Status:** COMPLETE / GREEN — 172/172 JS tests at closure
 
 Define the smallest resolved IR needed by the frozen semantics.
 
@@ -82,11 +100,13 @@ Define the smallest resolved IR needed by the frozen semantics.
 
 ### P0008 --- OperationSpec v1
 
-**Status:** COMPLETE / GREEN --- 220/220 full JS suite at closure.
+**Status:** COMPLETE / GREEN — 220/220 JS tests at closure
 
-Define declarative public-operation metadata: - argument roles; -
-symbolic scopes; - evaluator dispatch; - purity/volatility; - diagnostic
-adaptation hooks.
+Define declarative public-operation metadata:
+
+- Argument roles and symbolic scopes.
+- Evaluator dispatch and purity/volatility.
+- Diagnostic adaptation hooks.
 
 The v1 contract keeps operation policy declarative. In particular,
 `scopeOver` describes which arguments are governed by an
@@ -109,7 +129,9 @@ declarative adaptation identity in OperationSpec.
 **Exit:** representative operations described without DocumentRuntime
 special cases. **MET.**
 
-### P0009 --- Diagnostic contract v1 - COMPLETE/GREEN
+### P0009 --- Diagnostic contract v1
+
+**Status:** COMPLETE / GREEN
 
 Structured codes/parameters for parse, resolution, unsupported, arity,
 type/dimension, backend and blocked states.
@@ -120,7 +142,7 @@ type/dimension, backend and blocked states.
 
 ### P0010 --- Evaluator transport boundary
 
-**Status:** COMPLETE / GREEN — 308/308 full JS suite at closure.
+**Status:** COMPLETE / GREEN — 308/308 JS tests at closure
 
 Define:
 `resolved instruction + input Values + options -> EvaluationOutcome`.
@@ -131,20 +153,44 @@ No taskId, document order, history cursor or dependency graph.
 deep transport validation, dense Value input arrays,
 and structured success/failure outcomes. **MET.**
 
-Define:
-`resolved instruction + input Values + options -> EvaluationOutcome`.
-
-No taskId, document order, history cursor or dependency graph.
-
 ### P0011 --- SymPy Value adapter
+
+**Status:** COMPLETE / GREEN — 29/29 Python; 29/29 Pyodide; 323/323 full JS regression
 
 Translate Values/identities to and from SymPy without accidental
 capture.
 
+The completed initial adapter supports ExpressionValue integers, rationals,
+approximations (including explicit `precisionBits`), symbol references and
+arithmetic `add`/`mul`/`pow`. Equal display spellings cannot merge distinct
+SemanticIdentities. Unknown backend-generated symbols are rejected rather
+than silently assigned new public identities.
+
+**Scope boundary:** This completion does not imply support for all P0005
+Value families or for `constant` / `call` conversion. Function evaluation,
+symbolic operations, containers, units and statistics are addressed by
+P0013–P0017 as concrete operation paths require them.
+
+**Evidence:** 29/29 Python adapter tests; the same 29/29 on Pyodide 314.0.7
+(Python 3.14.2, SymPy 1.14.0); 323/323 complete JavaScript regression
+(308 at P0010 closure plus 15 new numerical Value tests). The seven
+numerical transport probes also passed.
+
+**Exit:** Initial ExpressionValue bridge validated in desktop Python and
+the locked browser backend. **MET.**
+
+**Records:** `docs/architecture/P0011-exit-audit-FINAL.md` and
+`docs/architecture/P0011-slice-4-numeric-transport-decision.md`.
+
 ### P0012 --- Core scalar/expression operations
+
+**Status:** NEXT
 
 Arithmetic, simplification where officially supported, exact/approximate
 behavior.
+
+**Exit:** Defined by supported scalar operations and their evaluator contract
+tests, without document authority or persistent Python task scope.
 
 ### P0013 --- FunctionValue evaluation
 
