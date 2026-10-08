@@ -120,6 +120,17 @@ type/dimension, backend and blocked states.
 
 ### P0010 --- Evaluator transport boundary
 
+**Status:** COMPLETE / GREEN — 308/308 full JS suite at closure.
+
+Define:
+`resolved instruction + input Values + options -> EvaluationOutcome`.
+
+No taskId, document order, history cursor or dependency graph.
+
+**Exit:** Canonical immutable request/outcome contracts,
+deep transport validation, dense Value input arrays,
+and structured success/failure outcomes. **MET.**
+
 Define:
 `resolved instruction + input Values + options -> EvaluationOutcome`.
 
