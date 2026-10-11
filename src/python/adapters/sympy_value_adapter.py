@@ -7,6 +7,12 @@ from __future__ import annotations
 
 import sympy as sp
 
+# Only functions with a defined, stable, backend-independent public meaning.
+_PUBLIC_FUNCTIONS = {"sin": sp.sin, "cos": sp.cos, "tan": sp.tan, "exp": sp.exp, "log": sp.log}
+_BACKEND_FUNCTIONS = {value: name for name, value in _PUBLIC_FUNCTIONS.items()}
+_PUBLIC_CONSTANTS = {"pi": sp.pi, "E": sp.E, "I": sp.I}
+_BACKEND_CONSTANTS = {value: name for name, value in _PUBLIC_CONSTANTS.items()}
+
 
 class SympyValueAdapter:
     def __init__(self):
@@ -56,6 +62,16 @@ class SympyValueAdapter:
         if not isinstance(node, dict):
             raise ValueError('invalid expression node')
         op = node.get('op')
+        if op == 'constant' and set(node) == {'op', 'name'}:
+            name = node['name']
+            if name not in _PUBLIC_CONSTANTS:
+                raise ValueError('unsupported public constant')
+            return _PUBLIC_CONSTANTS[name]
+        if op == 'call' and set(node) == {'op', 'name', 'args'}:
+            name, args = node['name'], node['args']
+            if name not in _PUBLIC_FUNCTIONS or not isinstance(args, list) or len(args) != 1:
+                raise ValueError('unsupported public function call')
+            return _PUBLIC_FUNCTIONS[name](self._to_expr(args[0]), evaluate=False)
         if op == 'symbolRef' and set(node) == {'op', 'identity'}:
             return self._symbol(node['identity'])
         if op == 'integer' and set(node) == {'op', 'value'}:
@@ -85,6 +101,13 @@ class SympyValueAdapter:
         return {'valueVersion': 1, 'kind': 'expression', 'data': {'expr': node}}
 
     def _from_expr(self, obj):
+        if obj in _BACKEND_CONSTANTS:
+            return {"op": "constant", "name": _BACKEND_CONSTANTS[obj]}
+        if obj.func in _BACKEND_FUNCTIONS:
+            if len(obj.args) != 1:
+                raise ValueError("unsupported function arity")
+            return {"op": "call", "name": _BACKEND_FUNCTIONS[obj.func],
+                    "args": [self._from_expr(obj.args[0])]}
         if isinstance(obj, sp.Symbol):
             if obj not in self._identities:
                 raise ValueError('unregistered backend symbol; no public identity available')

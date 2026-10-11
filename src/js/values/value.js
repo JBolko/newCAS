@@ -182,6 +182,19 @@ function validateRelationData(data) {
   validateValue(data.left); validateValue(data.right);
 }
 
+function isInfinityBound(value) {
+  return isPlainObject(value) && Object.keys(value).length === 1 &&
+    (value.bound === 'negative-infinity' || value.bound === 'positive-infinity');
+}
+
+function validateIntervalBound(value, side) {
+  if (isInfinityBound(value)) return;
+  // Infinity boundary markers are not ordinary public Values.
+  if (isPlainObject(value) && Object.hasOwn(value, 'bound')) fail(`invalid ${side} infinity bound`);
+  validateValue(value);
+  if (value.kind !== 'expression') fail(`${side} bound must be an expression`);
+}
+
 function validateSetData(data) {
   if (typeof data.setKind !== 'string') fail('set.setKind must be a string');
   switch (data.setKind) {
@@ -193,8 +206,19 @@ function validateSetData(data) {
       data.items.forEach(validateValue); return;
     case 'interval':
       assertKeys(data, new Set(['setKind','lower','upper','lowerClosed','upperClosed']), 'interval set data');
-      validateValue(data.lower); validateValue(data.upper);
+      validateIntervalBound(data.lower, 'lower');
+      validateIntervalBound(data.upper, 'upper');
       if (typeof data.lowerClosed !== 'boolean' || typeof data.upperClosed !== 'boolean') fail('interval closure flags must be boolean');
+      if (isInfinityBound(data.lower) && (data.lower.bound !== 'negative-infinity' || data.lowerClosed)) fail('negative infinity is open lower bound');
+      if (isInfinityBound(data.upper) && (data.upper.bound !== 'positive-infinity' || data.upperClosed)) fail('positive infinity is open upper bound');
+      return;
+    case 'union':
+      assertKeys(data, new Set(['setKind','sets']), 'union set data');
+      if (!Array.isArray(data.sets) || data.sets.length < 2) fail('union requires at least two members');
+      data.sets.forEach(member => {
+        validateValue(member);
+        if (member.kind !== 'set') fail('union members must be SetValues');
+      });
       return;
     default: fail(`unsupported setKind ${JSON.stringify(data.setKind)}`);
   }
@@ -279,6 +303,16 @@ export function finiteSet(items) {
 }
 export function interval(lower, upper, { lowerClosed=false, upperClosed=false } = {}) {
   return make('set', { setKind:'interval', lower, upper, lowerClosed, upperClosed });
+}
+
+export function negativeInfinityBound() { return Object.freeze({ bound:'negative-infinity' }); }
+export function positiveInfinityBound() { return Object.freeze({ bound:'positive-infinity' }); }
+export function unionSet(sets) {
+  if (!Array.isArray(sets) || sets.length < 2) fail('union requires at least two SetValues');
+  // Stable canonical ordering, independent of backend set order.
+  const sorted = sets.map(member => { validateValue(member); if (member.kind !== 'set') fail('union member must be SetValue'); return member; })
+    .sort((a,b) => encodeValue(a).localeCompare(encodeValue(b)));
+  return make('set', {setKind:'union', sets:sorted});
 }
 
 export function list(items) {
