@@ -1,4 +1,4 @@
-/** P0021 Slice 12: a Pyodide-backed, explicitly selected P0012 addition handler.
+/** P0021 Slice 18: explicitly selected scalar and trigonometric operations via Pyodide.
  * Worker-only intended; do not instantiate on the UI thread.
  * No source parser, Python task scope or operation-name registry.
  */
@@ -9,14 +9,51 @@ const FILES = [
   'src/python/evaluator/__init__.py',
   'src/python/evaluator/_binary_expression_contract.py',
   'src/python/evaluator/scalar_operations.py',
+  'src/python/evaluator/scalar_differentiation.py',
+  'src/python/evaluator/scalar_multiplication.py',
+  'src/python/evaluator/scalar_power.py',
+  'src/python/evaluator/scalar_exponential.py',
+  'src/python/evaluator/scalar_logarithms.py',
+  'src/python/evaluator/_unary_value_contract.py',
+  'src/python/evaluator/_trigonometric_argument.py',
+  'src/python/evaluator/scalar_trigonometry.py',
   'src/python/evaluator/selected_gateway_bridge.py',
 ];
 const PYTHON_ENTRY = `
 import json
 from src.python.evaluator.selected_gateway_bridge import evaluate_selected_gateway
 from src.python.evaluator.scalar_operations import evaluate_scalar_request
+from src.python.evaluator.scalar_differentiation import evaluate_diff_request
+from src.python.evaluator.scalar_multiplication import evaluate_multiplication_request
+from src.python.evaluator.scalar_power import evaluate_power_request
+from src.python.evaluator.scalar_exponential import evaluate_exp_request
+from src.python.evaluator.scalar_logarithms import evaluate_ln_request, evaluate_log10_request
+from src.python.evaluator.scalar_trigonometry import evaluate_sine_request, evaluate_cosine_request, evaluate_tangent_request
 _payload = json.loads(_newcas_request_json)
-_result = evaluate_selected_gateway(_payload['envelope'], _payload['selection'], evaluate_scalar_request)
+_selected_id = _payload['selection']['operationSpec']['evaluatorId']
+if _selected_id == 'probe.symbolic.diff':
+    _handler = evaluate_diff_request
+elif _selected_id == 'probe.scalar.add':
+    _handler = evaluate_scalar_request
+elif _selected_id == 'probe.scalar.multiply':
+    _handler = evaluate_multiplication_request
+elif _selected_id == 'probe.scalar.power':
+    _handler = evaluate_power_request
+elif _selected_id == 'probe.scalar.exp':
+    _handler = evaluate_exp_request
+elif _selected_id == 'probe.scalar.ln':
+    _handler = evaluate_ln_request
+elif _selected_id == 'probe.scalar.log10':
+    _handler = evaluate_log10_request
+elif _selected_id == 'probe.scalar.sin':
+    _handler = evaluate_sine_request
+elif _selected_id == 'probe.scalar.cos':
+    _handler = evaluate_cosine_request
+elif _selected_id == 'probe.scalar.tan':
+    _handler = evaluate_tangent_request
+else:
+    raise ValueError('unsupported selected evaluator')
+_result = evaluate_selected_gateway(_payload['envelope'], _payload['selection'], _handler)
 json.dumps(_result, allow_nan=False)
 `;
 const unique = (v) => JSON.parse(JSON.stringify(v));
@@ -47,11 +84,29 @@ export function createSelectedPyodideRuntime({loadPyodide, fetchText, indexURL} 
   async function evaluateSelected(envelope, selection) {
     const py = await init();
     const e = unique(envelope), s = unique(selection);
-    // This slice deliberately binds exactly one known P0012 capability.
+    // Static transport-level handler allowlist; operation selection remains in JS.
     // Python gateway checks the selection and provider attestations again.
-    if (s?.operationSpec?.evaluatorId !== 'probe.scalar.add' ||
-        s?.evaluationRequest?.evaluatorId !== 'probe.scalar.add')
-      throw new TypeError('unsupported selected evaluator in P0021 Slice 12');
+    if (!['probe.scalar.add','probe.scalar.multiply','probe.scalar.sin','probe.scalar.cos','probe.scalar.tan','probe.scalar.power','probe.scalar.exp','probe.scalar.ln','probe.scalar.log10','probe.symbolic.diff'].includes(s?.operationSpec?.evaluatorId) ||
+        s?.evaluationRequest?.evaluatorId !== s?.operationSpec?.evaluatorId)
+      throw new TypeError('unsupported selected evaluator in P0021 Slice 17');
+    if (['probe.scalar.sin','probe.scalar.cos','probe.scalar.tan'].includes(s.operationSpec.evaluatorId) &&
+        (!s.evaluationRequest.options ||
+         Object.keys(s.evaluationRequest.options).length !== 1 ||
+         !['deg','rad'].includes(s.evaluationRequest.options.angleUnit)))
+      throw new TypeError('trigonometric operation requires explicit angleUnit deg or rad');
+    if (['probe.scalar.power','probe.scalar.exp','probe.scalar.ln','probe.scalar.log10'].includes(s.operationSpec.evaluatorId) &&
+        (s.evaluationRequest.options === null || typeof s.evaluationRequest.options !== 'object' ||
+         Array.isArray(s.evaluationRequest.options) || Object.keys(s.evaluationRequest.options).length !== 0))
+      throw new TypeError('selected scalar family requires empty options');
+    if (s.operationSpec.evaluatorId === 'probe.symbolic.diff' &&
+        (s.evaluationRequest.options === null || typeof s.evaluationRequest.options !== 'object' ||
+         Array.isArray(s.evaluationRequest.options) || Object.keys(s.evaluationRequest.options).length !== 0 ||
+         s.evaluationRequest.instruction === null || typeof s.evaluationRequest.instruction !== 'object' ||
+         Array.isArray(s.evaluationRequest.instruction) || Object.keys(s.evaluationRequest.instruction).length !== 0 ||
+         !Array.isArray(s.evaluationRequest.inputs) || s.evaluationRequest.inputs.length !== 2 ||
+         s.evaluationRequest.inputs[1]?.kind !== 'expression' ||
+         s.evaluationRequest.inputs[1]?.data?.expr?.op !== 'symbolRef'))
+      throw new TypeError('selected differentiation requires explicit symbolRef target and empty options/instruction');
     // Non-reentrant Python globals; the worker handler serializes requests.
     py.globals.set('_newcas_request_json', JSON.stringify({envelope:e,selection:s}));
     try {

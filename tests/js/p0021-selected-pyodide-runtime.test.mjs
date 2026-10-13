@@ -13,7 +13,24 @@ function fixture({failLoad=false}={}) {
  return {runtime,calls,fs,vars,get loads(){return loads}};
 }
 test('P0021 Pyodide initializes once and loads SymPy',async()=>{const f=fixture();await Promise.all([f.runtime.init(),f.runtime.init()]);assert.equal(f.loads,1);assert.equal(f.calls.filter(x=>x[0]==='package').length,1)});
-test('P0021 Pyodide loads only explicitly whitelisted Python modules',async()=>{const f=fixture();await f.runtime.init();assert.ok(f.fs.has('/newcas/src/python/evaluator/selected_gateway_bridge.py'));assert.ok(f.fs.has('/newcas/src/python/adapters/sympy_value_adapter.py'));assert.equal(f.fs.size,8)});
+test('P0021 Pyodide loads only explicitly whitelisted Python modules',async()=>{const f=fixture();await f.runtime.init();assert.ok(f.fs.has('/newcas/src/python/evaluator/selected_gateway_bridge.py'));assert.ok(f.fs.has('/newcas/src/python/adapters/sympy_value_adapter.py'));assert.deepEqual([...f.fs.keys()].sort(), [
+ '/newcas/src/__init__.py',
+ '/newcas/src/python/__init__.py',
+ '/newcas/src/python/adapters/__init__.py',
+ '/newcas/src/python/adapters/sympy_value_adapter.py',
+ '/newcas/src/python/evaluator/__init__.py',
+ '/newcas/src/python/evaluator/_binary_expression_contract.py',
+ '/newcas/src/python/evaluator/_unary_value_contract.py',
+ '/newcas/src/python/evaluator/_trigonometric_argument.py',
+ '/newcas/src/python/evaluator/scalar_trigonometry.py',
+ '/newcas/src/python/evaluator/scalar_multiplication.py',
+ '/newcas/src/python/evaluator/scalar_power.py',
+ '/newcas/src/python/evaluator/scalar_exponential.py',
+ '/newcas/src/python/evaluator/scalar_logarithms.py',
+ '/newcas/src/python/evaluator/scalar_operations.py',
+ '/newcas/src/python/evaluator/scalar_differentiation.py',
+ '/newcas/src/python/evaluator/selected_gateway_bridge.py',
+].sort())});
 test('P0021 Pyodide calls real Python gateway entry, not legacy run_in_task',async()=>{const f=fixture();await f.runtime.evaluateSelected(envelope,selection);const code=f.calls.filter(x=>x[0]==='python').at(-1)[1];assert.match(code,/evaluate_selected_gateway/);assert.doesNotMatch(code,/run_in_task/)});
 test('P0021 transport passes source, revision and provider identity unchanged',async()=>{const f=fixture();const out=await f.runtime.evaluateSelected(envelope,selection);assert.deepEqual(out.blockId,'b1');assert.equal(out.value.data.expr.value,'5')});
 test('P0021 unselected operation is refused before Python',async()=>{const f=fixture();await assert.rejects(()=>f.runtime.evaluateSelected(envelope,{...selection,operationSpec:{evaluatorId:'other'}}),/unsupported selected evaluator/);assert.equal(f.calls.filter(x=>x[0]==='python').length,1)});

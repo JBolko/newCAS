@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createSelectedPyodideRuntime} from '../../src/js/evaluation/selected-pyodide-runtime.js';
+const envelope={protocol:'newcas.semantic-evaluation.v1',revision:'r',blockId:'b',taskScopeId:'t',source:'2*3',providers:[]};
+const selection=id=>({operationSpec:{evaluatorId:id},evaluationRequest:{evaluatorId:id}});
+const calls=[];
+const py={FS:{mkdirTree(){},writeFile(p,s){calls.push(p)}},loadPackage:async p=>calls.push(p),runPythonAsync:async code=>{calls.push(code);return JSON.stringify({blockId:'b',status:'success',value:{valueVersion:1,kind:'expression',data:{expr:{op:'integer',value:'6'}}}})},globals:{set(k,v){calls.push(JSON.parse(v))},delete(){}}};
+const runtime=()=>createSelectedPyodideRuntime({loadPyodide:async()=>py,fetchText:async()=>'',indexURL:'test'});
+test('Slice 15 loads existing P0012 multiplication handler in Pyodide',async()=>{calls.length=0;await runtime().init();assert.ok(calls.some(x=>String(x).includes('scalar_multiplication.py')));});
+test('Slice 15 passes explicitly selected multiplication through same gateway',async()=>{calls.length=0;const out=await runtime().evaluateSelected(envelope,selection('probe.scalar.multiply'));assert.equal(out.value.data.expr.value,'6');assert.ok(calls.some(x=>x?.selection?.operationSpec?.evaluatorId==='probe.scalar.multiply'));});
+test('Slice 15 preserves addition capability',async()=>{const out=await runtime().evaluateSelected(envelope,selection('probe.scalar.add'));assert.equal(out.status,'success');});
+test('Slice 15 rejects a capability outside the currently supported allowlist before Python',async()=>{calls.length=0;await assert.rejects(()=>runtime().evaluateSelected(envelope,selection('probe.scalar.divide')),/unsupported selected evaluator/);assert.ok(!calls.some(x=>x?.selection));});
+test('Slice 15 rejects mismatched evaluator identity before Python',async()=>{calls.length=0;const wrong=selection('probe.scalar.multiply');wrong.evaluationRequest.evaluatorId='probe.scalar.add';await assert.rejects(()=>runtime().evaluateSelected(envelope,wrong),/unsupported selected evaluator/);assert.ok(!calls.some(x=>x?.selection));});

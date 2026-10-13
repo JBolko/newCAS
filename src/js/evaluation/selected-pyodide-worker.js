@@ -2,7 +2,7 @@
  * Uses Slice 11 transport and explicit Slice 12 Python gateway.
  */
 import { createWorkerEvaluationHandler } from './worker-evaluation-protocol.js';
-import { createSelectedPyodideRuntime } from './selected-pyodide-runtime.js';
+import { createSelectedPyodideRuntime } from './selected-pyodide-runtime.js?v=slice24-symbolic-diff-v1';
 
 const CDN = 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/';
 const runtime = createSelectedPyodideRuntime({
