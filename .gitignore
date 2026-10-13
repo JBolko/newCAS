@@ -16,3 +16,6 @@ repomix-*.md
 # Python
 __pycache__/
 *.pyc
+
+# Local development artifacts
+/.local/
