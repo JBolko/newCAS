@@ -1,3 +1,4 @@
+import {decodeValue} from '../values/value.js';
 /** P0021 Slice 11: transport of preselected evaluations across a Worker boundary.
  * No parser, OperationSpec selection, Python registry or document-owned state here.
  * The worker must be handed a backend-neutral handler by its bootstrap code.
@@ -57,7 +58,18 @@ export function createWorkerEvaluationClient({worker, getCurrentRevision} = {}) 
       entry.reject(new Error('INVALID_WORKER_OUTCOME'));
       return;
     }
-    entry.resolve(snapshot(message.outcome));
+    // A Worker clone/JSON boundary drops Object.freeze markers on public Values.
+    // Rehydrate *once* at this shared boundary; never weaken P0005 validation.
+    try {
+      const outcome = snapshot(message.outcome);
+      if (outcome.status === 'success') {
+        if (!Object.hasOwn(outcome, 'value')) throw new TypeError('missing Value');
+        outcome.value = decodeValue(JSON.stringify(outcome.value));
+      }
+      entry.resolve(Object.freeze(outcome));
+    } catch {
+      entry.reject(new Error('INVALID_WORKER_VALUE'));
+    }
   };
   worker.addEventListener('message', receive);
   function evaluate(envelope, selection) {
