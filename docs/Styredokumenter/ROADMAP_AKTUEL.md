@@ -3,7 +3,10 @@
 **Status:** Living implementation roadmap (sequencing may change).  
 **Numbering:** Implementation series `P0001` onward.  
 **Rule:** Frozen architecture is normative; roadmap sequencing is not.  
-**Progress:** P0001–P0011 complete; P0012 next. Test totals are snapshots, not exit conditions.
+**Progress (2026-10-13):** P0001–P0011 complete as originally audited. Subsequent implementation deliberately crossed roadmap phases; P0021 Slices 14–38 established selected scalar, symbolic, FunctionValue and Worker paths. **713/713 JavaScript tests and the Slice 38 real-browser regression were reported green by the developer.** This is an evidence snapshot, not a claim that P0012–P0025 have met all their exits.
+**Git baseline:** `6a6ee24` (`architecture-v1-implementation`) covers work through Slice 35; Slices 36–38 are locally validated but require the next commit.
+**Current priority:** Integrate the established semantics/evaluator boundary into the real DocumentRuntime, then verify document edits, dependency binding, invalidation, ordering and stale-result protection.
+**Test totals are snapshots, not exit conditions.**
 
 ## Purpose
 
@@ -14,6 +17,40 @@ A phase may be split, merged or reordered when implementation evidence
 requires it. A roadmap change does not change architecture. Any
 implementation discovery that would change frozen mathematical semantics
 requires an explicit architecture decision/ADR before coding proceeds.
+
+## Implementation checkpoint — 13 October 2026
+
+The originally numbered phases remain useful **capability and ownership landmarks**, not a strictly chronological queue. Slices are experimental/incremental implementation steps, **not** replacement roadmap project identifiers. A green slice does not close a roadmap phase without its stated exit criteria.
+
+| Track | Verified / implemented so far | Remaining before exit |
+| --- | --- | --- |
+| Contracts P0001–P0011 | Originally closed / green; frozen architecture remains authoritative. | Preserve invariants as integration broadens. |
+| Scalar evaluator P0012 | Selected `add`, `multiply`, `power`, signed-source and trigonometric/scalar-family paths; real Pyodide Worker smoke checks. | Full agreed capability/diagnostic coverage and exit audit. |
+| FunctionValue P0013 | Definition compilation, lexical binders, immutable materialization, application, provider-selected evaluation, capture and shadowing checks; real Worker checks. | Full document integration, multi-argument/higher-order/arity cases as required by scope. |
+| Symbolic P0014 | `diff` through selected symbolic request → SymPy → immutable result; differentiated FunctionValue and invocation verified in real browser (`f'(12)=436`). | Broader selected symbolic capabilities (`integrate`, `sum`, `solve`, `limit`), robust diagnostics and exit audit. |
+| P0015–P0017 | Earlier capability probes/contract foundations may exist. | Containers, units, statistics/regression end-to-end paths are not yet evidenced as complete. |
+| Parser/resolution P0018–P0020 | Selected source AST and signed precedence, symbolic argument roles, lexical function definitions and source/provider binding slices. | Full grammar/resolver coverage and normative boundary audit; P0018 i18n/grammar RED probe outstanding. |
+| Document P0021–P0025 | Selected binding/DAG/batch/worker plumbing, revision-guarded provider outcomes and fail-closed checks demonstrated. | **Next:** actual DocumentRuntime end-to-end orchestration, source edit/rebinding, dirty propagation, task boundaries, generation/stale protection and normative stress suite. |
+| UI/persistence/legacy removal/hardening P0026–P0050 | Planned landmarks retained. | Not claimed complete on the basis of evaluator smoke tests. |
+
+### Verified integration examples (not full document-runtime exits)
+
+- Browser: local parameter vs. document `x:=12`; `f(t):=t^3+4t`; `f(12)=1776`; repeat application and provider mismatch rejected.
+- Browser: actual SymPy derivative retains lexical binder; derived immutable `FunctionValue` evaluates at 0, 1 and 12 to **4, 7, 436**.
+- Slice 37 exposed JSON transport losing `Object.freeze`; Slice 38 moved decoding/validation into the shared Worker client boundary. The resulting browser path passed without caller-local repair.
+- Node full suite: **713 green** as reported by the developer after Slice 38; this is a timestamped verification point, **not** an exit condition.
+
+### Immediate next execution order
+
+1. **Checkpoint commit:** Stage only Slice 36–38 production changes, tests and architecture notes; check staged diff and run `git diff --cached --check`. Exclude transport ZIPs and the separate P0018 RED probe.
+2. **DocumentRuntime integration, first vertical slice:** real document sources `x:=12`, `f(t):=t^3+4t`, then selected application `f(x)` → 1776 with nearest-predecessor provider identity, ordered Value evaluation and no Python scope. Keep the first slice small and testable.
+3. **Reactive behavior:** changing `x` or `f` invalidates only downstream dependents; revisions prevent stale asynchronous commits; wrong/unavailable providers fail closed.
+4. **Derived-function document path:** incorporate derived `FunctionValue` into document orchestration, then test the equivalent of `g(t):=diff(f(t),t)` and `g(x)=436`. Resolve precise language syntax/semantics against the frozen contracts rather than assuming this illustrative syntax is already supported.
+5. **Normative end-to-end audit:** exercise the 53+ architecture stress tests through actual DocumentRuntime before closing P0021–P0025. Then resume missing Phase C operations and grammar gaps in priority order.
+
+### Capability-extension note: one-sided limits
+
+A future `limit(expr, target, approach, direction)` should be governed by OperationSpec's existing value/symbolic/scoped argument semantics and valid direction metadata, and implemented through the established symbolic compiler, selected evaluator/Worker allowlist and SymPy Value adapter. Earlier backend capability probes/legacy implementations **do not** count as an integrated new-pipeline `limit`. Do not add a new document-level scope or change frozen Value/SemanticIdentity contracts merely to support `a+` / `a−`. Exact source spelling is a separate parser/UX decision.
 
 ## Phase A --- Freeze and capability gate
 
@@ -184,7 +221,7 @@ the locked browser backend. **MET.**
 
 ### P0012 --- Core scalar/expression operations
 
-**Status:** NEXT
+**Status (2026-10-13): PARTIAL / selected scalar-family Worker paths GREEN; exit audit pending.**
 
 Arithmetic, simplification where officially supported, exact/approximate
 behavior.
@@ -194,70 +231,96 @@ tests, without document authority or persistent Python task scope.
 
 ### P0013 --- FunctionValue evaluation
 
+**Status (2026-10-13): PARTIAL / lexical FunctionValue, capture/application and real Worker smoke GREEN; document integration and full capability exit pending.**
+
 Immutable resolved closures, application, higher-order Values,
 wrong-arity diagnostics.
 
 ### P0014 --- Symbolic operations
+
+**Status (2026-10-13): PARTIAL / selected symbolic `diff` and derived FunctionValue via actual SymPy GREEN; remaining symbolic operations and exit pending.**
 
 diff/integral/sum/solve/limit according to OperationSpec symbolic-target
 rules.
 
 ### P0015 --- Containers and linear algebra
 
+**Status (2026-10-13): NOT AUDITED COMPLETE; initial contracts/probes are not a verified full container/linear-algebra path.**
+
 List/Vector/Matrix semantics and backend error adaptation.
 
 ### P0016 --- Quantity/unit evaluator path
+
+**Status (2026-10-13): NOT AUDITED COMPLETE; unit/Quantity evaluator path remains on the roadmap.**
 
 Compose Quantity with ordinary Values; backend capability limited to
 officially supported unit behavior.
 
 ### P0017 --- Statistics/regression/distributions
 
+**Status (2026-10-13): NOT AUDITED COMPLETE; statistics/regression/distributions remain on the roadmap.**
+
 Use natural backend (often NumPy/SymPy) behind stable public Values.
 
 **Exit Phase C:** evaluator passes its contract tests with no persistent
-task scope.
+task scope. **NOT YET MET AS A FULL-PHASE EXIT:** selected paths have passed, but P0015–P0017 and broader P0014 coverage remain.
 
 ## Phase D --- Semantic document runtime
 
 ### P0018 --- Parser/grammar alignment
 
+**Status (2026-10-13): PARTIAL / selected PEG source paths tested; grammar/i18n RED probe outstanding.**
+
 Adjust PEG grammar only where frozen semantics require it.
 
 ### P0019 --- AST → Semantic Resolution
+
+**Status (2026-10-13): PARTIAL / selected lexical and symbolic argument-role resolution; complete generic AST resolution and normative audit pending.**
 
 Resolve lexical binders, symbolic targets, nearest predecessor and free
 symbols.
 
 ### P0020 --- Writer/binding analysis
 
+**Status (2026-10-13): PARTIAL / selected document-writer/source binding and fail-closed provider tests; full document-source coverage pending.**
+
 Implement exact parse/structural writer boundary and no
 success-dependent fallback.
 
 ### P0021 --- Dependency model v2
 
+**Status (2026-10-13): PARTIAL / selected binding, dependency and task batch seams GREEN; full DocumentRuntime exit unverified.**
+
 Generate bindings + DAG from the same semantic analysis.
 
 ### P0022 --- Calculation state v2
+
+**Status (2026-10-13): NOT CLOSED / selected outcome envelopes and result plumbing exist; full calculation state projection pending.**
 
 idle/running/success/error/dirty/blocked as derived runtime state.
 
 ### P0023 --- Reactive invalidation
 
+**Status (2026-10-13): NOT CLOSED / need real-document downstream invalidation regression.**
+
 Provider changes, structural mutations, downstream invalidation.
 
 ### P0024 --- Evaluation orchestration
+
+**Status (2026-10-13): NEXT INTEGRATION FOCUS / selected async batch dispatch GREEN; wire into actual DocumentRuntime.**
 
 DocumentRuntime sends resolved instructions/Values to evaluator in
 correct dependency/order semantics.
 
 ### P0025 --- Async epoch/generation protection
 
+**Status (2026-10-13): PARTIAL / selected revision-stale guard tests GREEN; full runtime generation/epoch stress tests pending.**
+
 Pure, volatile and external results use identical stale-result
 protection.
 
 **Exit Phase D:** the 53+ normative architecture stress tests run
-through DocumentRuntime.
+through DocumentRuntime. **NOT YET MET:** isolated/batch/Worker tests are not equivalent to this exit.
 
 ## Phase E --- Editing and presentation
 
@@ -396,8 +459,8 @@ concrete.
 -   **M1 --- Frozen architecture:** P0001
 -   **M2 --- Known backend/toolchain:** P0004
 -   **M3 --- Stable semantic/evaluator contracts:** P0009
--   **M4 --- Pure evaluator works:** P0017
--   **M5 --- Reactive document runtime works:** P0025
+-   **M4 --- Pure evaluator works:** P0017 (selected evaluator paths GREEN; milestone not yet closed)
+-   **M5 --- Reactive document runtime works:** P0025 (next integration focus; milestone not yet closed)
 -   **M6 --- Student editing/presentation works:** P0033
 -   **M7 --- Save/load/export works:** P0037
 -   **M8 --- Legacy Task Scope gone:** P0042
