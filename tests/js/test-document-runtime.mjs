@@ -705,7 +705,7 @@ test('markBlockDirty marks successful formula block dirty', () => {
 });
 
 
-test('markBlockDirty preserves previous result', () => {
+test('markBlockDirty clears obsolete result', () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
@@ -723,7 +723,7 @@ test('markBlockDirty preserves previous result', () => {
 
     runtime.markBlockDirty('A');
 
-    assert.equal(block.calculation.result, result);
+    assert.equal(block.calculation.result, null);
 });
 
 
@@ -1193,7 +1193,7 @@ test('dirty block can be recalculated successfully', async () => {
 
     assert.equal(block.calculation.status, 'success');
     assert.equal(block.calculation.generation, 1);
-    assert.equal(block.calculation.result, result);
+    assert.strictEqual(block.calculation.result, result);
 });
 
 test('dirty block can be recalculated into error state', async () => {

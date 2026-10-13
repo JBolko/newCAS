@@ -1,0 +1,54 @@
+/** P0021 Slice 51 — compose existing source-attested definition and literal-call
+ * evaluators for ONE ordered batch. The transient outcomes live only as long as
+ * the invocation; DocumentRuntime alone commits authoritative calculation state.
+ */
+import {createSourceFunctionDefinitionTaskEvaluator} from './create-source-function-definition-task-evaluator.js';
+import {createSourceLiteralFunctionTaskEvaluator} from './create-source-literal-function-task-evaluator.js';
+import {createSourceVariableFunctionTaskEvaluator} from './create-source-variable-function-task-evaluator.js';
+import {createSourceIntegerAssignmentTaskEvaluator} from './create-source-integer-assignment-task-evaluator.js';
+import {isValue} from '../values/value.js';
+
+const fail = message => {throw new TypeError(`P0021 runtime function batch: ${message}`);};
+export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evaluate,revision,cachedOutcomes=new Map()}={}) {
+  if (!snapshot || !Array.isArray(snapshot.blocks) || typeof parse!=='function' ||
+      !(specs instanceof Map) || typeof evaluate!=='function' ||
+      typeof revision!=='string' || !revision) fail('explicit snapshot, operations, backend and revision required');
+  if (!(cachedOutcomes instanceof Map)) fail('cached outcomes must be an explicit Map');
+  const entries = new Map(snapshot.blocks.map(b => [b.blockId,b]));
+  if (entries.size !== snapshot.blocks.length) fail('duplicate document block identity');
+  const known = new Map(); // current-batch outcomes plus explicit revision-valid providers
+  for (const [id, record] of cachedOutcomes) {
+    if (!entries.has(id) || record?.revision !== revision ||
+        record.outcome?.blockId !== id || record.outcome.status !== 'success' ||
+        !isValue(record.outcome.value)) fail('invalid or stale cached provider');
+    known.set(id, record.outcome);
+  }
+  const read = id => known.get(id) ?? null;
+  return async task => {
+    if (!task || !entries.has(task.blockId) || task.taskScopeId!==snapshot.taskScopeId)
+      fail('task outside analyzed document snapshot');
+    const ast = parse(task.source);
+    if (!Array.isArray(ast) || ast.length!==1) fail('single source statement required');
+    let evaluator;
+    if (ast[0].type==='FunctionDefinition') {
+      evaluator=createSourceFunctionDefinitionTaskEvaluator({snapshot,blockId:task.blockId,
+        expectedName:ast[0].name,parse,specs,getProviderOutcome:read,revision});
+    } else if (ast[0].type==='Assignment') {
+      evaluator=createSourceIntegerAssignmentTaskEvaluator({snapshot,blockId:task.blockId,
+        expectedName:ast[0].name,parse,getProviderOutcome:read,revision});
+    } else if (ast[0].type==='FunctionCall') {
+      const argument=ast[0].args?.[0];
+      const factory=ast[0].args?.length===1 && argument?.type==='Variable'
+        ? createSourceVariableFunctionTaskEvaluator : createSourceLiteralFunctionTaskEvaluator;
+      evaluator=factory({snapshot,blockId:task.blockId,
+        expectedName:ast[0].name,parse,specs,evaluate,getProviderOutcome:read,revision});
+    } else fail('only selected functions, integer assignments and one-argument calls supported');
+    const result=await evaluator(task);
+    if (result?.blockId!==task.blockId || !['success','failure'].includes(result?.status))
+      fail('invalid evaluation outcome');
+    // Only successful outcomes are eligible as providers. Failed/blocked tasks
+    // cannot be silently substituted by an older document result.
+    if (result.status==='success') known.set(task.blockId,result);
+    return result;
+  };
+}

@@ -8,6 +8,12 @@
  */
 
 import { parse } from './parser.mjs';
+import {deriveSourceSemanticSnapshot} from './semantics/derive-source-semantic-snapshot.js';
+import {projectSemanticDependencyAnalysis} from './semantics/project-semantic-dependency-analysis.js';
+import {orderSemanticRecomputation} from './semantics/order-semantic-recomputation.js';
+import {prepareSemanticEvaluationBatch} from './semantics/prepare-semantic-evaluation-batch.js';
+import {dispatchSemanticEvaluationBatch} from './semantics/dispatch-semantic-evaluation-batch.js';
+import {isValue} from './values/value.js';
 import { analyzeDependencies } from './dependency-analyzer.js';
 import {
     buildDocumentDependencyAnalysis,
@@ -252,6 +258,11 @@ export class DocumentRuntime {
                 ? { reads: [], writes: [] }
                 : analyzeDependencies(parse(source));
 
+        const oldSemantic = this.captureSemanticAnalyses();
+
+        // Preserve semantic downstream as well: provider IDs may stay the same
+        // while the writer's VALUE changes (e.g. editing f(t)'s body).
+        const oldSemanticDownstream = oldSemantic.get(block.taskId)?.graph.getAllDownstream(blockId) ?? [];
         // Gem downstream fra den gamle graph før dependencies ændres.
         const oldGraph = this.getDependencyGraph(block.taskId);
         const oldDownstream =
@@ -280,19 +291,201 @@ export class DocumentRuntime {
             newGraph?.getAllDownstream(blockId) ?? [];
 
         // Både tidligere og nye downstream blocks er nu potentielt ugyldige.
+        const newSemanticDownstream = this.deriveSemanticTask(block.taskId).analysis.graph.getAllDownstream(blockId);
         const affected = new Set([
             ...oldDownstream,
-            ...newDownstream
+            ...newDownstream,
+            ...oldSemanticDownstream,
+            ...newSemanticDownstream,
         ]);
 
         for (const affectedBlockId of affected) {
             this.markBlockDirty(affectedBlockId);
         }
+        this.invalidateSemanticChanges(oldSemantic);
     }
 
     rebuildDependencyAnalysis() {
         this.dependencyAnalysis =
             buildDocumentDependencyAnalysis(this.blocks);
+    }
+
+    /**
+     * P0021 integration: read-only projection from authoritative document source.
+     * No semantic registry/cache and no mutation of legacy calculation state.
+     * The projection is recalculated after each edit from the current block order.
+     */
+    deriveSemanticTask(taskId = 'default') {
+        if (typeof taskId !== 'string' || !taskId) {
+            throw new TypeError('taskId must be a nonempty string');
+        }
+        const sourceBlocks = this.blocks
+            .filter(block => block.type === 'formula' && block.taskId === taskId)
+            .map(block => ({id: block.id, source: block.source}));
+        const snapshot = deriveSourceSemanticSnapshot(sourceBlocks, parse, taskId);
+        const analysis = projectSemanticDependencyAnalysis(snapshot);
+        return {snapshot, analysis};
+    }
+
+    /**
+     * P0021 Slice 47: derive a pure evaluation batch from authoritative blocks.
+     * No cache, symbol table or result state is owned by this projection.
+     * cachedIds must refer to successfully computed outcomes at the caller's
+     * current revision; the dispatcher enforces that separately.
+     */
+    prepareSemanticTaskBatch(taskId = 'default', {recompute, cachedIds = []} = {}) {
+        const {snapshot, analysis} = this.deriveSemanticTask(taskId);
+        const present = new Set(snapshot.blocks.map(block => block.blockId));
+        const ids = recompute === undefined ? new Set(present) : recompute;
+        if (!(ids instanceof Set) || [...ids].some(id => !present.has(id))) {
+            throw new TypeError('recompute must be a Set of current task block IDs');
+        }
+        if (!Array.isArray(cachedIds) || cachedIds.some(id => !present.has(id) || ids.has(id))) {
+            throw new TypeError('cachedIds must be current, unscheduled task block IDs');
+        }
+        const plan = {recompute: ids, removed: new Set()};
+        const schedule = orderSemanticRecomputation(analysis, plan);
+        const sources = new Map(this.blocks
+            .filter(block => block.type === 'formula' && block.taskId === taskId)
+            .map(block => [block.id, block.source]));
+        return prepareSemanticEvaluationBatch(snapshot, analysis, schedule, sources, cachedIds);
+    }
+
+    /**
+     * Execute through P0021, not CASEngine. The returned outcomes are
+     * deliberately NOT committed to document state in Slice 47.
+     * Caller owns revision tokens and must invalidate them on source edits.
+     */
+    async dispatchSemanticTask(taskId = 'default', {
+        recompute, cachedIds = [], revision, getCurrentRevision,
+        evaluate, cachedOutcomes = new Map(),
+    } = {}) {
+        const batch = this.prepareSemanticTaskBatch(taskId, {recompute, cachedIds});
+        return dispatchSemanticEvaluationBatch(batch, {
+            revision, getCurrentRevision, evaluate, cachedOutcomes,
+        });
+    }
+
+    /**
+     * P0021 Slice 48: commit a completed semantic batch to the existing
+     * DocumentRuntime calculation slots. No second state store is introduced.
+     * External revisions remain caller-owned; runtime identity/generation and
+     * source checks additionally guard edits made during asynchronous dispatch.
+     */
+    async evaluateAndCommitSemanticTask(taskId = 'default', options = {}) {
+        const {revision, getCurrentRevision} = options;
+        if (typeof revision !== 'string' || !revision || typeof getCurrentRevision !== 'function') {
+            throw new TypeError('semantic commit requires revision and revision reader');
+        }
+        const batch = this.prepareSemanticTaskBatch(taskId, options);
+        const owned = this.blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
+        const initial = owned.map(b => ({block: b, id: b.id, source: b.source,
+            generation: b.calculation.generation}));
+        const stillCurrent = () => {
+            if (getCurrentRevision() !== revision) return false;
+            const now = this.blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
+            return now.length === initial.length && initial.every((entry, i) =>
+                now[i] === entry.block && now[i].id === entry.id &&
+                now[i].source === entry.source &&
+                now[i].calculation.generation === entry.generation);
+        };
+        if (!stillCurrent()) return Object.freeze({kind: 'stale'});
+        const outcome = await dispatchSemanticEvaluationBatch(batch, {
+            revision, getCurrentRevision: () => stillCurrent() ? revision : null,
+            evaluate: options.evaluate, cachedOutcomes: options.cachedOutcomes ?? new Map(),
+        });
+        if (outcome.kind !== 'complete' || !stillCurrent()) return Object.freeze({kind: outcome.kind === 'complete' ? 'stale' : outcome.kind});
+        // Validate the entire batch *before* writing any result.
+        for (const result of outcome.state.outcomes) {
+            if (result.status === 'success' && !isValue(result.value)) {
+                throw new TypeError(`invalid semantic Value for ${result.blockId}`);
+            }
+        }
+        const byId = new Map(initial.map(e => [e.id, e.block]));
+        for (const result of outcome.state.outcomes) {
+            const block = byId.get(result.blockId);
+            if (!block) throw new TypeError('semantic batch referenced a foreign block');
+            block.calculation = {
+                status: result.status === 'success' ? 'success' : 'error',
+                generation: block.calculation.generation,
+                result: result.status === 'success' ? result.value : null,
+                error: result.status === 'failure' ? {code: result.code, message: result.message} : null,
+            };
+        }
+        return outcome;
+    }
+
+    /**
+     * P0021 Slice 53: selective semantic execution using the authoritative
+     * calculation slots as the ONLY cache source. The cache is an ephemeral,
+     * revision-stamped adapter for the existing dispatcher, not runtime state.
+     * A caller supplies the existing evaluator through createEvaluate.
+     */
+    async evaluateAndCommitDirtySemanticTask(taskId = 'default', {
+        revision, getCurrentRevision, createEvaluate,
+    } = {}) {
+        if (typeof revision !== 'string' || !revision ||
+            typeof getCurrentRevision !== 'function' ||
+            typeof createEvaluate !== 'function') {
+            throw new TypeError('selective evaluation requires revision and evaluator factory');
+        }
+        const owned = this.blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
+        const recompute = new Set();
+        const cachedIds = [];
+        const cachedOutcomes = new Map();
+        for (const block of owned) {
+            if (block.calculation.status === 'success') {
+                if (!isValue(block.calculation.result)) {
+                    throw new TypeError(`invalid cached Value for ${block.id}`);
+                }
+                cachedIds.push(block.id);
+                cachedOutcomes.set(block.id, {revision, outcome: {
+                    blockId: block.id, status: 'success', value: block.calculation.result,
+                }});
+            } else {
+                recompute.add(block.id);
+            }
+        }
+        const {snapshot} = this.deriveSemanticTask(taskId);
+        const evaluate = createEvaluate({snapshot, revision, cachedOutcomes});
+        if (typeof evaluate !== 'function') throw new TypeError('evaluator factory must return function');
+        return this.evaluateAndCommitSemanticTask(taskId, {
+            revision, getCurrentRevision, recompute, cachedIds, cachedOutcomes, evaluate,
+        });
+    }
+
+    /** Transient P0020/P0021 facts, never an authoritative parallel registry. */
+    captureSemanticAnalyses() {
+        const analyses = new Map();
+        for (const block of this.blocks) {
+            if (block.type !== 'formula') continue;
+            const taskId = block.taskId;
+            if (!analyses.has(taskId)) {
+                analyses.set(taskId, this.deriveSemanticTask(taskId).analysis);
+            }
+        }
+        return analyses;
+    }
+
+    /** Invalidate changed provider bindings using the same semantic source facts. */
+    invalidateSemanticChanges(previous) {
+        const current = this.captureSemanticAnalyses();
+        const affected = new Set();
+        for (const [taskId, next] of current) {
+            const old = previous.get(taskId);
+            for (const [blockId, nextBindings] of next.bindings) {
+                if (!old?.bindings.has(blockId)) continue; // inserted block is not a changed former calculation
+                const previousBindings = old?.bindings.get(blockId) ?? new Map();
+                const names = new Set([...previousBindings.keys(), ...nextBindings.keys()]);
+                if ([...names].some(name => previousBindings.get(name) !== nextBindings.get(name))) {
+                    affected.add(blockId);
+                    for (const id of old?.graph.getAllDownstream(blockId) ?? []) affected.add(id);
+                    for (const id of next.graph.getAllDownstream(blockId)) affected.add(id);
+                }
+            }
+        }
+        for (const blockId of affected) this.markBlockDirty(blockId);
+        return affected;
     }
 
     getDependencyGraph(taskId = 'default') {
@@ -312,8 +505,12 @@ export class DocumentRuntime {
             return;
         }
 
-        block.calculation.generation++;
-        block.calculation.status = 'dirty';
+        block.calculation = {
+            status: 'dirty',
+            generation: block.calculation.generation + 1,
+            result: null,
+            error: null
+        };
     }
 
     invalidateStructuralChanges(oldAnalysis) {
@@ -368,6 +565,7 @@ export class DocumentRuntime {
             return new Set();
         }
 
+        const oldSemantic = this.captureSemanticAnalyses();
         const oldAnalysis = this.dependencyAnalysis;
 
         const [block] = this.blocks.splice(oldIndex, 1);
@@ -375,7 +573,9 @@ export class DocumentRuntime {
 
         this.rebuildDependencyAnalysis();
 
-        return this.invalidateStructuralChanges(oldAnalysis);
+        const affected = this.invalidateStructuralChanges(oldAnalysis);
+        for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
+        return affected;
     }
 
     removeBlock(blockId) {
@@ -386,13 +586,16 @@ export class DocumentRuntime {
             throw new Error(`Block '${blockId}' findes ikke`);
         }
 
+        const oldSemantic = this.captureSemanticAnalyses();
         const oldAnalysis = this.dependencyAnalysis;
 
         this.blocks.splice(index, 1);
 
         this.rebuildDependencyAnalysis();
 
-        return this.invalidateStructuralChanges(oldAnalysis);
+        const affected = this.invalidateStructuralChanges(oldAnalysis);
+        for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
+        return affected;
     }
 
     insertBlock(block, index) {
@@ -405,12 +608,15 @@ export class DocumentRuntime {
         }
 
         const storedBlock = this.prepareBlock(block);
+        const oldSemantic = this.captureSemanticAnalyses();
         const oldAnalysis = this.dependencyAnalysis;
 
         this.blocks.splice(index, 0, storedBlock);
 
         this.rebuildDependencyAnalysis();
 
-        return this.invalidateStructuralChanges(oldAnalysis);
+        const affected = this.invalidateStructuralChanges(oldAnalysis);
+        for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
+        return affected;
     }
 }

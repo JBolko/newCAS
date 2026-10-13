@@ -41,6 +41,29 @@ export function projectSemanticDependencyAnalysis(snapshot) {
         throw new TypeError('unsupported semantic binding kind');
       }
     }
+    // Callable document writers are dependencies too: f(x) reads both f and x.
+    // P0020 already selected the callable provider. Never resolve it again here.
+    if (block.calls !== undefined && !Array.isArray(block.calls)) {
+      throw new TypeError('invalid source callable facts');
+    }
+    for (const call of block.calls ?? []) {
+      if (!call || typeof call.name !== 'string' || !call.name ||
+          !Array.isArray(call.candidates) || typeof call.classification !== 'string') {
+        throw new TypeError('invalid callable binding fact');
+      }
+      if (call.providerId === null) continue;
+      if (typeof call.providerId !== 'string' || !knownBlocks.has(call.providerId) ||
+          !call.candidates.includes('document-writer') ||
+          !['document-writer','ambiguous'].includes(call.classification)) {
+        throw new TypeError('invalid callable provider reference');
+      }
+      const existing = blockBindings.get(call.name);
+      if (existing !== undefined && existing !== call.providerId) {
+        throw new TypeError('conflicting variable/callable provider binding');
+      }
+      blockBindings.set(call.name, call.providerId);
+      graph.addEdge(call.providerId, block.blockId);
+    }
     bindings.set(block.blockId, blockBindings);
   }
   // Same graph/bindings interface used by the existing document dependency
