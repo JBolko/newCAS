@@ -11,8 +11,8 @@ Program
 // Function names are intentionally NOT enumerated here.
 // Any Identifier(...) is parsed as a generic FunctionCall.
 // The authoritative list of available CAS functions lives in
-// src/python/cas_math/registry.py. A new CAS function normally
-// requires implementation + registry + tests, not a grammar change.
+// the OperationSpec catalog. Parsing alone does not resolve built-in
+// operations versus document-defined functions.
 
 Statement
   = Conversion 
@@ -110,10 +110,10 @@ Params
 
 Identifier "id" = [a-zA-ZæøåÆØÅ_][a-zA-ZæøåÆØÅ0-9_]* { return text(); }
 
-Number "number" = [0-9]+([.,][0-9]+)?
-    { 
-      return parseFloat(text().replace(",", ".")); 
-    }
+// Canonical parser notation: dot decimal, comma or semicolon argument separator.
+// Locale-specific input normalization is a separate, not-yet-implemented UI step.
+Number "number" = [0-9]+("." [0-9]+)?
+    { return parseFloat(text()); }
 
 _ "whitespace" = [ \t\n\r]*
 
