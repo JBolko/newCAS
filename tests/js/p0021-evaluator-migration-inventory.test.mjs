@@ -49,17 +49,22 @@ test('legacy path matching is platform-independent',()=>{
  assert.equal(win.replaceAll('\\','/'),expected);
  assert.ok(legacy.some(file=>expected===`src/js/semantics/${file}`));
 });
-test('historical direct consumers are explicitly confined to contract and browser tests',()=>{
+test('remaining bound-function adapter consumers are explicit migration witnesses only',()=>{
  const users=directConsumers();
- assert.ok(users.some(x=>x.path.startsWith('tests/js/')),'missing unit-level migration witnesses');
- assert.ok(users.some(x=>x.path.startsWith('tests/browser/')),'missing browser migration witness');
- assert.ok(users.every(x=>x.path.startsWith('tests/js/')||x.path.startsWith('tests/browser/')));
- assert.ok(users.every(x=>legacy.some(name=>x.target.endsWith(name))));
+ const bound='src/js/semantics/create-bound-function-task-evaluator.js';
+ const expected=[
+  {path:'tests/browser/p0021-function-worker-smoke.mjs',target:bound},
+  {path:'tests/js/p0021-bound-function-batch.test.mjs',target:bound},
+ ];
+ assert.deepEqual(users.sort((a,b)=>a.path.localeCompare(b.path)),
+   expected.sort((a,b)=>a.path.localeCompare(b.path)),
+   `unexpected historical adapter consumers: ${JSON.stringify(users)}`);
 });
 test('active production batch is outside the direct legacy import set',()=>{
  assert.ok(!directConsumers().some(x=>x.path.endsWith('create-runtime-function-batch-evaluator.js')));
  const batch=read('src/js/semantics/create-runtime-function-batch-evaluator.js');
- assert.match(batch,/createSourceComposedExpressionTaskEvaluator/);
+ assert.match(batch,/createAttestedIRTaskEvaluator/);
+ assert.doesNotMatch(batch,/createSourceComposedExpressionTaskEvaluator/);
  assert.match(batch,/createSourceFunctionDefinitionTaskEvaluator/);
 });
 test('P0004 new Worker pin agrees with the selected baseline; legacy engine remains pinned separately',()=>{

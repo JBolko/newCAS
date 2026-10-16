@@ -4,7 +4,8 @@
  */
 import {createSourceFunctionDefinitionTaskEvaluator} from './create-source-function-definition-task-evaluator.js';
 import {isValue} from '../values/value.js';
-import {createSourceComposedExpressionTaskEvaluator} from './create-source-composed-expression-task-evaluator.js';
+import {createAttestedIRTaskEvaluator} from './create-attested-ir-task-evaluator.js';
+import {evaluateSelectedFunctionApplication} from './evaluate-selected-function-application.js';
 
 const fail = message => {throw new TypeError(`P0021 runtime function batch: ${message}`);};
 export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evaluate,revision,cachedOutcomes=new Map()}={}) {
@@ -32,9 +33,10 @@ export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evalua
       evaluator=createSourceFunctionDefinitionTaskEvaluator({snapshot,blockId:task.blockId,
         expectedName:ast[0].name,parse,specs,getProviderOutcome:read,revision});
     } else if (['Assignment','FunctionCall','Variable'].includes(ast[0].type)) {
-      // Single recursive source-attested expression path for assignment values,
+      // Single resolved IR expression path for assignment values,
       // variable reads, simple calls and arbitrary nested calls.
-      evaluator=createSourceComposedExpressionTaskEvaluator({snapshot,blockId:task.blockId,parse,specs,evaluate,getProviderOutcome:read,revision});
+      evaluator=createAttestedIRTaskEvaluator({snapshot,blockId:task.blockId,parse,specs,evaluate,
+        applyFunction:evaluateSelectedFunctionApplication,getProviderOutcome:read,revision});
     } else fail('unsupported statement in selected runtime slice');
     const result=await evaluator(task);
     if (result?.blockId!==task.blockId || !['success','failure'].includes(result?.status))
