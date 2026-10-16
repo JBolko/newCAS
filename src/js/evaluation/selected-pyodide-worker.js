@@ -4,7 +4,8 @@
 import { createWorkerEvaluationHandler } from './worker-evaluation-protocol.js';
 import { createSelectedPyodideRuntime } from './selected-pyodide-runtime.js?v=slice24-symbolic-diff-v1';
 
-const CDN = 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/';
+// P0004 new-runtime baseline; legacy CASEngine keeps its separate migration allowance.
+const CDN = 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/';
 const runtime = createSelectedPyodideRuntime({
   indexURL: CDN,
   loadPyodide: async options => {

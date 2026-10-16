@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><title>newCAS P0004 — faktisk Pyodide/Python/SymPy</title>
+<style>body{font:16px system-ui,sans-serif;max-width:740px;margin:3rem auto;padding:0 1rem}button{padding:.7rem 1rem}pre{background:#eee;padding:1rem}.pass{color:#067a3c}.fail{color:#ad2633}</style>
+</head><body><h1>P0004 — versionskontrol i browseren</h1>
+<p>Indlæser faktisk Pyodide 314.0.7 og SymPy fra CDN og kontrollerer Python 3.14.2 og SymPy 1.14.0. Start over HTTP, ikke file://. Denne probe anvender en separat instans; kør bagefter den eksisterende selected Worker-smoke for integrationskontrol.</p>
+<button id="run" type="button">Kontrollér faktiske versioner</button><p id="status" role="status">Klar</p><pre id="output"></pre>
+<script type="module" src="./p0021-p0004-version-probe.mjs"></script></body></html>

@@ -3,10 +3,8 @@
  * the invocation; DocumentRuntime alone commits authoritative calculation state.
  */
 import {createSourceFunctionDefinitionTaskEvaluator} from './create-source-function-definition-task-evaluator.js';
-import {createSourceLiteralFunctionTaskEvaluator} from './create-source-literal-function-task-evaluator.js';
-import {createSourceVariableFunctionTaskEvaluator} from './create-source-variable-function-task-evaluator.js';
-import {createSourceIntegerAssignmentTaskEvaluator} from './create-source-integer-assignment-task-evaluator.js';
 import {isValue} from '../values/value.js';
+import {createSourceComposedExpressionTaskEvaluator} from './create-source-composed-expression-task-evaluator.js';
 
 const fail = message => {throw new TypeError(`P0021 runtime function batch: ${message}`);};
 export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evaluate,revision,cachedOutcomes=new Map()}={}) {
@@ -33,16 +31,11 @@ export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evalua
     if (ast[0].type==='FunctionDefinition') {
       evaluator=createSourceFunctionDefinitionTaskEvaluator({snapshot,blockId:task.blockId,
         expectedName:ast[0].name,parse,specs,getProviderOutcome:read,revision});
-    } else if (ast[0].type==='Assignment') {
-      evaluator=createSourceIntegerAssignmentTaskEvaluator({snapshot,blockId:task.blockId,
-        expectedName:ast[0].name,parse,getProviderOutcome:read,revision});
-    } else if (ast[0].type==='FunctionCall') {
-      const argument=ast[0].args?.[0];
-      const factory=ast[0].args?.length===1 && argument?.type==='Variable'
-        ? createSourceVariableFunctionTaskEvaluator : createSourceLiteralFunctionTaskEvaluator;
-      evaluator=factory({snapshot,blockId:task.blockId,
-        expectedName:ast[0].name,parse,specs,evaluate,getProviderOutcome:read,revision});
-    } else fail('only selected functions, integer assignments and one-argument calls supported');
+    } else if (['Assignment','FunctionCall','Variable'].includes(ast[0].type)) {
+      // Single recursive source-attested expression path for assignment values,
+      // variable reads, simple calls and arbitrary nested calls.
+      evaluator=createSourceComposedExpressionTaskEvaluator({snapshot,blockId:task.blockId,parse,specs,evaluate,getProviderOutcome:read,revision});
+    } else fail('unsupported statement in selected runtime slice');
     const result=await evaluator(task);
     if (result?.blockId!==task.blockId || !['success','failure'].includes(result?.status))
       fail('invalid evaluation outcome');

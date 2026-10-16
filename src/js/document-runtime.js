@@ -33,6 +33,20 @@ export class DocumentRuntime {
         this.documentId = documentId;
         this.blocks = [];
         this.dependencyAnalysis = new Map();
+        this.semanticChangeListeners = new Set();
+    }
+
+    /** Opt-in notification: edits only, never calculation outcomes. */
+    subscribeSemanticChanges(listener) {
+        if (typeof listener !== 'function') throw new TypeError('listener must be a function');
+        this.semanticChangeListeners.add(listener);
+        return () => this.semanticChangeListeners.delete(listener);
+    }
+
+    notifySemanticChange(taskIds) {
+        for (const listener of this.semanticChangeListeners) {
+            listener(Object.freeze([...taskIds]));
+        }
     }
 
     /**
@@ -111,6 +125,7 @@ export class DocumentRuntime {
 
         this.blocks.push(storedBlock);
         this.rebuildDependencyAnalysis();
+        if (storedBlock.type === 'formula') this.notifySemanticChange([storedBlock.taskId]);
 
         return storedBlock;
     }
@@ -303,6 +318,7 @@ export class DocumentRuntime {
             this.markBlockDirty(affectedBlockId);
         }
         this.invalidateSemanticChanges(oldSemantic);
+        this.notifySemanticChange([block.taskId]);
     }
 
     rebuildDependencyAnalysis() {
@@ -575,6 +591,7 @@ export class DocumentRuntime {
 
         const affected = this.invalidateStructuralChanges(oldAnalysis);
         for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
+        this.notifySemanticChange([block.taskId]);
         return affected;
     }
 
@@ -588,6 +605,7 @@ export class DocumentRuntime {
 
         const oldSemantic = this.captureSemanticAnalyses();
         const oldAnalysis = this.dependencyAnalysis;
+        const removedTaskId = this.blocks[index].taskId;
 
         this.blocks.splice(index, 1);
 
@@ -595,6 +613,7 @@ export class DocumentRuntime {
 
         const affected = this.invalidateStructuralChanges(oldAnalysis);
         for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
+        this.notifySemanticChange([removedTaskId]);
         return affected;
     }
 
@@ -617,6 +636,7 @@ export class DocumentRuntime {
 
         const affected = this.invalidateStructuralChanges(oldAnalysis);
         for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
+        if (storedBlock.type === 'formula') this.notifySemanticChange([storedBlock.taskId]);
         return affected;
     }
 }
