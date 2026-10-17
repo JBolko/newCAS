@@ -1,31 +1,50 @@
-/** P0020 Slice 3: derive source-occurrence binding facts from a block analysis.
- * No evaluator, DocumentRuntime mutation, or result availability lookup.
- * Builtin-vs-FunctionValue call-name resolution and symbolic argument policies
- * remain P0019 integration work; report call targets separately, do not guess.
+/** P0020: source occurrence binding facts from a block analysis.
+ * P0021 S93f: selected P0008 symbolic roles govern source occurrences,
+ * without performing document evaluation or inventing default binders.
  */
-import { resolveBlockSourceName } from './analyze-source-blocks.js';
+import {resolveBlockSourceName} from './analyze-source-blocks.js';
+import {findSelectedOperationSpec} from '../operations/selected-operation-catalog.js';
+import {planSourceOccurrenceRoles,UnsupportedSourceOperationRole} from './plan-source-occurrence-roles.js';
 
-function visit(node, refs, calls, bound = new Set()) {
+function visit(node, refs, calls, bound, analysis, blockId) {
   if (!node || typeof node !== 'object') throw new TypeError('invalid expression AST');
+  const nested = (child, scope=bound) => visit(child,refs,calls,scope,analysis,blockId);
   switch (node.type) {
     case 'Literal': case 'Quantity': return;
-    case 'Variable':
-      if (!bound.has(node.name)) refs.push(node.name);
+    case 'Variable': if (!bound.has(node.name)) refs.push(node.name); return;
+    case 'BinaryExpression': nested(node.left); nested(node.right); return;
+    case 'UnaryExpression': nested(node.argument); return;
+    case 'PowerExpression': nested(node.base); nested(node.exponent); return;
+    case 'Equation': nested(node.left); nested(node.right); return;
+    case 'FunctionCall': {
+      calls.push(node.name);
+      let roles = null;
+      const spec = findSelectedOperationSpec(node.name);
+      // A document writer with the same callable spelling makes selection
+      // ambiguous. Never introduce an operation-local binder in that case.
+      if (spec && resolveBlockSourceName(analysis,blockId,node.name).kind !== 'provider-reference') {
+        try {
+          const candidate = planSourceOccurrenceRoles(node,spec);
+          if (candidate.status === 'selected') roles = candidate;
+        } catch (error) {
+          if (!(error instanceof UnsupportedSourceOperationRole)) throw error;
+          // Ill-formed targets or unsupported scoped signatures do NOT bind.
+          // Keep ordinary reads visible so attestation can fail closed.
+        }
+      }
+      for (let i = 0; i < node.args.length; i++) {
+        const occurrence = roles?.occurrences[i];
+        if (occurrence?.role === 'symbolic') continue; // local identity, not a read
+        const names = occurrence?.governedBy ?? [];
+        nested(node.args[i], names.length ? new Set([...bound,...names]) : bound);
+      }
       return;
-    case 'BinaryExpression': visit(node.left,refs,calls,bound); visit(node.right,refs,calls,bound); return;
-    case 'UnaryExpression': visit(node.argument,refs,calls,bound); return;
-    case 'PowerExpression': visit(node.base,refs,calls,bound);visit(node.exponent,refs,calls,bound);return;
-    case 'Equation': visit(node.left,refs,calls,bound);visit(node.right,refs,calls,bound);return;
-    case 'FunctionCall':
-      calls.push(node.name); for (const arg of node.args) visit(arg,refs,calls,bound);return;
-    case 'Derivative':
-      calls.push(node.name); for (const arg of node.args) visit(arg,refs,calls,bound);return;
-    case 'List': for(const item of node.elements) visit(item,refs,calls,bound);return;
-    case 'Vector': for(const item of node.components) visit(item,refs,calls,bound);return;
-    case 'Access':
-      if (!bound.has(node.container)) refs.push(node.container);
-      visit(node.index,refs,calls,bound);return;
-    case 'Conversion': visit(node.expr,refs,calls,bound);return;
+    }
+    case 'Derivative': calls.push(node.name); for (const arg of node.args) nested(arg); return;
+    case 'List': for (const item of node.elements) nested(item); return;
+    case 'Vector': for (const item of node.components) nested(item); return;
+    case 'Access': if (!bound.has(node.container)) refs.push(node.container); nested(node.index); return;
+    case 'Conversion': nested(node.expr); return;
     default: throw new TypeError(`unsupported AST node: ${String(node.type)}`);
   }
 }
@@ -44,15 +63,17 @@ export function deriveBlockSourceBindings(analysis) {
     if(!Array.isArray(program) || program.length !== 1)
       throw new TypeError('expected one parsed statement per formula block');
     const ast=program[0], refs=[], calls=[];
-    if(ast.type==='Assignment') visit(ast.value,refs,calls);
-    else if(ast.type==='FunctionDefinition') visit(ast.body,refs,calls,new Set(ast.params));
-    else visit(ast,refs,calls);
+    const visitBody=(node,bound=new Set())=>visit(node,refs,calls,bound,analysis,entry.blockId);
+    if(ast.type==='Assignment') visitBody(ast.value);
+    else if(ast.type==='FunctionDefinition') visitBody(ast.body,new Set(ast.params));
+    else visitBody(ast);
     const unique=[...new Set(refs)];
     const references=unique.map(name=>Object.freeze({name,
       binding:resolveBlockSourceName(analysis,entry.blockId,name)}));
     blocks.push(Object.freeze({blockId:entry.blockId, parseError:null,
       references:Object.freeze(references),
-      // No inference of built-in versus user-defined function here.
+      // This is a name-level dependency projection, NOT a per-occurrence IR
+      // attestation. Mixed symbolic/source-name uses require an IR contract.
       callTargets:Object.freeze([...new Set(calls)])}));
   }
   return Object.freeze({taskScopeId:analysis.taskScopeId, blocks:Object.freeze(blocks)});

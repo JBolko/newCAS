@@ -4,6 +4,7 @@
 import { identityKey, isSemanticIdentity } from './identity.js';
 import { isSemanticIRNode } from './semantic-ir.js';
 import { expression, functionValue, isValue } from '../values/value.js';
+import {applySelectedFunctionValue} from './apply-selected-function-value.js';
 
 const fail = message => { throw new TypeError(`P0021 function materialization: ${message}`); };
 const OPERATIONS = Object.freeze({add:'add', multiply:'mul', power:'pow'});
@@ -29,6 +30,7 @@ export function materializeSelectedFunctionValue(ir, {captures = []} = {}) {
     capturesByIdentity.set(key,capture);
   }
   const used = new Set();
+  const valueCaptures = new Set();
   const lower = node => {
     if (!isSemanticIRNode(node)) fail('invalid body node');
     switch (node.kind) {
@@ -44,10 +46,24 @@ export function materializeSelectedFunctionValue(ir, {captures = []} = {}) {
       case 'provider-reference': {
         const capture=providers.get(node.providerId);
         if (!capture) fail(`missing capture for provider ${node.providerId}`);
+        if (capture.value.kind !== 'expression') fail('scalar reference needs ExpressionValue capture');
         used.add(node.providerId);
+        valueCaptures.add(node.providerId);
         return {op:'symbolRef',identity:capture.identity};
       }
       case 'call': {
+        if (node.callee?.kind === 'provider-reference') {
+          // Lexically bound FunctionValue application is normalized here into
+          // the existing expression body via capture-safe beta substitution.
+          // No source-name lookup, Python code generation, or runtime dispatch.
+          const providerId=node.callee.providerId;
+          const capture=providers.get(providerId);
+          if (!capture || capture.value.kind !== 'function') fail('attested FunctionValue capture required');
+          const argumentsAsValues=node.args.map(arg=>expression(lower(arg)));
+          const normalized=applySelectedFunctionValue(capture.value,argumentsAsValues);
+          used.add(providerId);
+          return normalized.data.expr;
+        }
         if (node.callee?.kind !== 'operation-reference') fail('selected operation reference required');
         const op=OPERATIONS[node.callee.operationId];
         if (!op || node.args.length !== 2) fail('unsupported selected function operation');
@@ -59,5 +75,7 @@ export function materializeSelectedFunctionValue(ir, {captures = []} = {}) {
   };
   const body=expression(lower(ir.body));
   if (used.size !== providers.size) fail('unused capture');
-  return functionValue(parameters,body,[...providers.values()].map(({identity,value})=>({identity,value})));
+  return functionValue(parameters,body,[...providers.values()]
+    .filter(capture=>valueCaptures.has(capture.providerId))
+    .map(({identity,value})=>({identity,value})));
 }

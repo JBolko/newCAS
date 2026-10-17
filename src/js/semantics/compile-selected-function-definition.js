@@ -9,7 +9,7 @@ const NAME = /^[a-zA-ZæøåÆØÅ_][a-zA-ZæøåÆØÅ0-9_]*$/u;
 function fail(message) { throw new TypeError(`P0021 function source: ${message}`); }
 export function compileSelectedFunctionDefinition(ast, {
   writerId, taskScopeId, specs, resolveVariable, makeBinderId,
-  lexicalScope = null, makeLocalId,
+  lexicalScope = null, makeLocalId, resolveCallable = null,
 } = {}) {
   if (Array.isArray(ast)) {
     if (ast.length !== 1) fail('exactly one function definition required');
@@ -27,7 +27,7 @@ export function compileSelectedFunctionDefinition(ast, {
   const ids = ast.params.map((name, index) => binderIdentity(makeBinderId({writerId,index,name}),name));
   if (new Set(ids.map(x => x.id)).size !== ids.length) fail('duplicate binder identity');
   const scope = (lexicalScope ?? new LexicalIdentityScope(taskScopeId)).push(ids);
-  const body = compileSelectedSourceAst(ast.body, {specs, resolveVariable, lexicalScope:scope, makeLocalId});
+  const body = compileSelectedSourceAst(ast.body, {specs, resolveVariable, lexicalScope:scope, makeLocalId, resolveCallable});
   if (!isSemanticIRNode(body)) fail('invalid function body');
   return defineFunction(writerId,ids,body);
 }

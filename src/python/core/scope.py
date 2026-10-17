@@ -5,6 +5,7 @@ Task-scope og auto-symbol-injektion
 from typing import Dict, Any, Set
 import re
 import sympy as sp
+from .legacy_safe_builtins import LEGACY_SAFE_BUILTINS
 
 task_registry: Dict[str, Dict[str, Any]] = {}
 _NAME_ERROR_RE = re.compile(r"name '([^']+)' is not defined")
@@ -17,6 +18,9 @@ def execute_with_auto_symbols(code: str, globs: Dict[str, Any], locs: Dict[str, 
     for attempt in range(10):
         try:
             combined = {**globs, **locs}
+            # A document writer named __builtins__ must not overwrite the
+            # trusted namespace when the task scope is merged into globals.
+            combined["__builtins__"] = LEGACY_SAFE_BUILTINS
             exec(code, combined, locs)
             return
         except NameError as exc:

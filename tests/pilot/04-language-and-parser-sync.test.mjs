@@ -25,7 +25,7 @@ const astOf = (parser, source) => {
 
 async function regeneratedParser() {
   const grammar = readFileSync(repoPath('docs', 'Grammatik.pegjs'), 'utf8');
-  const source = peggy.generate(grammar, {output: 'source', format: 'es'});
+  const source = peggy.generate(grammar, {output: 'source', format: 'es', cache: true});
   return import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 }
 
@@ -33,7 +33,7 @@ async function regeneratedParser() {
 if (!peggy) {
   test('F3 parser-sync', {skip: 'peggy er ikke installeret (npm install)'}, () => {});
 } else {
-  knownGap('F3', 'src/js/parser.mjs giver samme AST som en parser genereret fra docs/Grammatik.pegjs', async () => {
+  test('[F3] src/js/parser.mjs giver samme AST som en parser genereret fra docs/Grammatik.pegjs', async () => {
     const generated = await regeneratedParser();
     const differing = PROBES.filter(s => astOf({parse}, s) !== astOf(generated, s)).map(s =>
       `${JSON.stringify(s)}\n      parser.mjs : ${astOf({parse}, s).slice(0, 110)}\n      .pegjs     : ${astOf(generated, s).slice(0, 110)}`);

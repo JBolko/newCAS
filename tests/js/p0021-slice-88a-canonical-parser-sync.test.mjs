@@ -8,11 +8,11 @@ import peggy from 'peggy';
 import {parse} from '../../src/js/parser.mjs';
 
 const source = readFileSync(new URL('../../docs/Grammatik.pegjs', import.meta.url), 'utf8');
-const canonicalParser = peggy.generate(source);
+const canonicalParser = peggy.generate(source, {cache: true});
 const normalize = text => text.replace(/\r\n/g, '\n');
 
-test('S88a: generated parser is exactly the canonical Peggy source output', () => {
-  const expected = peggy.generate(source, {format:'es', output:'source'});
+test('S88a: generated parser is exactly the canonical Peggy packrat source output', () => {
+  const expected = peggy.generate(source, {format:'es', output:'source', cache:true});
   const shipped = readFileSync(new URL('../../src/js/parser.mjs', import.meta.url), 'utf8');
   assert.equal(normalize(shipped), normalize(expected),
     'src/js/parser.mjs has drifted from docs/Grammatik.pegjs; run the explicit generator');

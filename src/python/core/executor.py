@@ -5,6 +5,7 @@ import re
 import sympy as sp
 from typing import Optional
 from .context import build_base_context
+from .legacy_safe_builtins import LEGACY_SAFE_BUILTINS
 from .scope import (
     task_registry,
     execute_with_auto_symbols,
@@ -31,17 +32,25 @@ class ScopedGlobals(dict):
     """
     def __init__(self, base: dict, task_scope: dict):
         super().__init__(base)
+        # Keep the privileged slot controlled even when task locals conflict.
+        super().__setitem__("__builtins__", LEGACY_SAFE_BUILTINS)
         self._task_scope = task_scope
 
     def __getitem__(self, key):
+        if key == "__builtins__":
+            return LEGACY_SAFE_BUILTINS
         if key in self._task_scope:
             return self._task_scope[key]
         return super().__getitem__(key)
 
     def __contains__(self, key):
+        if key == "__builtins__":
+            return True
         return key in self._task_scope or super().__contains__(key)
 
     def get(self, key, default=None):
+        if key == "__builtins__":
+            return LEGACY_SAFE_BUILTINS
         if key in self._task_scope:
             return self._task_scope[key]
         return super().get(key, default)

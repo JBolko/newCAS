@@ -24,15 +24,32 @@ export function createSourceFunctionDefinitionTaskEvaluator({
     if (matched?.length !== 1 || matched[0].parseError !== null) fail('unique parsed document block required');
     // Attest captures against P0020's positional source bindings, not names alone.
     const referenceFacts = matched[0].references ?? [];
-    if (envelope.providers.length !== referenceFacts.length) fail('capture provider count mismatch');
-    const captures = referenceFacts.map(ref => {
-      if (ref.binding?.kind !== 'provider-reference') fail('unresolved free capture');
-      const candidates = envelope.providers.filter(p => p.name === ref.name && p.providerId === ref.binding.providerId);
-      if (candidates.length !== 1 || !isValue(candidates[0].value) || candidates[0].value.kind !== 'expression')
-        fail('capture provider identity or Value mismatch');
-      return {providerId:ref.binding.providerId, identity:freeSymbolIdentity(envelope.taskScopeId,ref.name),value:candidates[0].value};
+    const callFacts = matched[0].calls ?? [];
+    // Built-in operations are resolved by OperationSpec. Calls to document
+    // functions must have one unambiguous positional provider attestation.
+    const callableFacts = callFacts.filter(c => c.classification === 'document-writer');
+    if (callFacts.some(c => c.classification !== 'operation' && c.classification !== 'document-writer'))
+      fail('unresolved or ambiguous function call');
+    const bindings = [
+      ...referenceFacts.map(ref => ({name:ref.name,providerId:ref.binding?.providerId,kind:'variable'})),
+      ...callableFacts.map(call => ({name:call.name,providerId:call.providerId,kind:'function'})),
+    ];
+    if (bindings.some(binding => !binding.providerId) ||
+        new Set(bindings.map(b => b.name)).size !== bindings.length ||
+        new Set(bindings.map(b => b.providerId)).size !== bindings.length ||
+        envelope.providers.length !== bindings.length)
+      fail('capture provider metadata mismatch');
+    const captures = bindings.map(binding => {
+      const candidates = envelope.providers.filter(p => p.name === binding.name && p.providerId === binding.providerId);
+      const expectedKind = binding.kind === 'function' ? 'function' : 'expression';
+      if (candidates.length !== 1 || !isValue(candidates[0].value) || candidates[0].value.kind !== expectedKind)
+        fail('capture provider identity or Value kind mismatch');
+      return {providerId:binding.providerId,
+        identity:freeSymbolIdentity(envelope.taskScopeId,binding.name),value:candidates[0].value};
     });
-    if (new Set(captures.map(c => c.providerId)).size !== captures.length) fail('duplicate capture provider');
+    const variableCaptures = captures.filter(c=>c.value.kind === 'expression');
+    const callableCaptures = new Map(captures.filter(c=>c.value.kind === 'function')
+      .map(c=>[c.identity.name,c.providerId]));
     const ast = parse(envelope.source);
     if (!Array.isArray(ast) || ast.length !== 1 || ast[0]?.type !== 'FunctionDefinition' ||
         ast[0].name !== expectedName) fail('source function writer does not match expected name');
@@ -42,9 +59,14 @@ export function createSourceFunctionDefinitionTaskEvaluator({
       writerId:blockId, taskScopeId:envelope.taskScopeId, specs,
       makeBinderId:({writerId,index})=>`${envelope.taskScopeId}:${writerId}:param:${index}`,
       resolveVariable:name=>{
-        const selected = captures.find(c=>c.identity.name===name);
+        const selected = variableCaptures.find(c=>c.identity.name===name);
         if (!selected) fail('free variable without analyzed capture');
         return providerReference(selected.providerId);
+      },
+      resolveCallable:name=>{
+        const providerId=callableCaptures.get(name);
+        if (!providerId) fail('function name without analyzed callable capture');
+        return providerReference(providerId);
       },
     });
     const value = materializeSelectedFunctionValue(ir,{captures});

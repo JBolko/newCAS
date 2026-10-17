@@ -31,3 +31,29 @@ export const selectedOperationSpecs = Object.freeze([...definitions]);
 export function findSelectedOperationSpec(operationId) {
   return byName.get(operationId) ?? null;
 }
+
+/** Structural equivalence to the selected P0008 catalog policy, including
+ * argument roles and evaluator identity. No implicit operation selection.
+ * An immutable rehydrated OperationSpec may match, but a changed contract may not.
+ */
+export function matchesSelectedOperationSpec(spec) {
+  if (!isOperationSpec(spec)) return false;
+  const expected=byName.get(spec.operationId);
+  if (!expected || spec.evaluatorId!==expected.evaluatorId ||
+      spec.purity!==expected.purity ||
+      spec.diagnosticAdapterId!==expected.diagnosticAdapterId ||
+      spec.signatures.length!==expected.signatures.length) return false;
+  for(let i=0;i<spec.signatures.length;i++) {
+    const actual=spec.signatures[i].arguments;
+    const required=expected.signatures[i].arguments;
+    if(actual.length!==required.length) return false;
+    for(let j=0;j<actual.length;j++) {
+      const a=actual[j],r=required[j];
+      if(a.name!==r.name || a.role!==r.role ||
+          (a.variadic===true)!==(r.variadic===true)) return false;
+      const as=a.scopeOver??[],rs=r.scopeOver??[];
+      if(as.length!==rs.length || as.some((name,k)=>name!==rs[k])) return false;
+    }
+  }
+  return true;
+}

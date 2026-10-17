@@ -4,7 +4,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {runSequence, shrink, describeOps} from './lib/fuzz.mjs';
-import {knownGap} from './lib/gaps.mjs';
 
 const SEQS = Number(process.env.PILOT_FUZZ_SEQS ?? 100);
 const STEPS = Number(process.env.PILOT_FUZZ_STEPS ?? 25);
@@ -24,5 +23,5 @@ async function fuzz({sequences, steps, hostile}) {
 test(`${SEQS} historier × ${STEPS} redigeringer (set/indsæt/slet/flyt, to opgaver): inkrementel == fra bunden, ingen kast, opgaver isolerede`,
   {timeout: 600_000}, () => fuzz({sequences: SEQS, steps: STEPS, hostile: false}));
 
-knownGap('F1/F2', 'fuzz med realistiske, ufærdige og ugyldige kilder: dokumentet kan altid redigeres og er stadig == fra bunden',
-  () => fuzz({sequences: 30, steps: 15, hostile: true}), {timeout: 600_000});
+test('[F1/F2] fuzz med realistiske, ufærdige og ugyldige kilder: dokumentet kan altid redigeres og er stadig == fra bunden',
+  {timeout: 600_000}, () => fuzz({sequences: 30, steps: 15, hostile: true}));

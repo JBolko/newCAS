@@ -4,7 +4,7 @@
  */
 import { operationLocalIdentity, LexicalIdentityScope } from './identity.js';
 import { operationReference, semanticReference, call, isSemanticIRNode } from './semantic-ir.js';
-import { planOperationArguments } from './operation-argument-plan.js';
+import { planSourceOccurrenceRoles } from './plan-source-occurrence-roles.js';
 
 export function resolveSelectedOperationCall(ast, spec, resolveValue, makeLocalId, lexicalScope = null) {
   if (!ast || ast.type !== 'FunctionCall' || !Array.isArray(ast.args)) {
@@ -16,28 +16,19 @@ export function resolveSelectedOperationCall(ast, spec, resolveValue, makeLocalI
   if (ast.name !== spec?.operationId) {
     throw new TypeError('selected operation name does not match source call');
   }
-  const plan = planOperationArguments(spec, ast.args.length);
-  if (plan.status !== 'selected') return plan;
+  const occurrencePlan = planSourceOccurrenceRoles(ast, spec);
+  if (occurrencePlan.status !== 'selected') return occurrencePlan;
+  const plan = occurrencePlan.plan;
 
   if (lexicalScope !== null && !(lexicalScope instanceof LexicalIdentityScope)) {
     throw new TypeError('expected a LexicalIdentityScope or null');
   }
-  // Allocate target identities BEFORE visiting ordinary arguments: the
-  // expression precedes its symbolic target in textual argument order.
-  const targets = [];
-  for (let i = 0; i < ast.args.length; i++) {
-    const policy = plan.arguments[i];
-    if (policy.role === 'scoped') {
-      throw new TypeError('scoped binding not implemented in this slice');
-    }
-    if (policy.role !== 'symbolic') continue;
-    const node = ast.args[i];
-    if (!node || node.type !== 'Variable' || typeof node.name !== 'string' || !node.name) {
-      throw new TypeError(`symbolic argument ${policy.name} requires a variable reference`);
-    }
-    const id = makeLocalId({operationId: spec.operationId, index:i, name:node.name});
-    targets.push({index:i, identity:operationLocalIdentity(id,node.name)});
-  }
+  // Create symbolic identities before visiting source operands. The shared
+  // occurrence plan also drives P0020 document dependency projection.
+  const targets = occurrencePlan.targets.map(({index,name}) => ({
+    index, identity:operationLocalIdentity(
+      makeLocalId({operationId: spec.operationId, index, name}), name),
+  }));
   const scoped = lexicalScope === null
     ? null
     : lexicalScope.push(targets.map(target => target.identity));
@@ -54,8 +45,7 @@ export function resolveSelectedOperationCall(ast, spec, resolveValue, makeLocalI
     // In this bounded source-scope slice, source operands preceding the
     // symbolic target use its local identity. Later ordinary operands,
     // including integration bounds, resolve under the caller scope.
-    const firstTarget = targets.length ? targets[0].index : -1;
-    const governing = firstTarget !== -1 && index < firstTarget ? scoped : lexicalScope;
+    const governing = occurrencePlan.occurrences[index].governedBy.length ? scoped : lexicalScope;
     if (governing !== null) metadata.lexicalScope = governing;
     const resolved = resolveValue(node, Object.freeze(metadata));
     if (!isSemanticIRNode(resolved)) throw new TypeError('value resolver must return Semantic IR');

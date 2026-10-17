@@ -9,20 +9,21 @@
   "scripts": {
     "dev": "echo \"Open index.html directly in your browser (no build step needed yet)\"",
     "start": "echo \"Open index.html directly in your browser\"",
-    "test": "echo \"No tests implemented yet\"",
+    "test": "npm run test:js && npm run test:python",
     "tools:build": "python -m tools.build.build_docs",
     "tools:doctor": "python -m tools.doctor",
     "tools:layer": "python -m tools.analyze.layer_guard",
     "tools:ast": "node tools/analyze/ast_report.mjs",
     "tools:runtime": "python -m tools.analyze.runtime_report",
-    "test:js": "node --test tests/js/*.mjs",
+    "test:js": "node --test",
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
     "pack:tools": "npx repomix --include \"tools/**/*,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,tools/reports/*.json,repomix-*.md\" --output repomix-tools.md",
     "pack:engine": "npx repomix --include \"src/js/**/*,src/python/**/*,docs/Grammatik.pegjs,package.json\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-engine.md",
     "pack:handover": "npx repomix --include \"src/python/**/*,src/js/cas-engine.js,src/js/transformer.js,tools/**/*,docs/Styredokumenter/**/*,docs/adr/**/*,docs/Grammatik.pegjs,package.json,README.md\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-handover.md",
     "pack:architecture": "npx repomix --include \"src/js/**/*,src/python/**/*,tests/js/**/*,docs/architecture/**/*,docs/Styredokumenter/**/*,docs/adr/**/*,docs/Grammatik.pegjs,package.json,README.md\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-architecture.md",
     "pack:tests": "npx repomix --include \"tests/**/*,src/js/parser.mjs,docs/Grammatik.pegjs,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,**/node_modules/**,repomix-*.md\" --output repomix-tests.md",
-    "pack:all": "npm run pack:docs && npm run pack:engine && npm run pack:tools && npm run pack:tests && npm run pack:architecture"
+    "pack:all": "npm run pack:docs && npm run pack:engine && npm run pack:tools && npm run pack:tests && npm run pack:architecture",
+    "test:python": "python -m unittest discover -s tests/python -p test_*.py"
   },
   "keywords": [
     "cas",

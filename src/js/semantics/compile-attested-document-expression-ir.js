@@ -2,29 +2,49 @@
  * This is COMPILATION ONLY: no evaluator, provider lookup, task state or fallback.
  * Repeated callable occurrences intentionally share the attested name/provider.
  */
-import {expression} from '../values/value.js';
 import {isOperationSpec} from '../operations/operation-spec.js';
-import {valueLiteral,providerReference,operationReference,call,define} from './semantic-ir.js';
+import {providerReference,operationReference,semanticReference,call,define} from './semantic-ir.js';
+import {LexicalIdentityScope} from './identity.js';
+import {matchesSelectedOperationSpec} from '../operations/selected-operation-catalog.js';
+import {resolveSelectedOperationCall} from './resolve-selected-operation-call.js';
+import {planSourceOccurrenceRoles} from './plan-source-occurrence-roles.js';
+import {createSelectedArithmeticLowering} from './lower-selected-arithmetic.js';
+import {lowerSourceExpressionTree} from './lower-source-expression-tree.js';
 
 const fail = m => {throw new TypeError(`P0021 attested IR: ${m}`);};
-const operators = Object.freeze({'+':'add','*':'multiply'});
-export function compileAttestedDocumentExpressionIR(statement,{entry,blockId,specs,writers=[]}={}) {
+export function compileAttestedDocumentExpressionIR(statement,{
+  entry,blockId,specs,writers=[],taskScopeId=null,makeLocalId=null,
+}={}) {
   if (!entry || !Array.isArray(entry.references) || !Array.isArray(entry.calls) ||
       !(specs instanceof Map) || typeof blockId!=='string' || !blockId) fail('attested entry, block identity and specs required');
   if (entry.parseError!==null && entry.parseError!==undefined) fail('invalid source');
-  const reads = new Map(), callables = new Map();
+  const reads = new Map(), callables = new Map(), selectedCalls = new Map();
   for(const ref of entry.references){
     if(ref.binding?.kind!=='provider-reference' || typeof ref.binding.providerId!=='string' || !ref.binding.providerId)fail('unresolved read');
     if(reads.has(ref.name) && reads.get(ref.name)!==ref.binding.providerId)fail('conflicting reads');
     reads.set(ref.name,ref.binding.providerId);
   }
   for(const item of entry.calls){
-    if(item.classification!=='document-writer' || item.candidates?.length!==1 ||
-        item.candidates[0]!=='document-writer' || typeof item.providerId!=='string' || !item.providerId)
+    if(typeof item?.name!=='string' || !item.name ||
+        !Array.isArray(item.candidates) || item.candidates.length!==1)
       fail('unresolved callable');
-    if(callables.has(item.name) && callables.get(item.name)!==item.providerId)fail('conflicting calls');
-    if(reads.has(item.name) && reads.get(item.name)!==item.providerId)fail('conflicting read/call');
-    callables.set(item.name,item.providerId);
+    if(item.classification==='document-writer' && item.candidates[0]==='document-writer') {
+      if(typeof item.providerId!=='string' || !item.providerId || selectedCalls.has(item.name))
+        fail('invalid callable provider');
+      if(callables.has(item.name) && callables.get(item.name)!==item.providerId)
+        fail('conflicting calls');
+      if(reads.has(item.name) && reads.get(item.name)!==item.providerId)
+        fail('conflicting read/call');
+      callables.set(item.name,item.providerId);
+    } else if(item.classification==='operation' && item.candidates[0]==='operation') {
+      // Only a P0020-classified, explicitly selected P0008 operation is eligible.
+      // An ambiguous document writer collision never becomes a local binder.
+      const selectedSpec=specs.get(item.name);
+      if(item.providerId!==null || !matchesSelectedOperationSpec(selectedSpec) ||
+          callables.has(item.name))
+        fail('unattested selected operation');
+      selectedCalls.set(item.name,selectedSpec);
+    } else fail('unresolved callable');
   }
   const selected=(name,args)=>{
     const spec=specs.get(name);
@@ -32,33 +52,43 @@ export function compileAttestedDocumentExpressionIR(statement,{entry,blockId,spe
         spec.arguments?.length!==args.length || spec.arguments.some(a=>a.role!=='value'))fail(`unsupported operation ${name}`);
     return call(operationReference(name),args);
   };
-  const lit=n=>valueLiteral(expression({op:'integer',value:String(n)}));
-  const neg=n=>selected('multiply',[lit(-1),n]);
-  const seenCalls=new Set(), seenReads=new Set();
-  const visit=n=>{
-    if(!n || typeof n!=='object')fail('invalid node');
-    switch(n.type){
-      case 'Literal':if(!Number.isSafeInteger(n.value) || n.value<0)fail('only nonnegative integer literals');return lit(n.value);
-      case 'Variable':{
-        if(!reads.has(n.name))fail(`unattested variable ${n.name}`);
-        seenReads.add(n.name);return providerReference(reads.get(n.name));
-      }
-      case 'FunctionCall':{
-        if(!callables.has(n.name) || !Array.isArray(n.args))fail(`unattested callable ${n.name}`);
-        seenCalls.add(n.name);return call(providerReference(callables.get(n.name)),n.args.map(visit));
-      }
-      case 'UnaryExpression':if(n.op!=='-')fail('unsupported unary operator');return neg(visit(n.argument));
-      case 'PowerExpression':return selected('power',[visit(n.base),visit(n.exponent)]);
-      case 'BinaryExpression':{
-        const lhs=visit(n.left),rhs=visit(n.right);
-        if(operators[n.op])return selected(operators[n.op],[lhs,rhs]);
-        if(n.op==='-')return selected('add',[lhs,neg(rhs)]);
-        if(n.op==='/')return selected('multiply',[lhs,selected('power',[rhs,lit(-1)])]);
-        fail('unsupported binary operator');
-      }
-      default:fail(`unsupported node ${n.type}`);
-    }
+  // Same arithmetic rules as function-source compilation; attestation stays here.
+  const arithmetic=createSelectedArithmeticLowering(selected);
+  const seenCalls=new Set(), seenReads=new Set(), localIdentityIds=new Set();
+  const supplyLocalId=meta=>{
+    const id=makeLocalId(meta);
+    if(typeof id!=='string' || !id || localIdentityIds.has(id))
+      fail('duplicate or invalid document-owned local identity');
+    localIdentityIds.add(id);
+    return id;
   };
+  // Lexical identities are enabled only by a caller-owned document scope and
+  // identity supplier. Ordinary documents retain their existing IR byte shape.
+  const lexicalScope=taskScopeId===null ? null : new LexicalIdentityScope(taskScopeId);
+  const resolveVariable=(n,scope)=>{
+    const identity=scope?.resolve(n.name);
+    if(identity && identity.kind!=='free-symbol')return semanticReference(identity);
+    if(!reads.has(n.name))fail(`unattested variable ${n.name}`);
+    seenReads.add(n.name);return providerReference(reads.get(n.name));
+  };
+  const resolveCall=(n,scope,visit)=>{
+    if(!Array.isArray(n.args))fail('invalid callable AST');
+    if(selectedCalls.has(n.name)) {
+      if(scope===null || typeof makeLocalId!=='function')
+        fail('selected symbolic operation requires document-owned identity supplier');
+      const spec=selectedCalls.get(n.name);
+      const plan=planSourceOccurrenceRoles(n,spec);
+      if(plan.status!=='selected')fail('unselected operation signature');
+      seenCalls.add(n.name);
+      return resolveSelectedOperationCall(n,spec,
+        (arg,meta)=>visit(arg,meta.lexicalScope??scope),supplyLocalId,scope);
+    }
+    if(!callables.has(n.name))fail(`unattested callable ${n.name}`);
+    seenCalls.add(n.name);
+    return call(providerReference(callables.get(n.name)),n.args.map(arg=>visit(arg,scope)));
+  };
+  const visit=n=>lowerSourceExpressionTree(n,{arithmetic,resolveVariable,resolveCall,
+    reject:fail,context:lexicalScope});
   if(!statement || typeof statement!=='object')fail('statement required');
   let result;
   if(statement.type==='Assignment'){
@@ -66,6 +96,6 @@ export function compileAttestedDocumentExpressionIR(statement,{entry,blockId,spe
       fail('unattested writer');
     result=define(blockId,visit(statement.value));
   } else result=visit(statement);
-  if(seenCalls.size!==callables.size || seenReads.size!==reads.size)fail('unconsumed attestations');
+  if(seenCalls.size!==callables.size+selectedCalls.size || seenReads.size!==reads.size)fail('unconsumed attestations');
   return result;
 }

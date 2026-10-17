@@ -8,13 +8,15 @@ from typing import Dict, Any, Tuple, Set
 from cas_math.registry import build_context
 from units.definitions import UNITS
 from units.convert import convert_to_unit
+from .legacy_safe_builtins import LEGACY_SAFE_BUILTINS
 
 def build_base_context() -> Tuple[Dict[str, Any], frozenset]:
     """
     Konstruerer CAS-engineens base-namespace.
     Prioritet: SymPy builtins < Registry functions < Units/Constants
     """
-    ctx: Dict[str, Any] = {}
+    # CPython otherwise injects its entire builtins namespace into exec/eval.
+    ctx: Dict[str, Any] = {"__builtins__": LEGACY_SAFE_BUILTINS}
 
     # ① SymPy callables
     for name, obj in vars(sp).items():
