@@ -26,7 +26,10 @@ export async function dispatchSemanticEvaluationBatch(batch, {
       blockId:decision.blockId, providerId:decision.providerId});
 
     let outcome;
-    if (decision.kind === 'blocked') {
+    if (decision.kind === 'invalid-source') {
+      outcome = {blockId:decision.blockId, status:'failure', code:'INVALID_SOURCE',
+        message:decision.message};
+    } else if (decision.kind === 'blocked') {
       outcome = {blockId:decision.blockId, status:'failure', code:'UPSTREAM_FAILED',
         message:`Required provider ${decision.providerId} did not succeed`};
     } else {

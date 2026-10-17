@@ -6,8 +6,7 @@ import {analyzeSourceBlocks} from './analyze-source-blocks.js';
 import {deriveBlockSourceBindings} from './derive-block-source-bindings.js';
 import {classifyBlockCallTargets} from './classify-call-targets.js';
 
-export function deriveSourceSemanticSnapshot(blocks, parse, taskScopeId) {
-  const analysis = analyzeSourceBlocks(blocks, parse, taskScopeId);
+export function snapshotFromSourceAnalysis(analysis) {
   const bindings = deriveBlockSourceBindings(analysis);
   const calls = classifyBlockCallTargets(analysis, bindings);
   const entries = analysis.entries.map((entry, i) => {
@@ -29,4 +28,8 @@ export function deriveSourceSemanticSnapshot(blocks, parse, taskScopeId) {
     writers: analysis.writers,
     blocks: Object.freeze(entries),
   });
+}
+
+export function deriveSourceSemanticSnapshot(blocks, parse, taskScopeId) {
+  return snapshotFromSourceAnalysis(analyzeSourceBlocks(blocks, parse, taskScopeId));
 }

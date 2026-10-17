@@ -10,9 +10,13 @@ test('S82 browser exercises the production DocumentRuntime batch, not retired ad
  assert.match(script,/setBlockSource/);
  assert.doesNotMatch(script,/createBoundFunctionTaskEvaluator|createSourceComposedExpressionTaskEvaluator/);
 });
-test('S82 preserves old browser witness and bound adapter until actual replacement is browser-proven',()=>{
+test('S82/S84 historical Worker proof replaced by real active-IR Worker witness',()=>{
+ const source=read('tests/browser/p0021-slice-83-active-ir-worker.mjs');
+ assert.match(source,/createRuntimeFunctionBatchEvaluator/);
+ assert.match(source,/createWorkerEvaluationClient/);
+ assert.match(source,/client\.evaluate\(envelope,selection\)/);
  for(const rel of ['src/js/semantics/create-bound-function-task-evaluator.js','tests/browser/p0021-function-worker-smoke.mjs','tests/js/p0021-bound-function-batch.test.mjs'])
-  assert.ok(existsSync(new URL(`../../${rel}`,import.meta.url)),`Do not retire without replacement: ${rel}`);
+  assert.equal(existsSync(new URL(`../../${rel}`,import.meta.url)),false,`Historical artifact still present: ${rel}`);
 });
 test('S82 browser documents JS test backend and does not claim end-to-end Pyodide proof',()=>{
  assert.match(read('tests/browser/p0021-slice-82-active-ir-acceptance.html'),/JavaScript-testbackend/);

@@ -19,6 +19,22 @@ import {
     buildDocumentDependencyAnalysis,
     findBlocksWithChangedBindings
 } from './document-dependency-graph.js';
+// Source persistence must be independent of source completeness. A block
+// without exactly one supported statement supplies no legacy graph writer;
+// authoritative semantic binding is derived separately from source.
+function sourceDependencies(source) {
+    if (typeof source !== 'string') throw new TypeError('formula source must be a string');
+    if (!source.trim()) return {reads: [], writes: []};
+    try {
+        const ast = parse(source);
+        if (!Array.isArray(ast) || ast.length !== 1) return {reads: [], writes: []};
+        return analyzeDependencies(ast);
+    } catch {
+        // Invalid/incomplete editor source is data, not a document mutation error.
+        return {reads: [], writes: []};
+    }
+}
+
 export class DocumentRuntime {
     constructor(engine, documentId) {
         if (!engine) {
@@ -104,10 +120,7 @@ export class DocumentRuntime {
             storedBlock.source ??= '';
             storedBlock.taskId ??= 'default';
 
-            storedBlock.dependencies =
-                storedBlock.source.trim() === ''
-                    ? { reads: [], writes: [] }
-                    : analyzeDependencies(parse(storedBlock.source));
+            storedBlock.dependencies = sourceDependencies(storedBlock.source);
 
             storedBlock.calculation = {
                 status: 'idle',
@@ -266,12 +279,9 @@ export class DocumentRuntime {
             throw new Error(`Block har ingen formula-source: ${blockId}`);
         }
 
-        // Parse og dependency-analyse sker før mutation.
-        // Ved ugyldig source forbliver block og graph uændret.
-        const dependencies =
-            source.trim() === ''
-                ? { reads: [], writes: [] }
-                : analyzeDependencies(parse(source));
+        // Validate input type and derive optional dependencies before mutation.
+        // Syntax-invalid or unsupported source is still committed as source data.
+        const dependencies = sourceDependencies(source);
 
         const oldSemantic = this.captureSemanticAnalyses();
 

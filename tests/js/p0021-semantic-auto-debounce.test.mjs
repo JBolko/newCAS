@@ -66,10 +66,10 @@ test('S63 stale result and successful completion never reschedule a timer',async
  c.advance(200);await tick();assert.equal(outcomes.length,1);assert.equal(c.size,0);s.dispose();
 });
 
-test('S63 failed source edit is not scheduled and dispose cancels pending timers',async()=>{
+test('S63 invalid source TYPE does not schedule and dispose cancels pending timers',async()=>{
  const rt=make();setup(rt);const c=clock(),visits=[];
  const s=scheduler(rt,c,visits);
- assert.throws(()=>rt.setBlockSource('A-x','('));assert.equal(c.size,0);
+ assert.throws(()=>rt.setBlockSource('A-x',{}),/source must be a string/);assert.equal(c.size,0);
  rt.setBlockSource('A-x','x:=3');assert.equal(c.size,1);
  s.dispose();assert.equal(c.size,0);c.advance(1000);await tick();assert.equal(visits.length,0);
 });

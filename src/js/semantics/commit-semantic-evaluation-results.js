@@ -64,6 +64,14 @@ export function nextSemanticEvaluationDecision(batch, state, currentRevision, ca
       if (!known.has(id)) known.set(id, record.outcome);
     }
   }
+  // Only the document side may turn invalid source into a local failure.
+  // Do not call an evaluator on text with no well-formed statement.
+  if (Object.hasOwn(task, 'sourceDiagnostic')) {
+    if (typeof task.sourceDiagnostic !== 'string' || !task.sourceDiagnostic || task.upstream.length) {
+      throw new TypeError('invalid source task must carry one local diagnostic and no dependencies');
+    }
+    return Object.freeze({kind:'invalid-source',blockId:task.blockId,message:task.sourceDiagnostic});
+  }
   for (const dep of task.upstream) {
     const outcome = known.get(dep);
     if (!outcome || !validOutcome(outcome)) return Object.freeze({kind:'missing-upstream', blockId:task.blockId, providerId:dep});
@@ -81,6 +89,9 @@ export function commitSemanticEvaluationOutcome(batch, state, currentRevision, o
   if (decision.kind === 'complete') throw new Error('evaluation batch complete');
   if (decision.kind === 'missing-upstream') throw new Error('missing upstream outcome');
   if (!outcome || outcome.blockId !== batch.tasks[state.cursor].blockId || !validOutcome(outcome)) throw new TypeError('invalid or out-of-order outcome');
+  if (decision.kind === 'invalid-source' && (outcome.status !== 'failure' || outcome.code !== 'INVALID_SOURCE')) {
+    throw new Error('invalid source cannot produce successful evaluation');
+  }
   if (decision.kind === 'blocked' && (outcome.status !== 'failure' || outcome.code !== 'UPSTREAM_FAILED')) {
     throw new Error('blocked task cannot produce successful evaluation');
   }

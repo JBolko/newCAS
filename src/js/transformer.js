@@ -9,35 +9,8 @@
 // Binære operatorer — ^ håndteres via PowerExpression-noden, ikke her
 const OPS = { '+': '+', '-': '-', '*': '*', '/': '/' };
 
-// Mapping fra brugervenlige enhedsnavne til Python-interne navne i base_context.
-// Formål: undgå konflikter med Python-funktioner og SymPy-navne.
-// Brugeren skriver [min], [N], [g] — Python-koden bruger minute, newton, gram.
-//
-// Regler for hvad der skal aliases:
-//   'min'  → 'minute'  konflikter med min() funktionen
-//   'N'    → 'newton'  konflikter med SymPy's N() (numerisk evaluering)
-//   'g'    → 'gram'    konflikter med g = 9,82 m/s² konstanten
-//   'E'    → 'eV'      (ikke i brug endnu, men E konflikter med Eulers tal)
-//
-// Enheder der IKKE aliases — de har unikke navne uden konflikter:
-//   m, km, cm, mm, dm, s, ms, h, kg, mg, J, kJ, MJ, W, kW, kWh,
-//   Pa, hPa, bar, A, mA, V, kV, C, Ohm, K, degC, deltaC
-const UNIT_ALIASES = {
-    'min': 'minute',   // min({data}) vs 5[min]
-    'N':   'newton',   // N(expr) vs 5[N]
-    'g':   'gram',     // g = 9.82 m/s² vs 5[g]
-};
-
-/** Oversætter en enhedsstreng fra brugernotation til Python-internt navn.
- *  Håndterer sammensatte enheder som "kg*m/s**2" korrekt ved at splitte
- *  på operatorer og kun aliase hele token-ord. */
-function resolveUnit(unitStr) {
-    // Erstat hvert helt "ord" (enhedsnavn) med sit alias hvis det findes.
-    // Regex matcher kun hele token: "min" i "km/min" oversættes, men "m" i "km" ikke.
-    return unitStr.replace(/[A-Za-z_][A-Za-z0-9_]*/g, token =>
-        UNIT_ALIASES[token] ?? token
-    );
-}
+// Retiring source-to-Python engine only. No imports into P0021 Semantic IR.
+import {compileLegacyQuantityUnit, compileLegacyConversionUnit} from './legacy/compile-legacy-unit.js';
 
 export class Transformer {
     constructor(settings) {
@@ -100,24 +73,16 @@ export class Transformer {
             }
 
             case 'Quantity': {
-                // replace(^→**) + alias (min→minute, N→newton, g→gram)
-                const unitClean = resolveUnit(node.unit.replace(/\^/g, '**').trim());
-                return `(${node.value} * ${unitClean})`;
+                const unitExpression = compileLegacyQuantityUnit(node.unit);
+                return `(${node.value} * ${unitExpression})`;
             }
 
             case 'Access':
                 return `${node.container}[${this.translate(node.index)}]`;
 
             case 'Conversion': {
-                // replace([]→'') + replace(^→**) + alias
-                const targetClean = resolveUnit(
-                    node.targetUnit
-                        .replace(/[\[\]]/g, '')
-                        .replace(/\^/g, '**')
-                        .trim()
-                );
-                if (!targetClean) return this.translate(node.expr);
-                return `convert_to_unit(${this.translate(node.expr)}, "${targetClean}")`;
+                const targetLiteral = compileLegacyConversionUnit(node.targetUnit);
+                return `convert_to_unit(${this.translate(node.expr)}, ${targetLiteral})`;
             }
 
             case 'Derivative': {

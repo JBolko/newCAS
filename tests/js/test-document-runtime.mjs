@@ -435,34 +435,17 @@ test('changing formula source updates dependencies', () => {
     );
 });
 
-test('invalid source does not mutate existing formula state', () => {
-    const engine = makeFakeEngine();
-    const runtime = new DocumentRuntime(engine, 'document-17');
-
-    runtime.addBlock({
-        id: 'formula-1',
-        type: 'formula',
-        source: 'b:=2*a'
-    });
-
-    assert.throws(
-        () => runtime.setBlockSource(
-            'formula-1',
-            'b:=('
-        )
-    );
-
+test('invalid source is committed without creating a writer or hidden dependencies', () => {
+    const runtime = new DocumentRuntime(makeFakeEngine(), 'document-17');
+    runtime.addBlock({id: 'formula-1', type: 'formula', source: 'b:=2*a'});
+    const generation = runtime.getBlock('formula-1').calculation.generation;
+    assert.doesNotThrow(() => runtime.setBlockSource('formula-1', 'b:=('));
     const block = runtime.getBlock('formula-1');
-
-    assert.equal(block.source, 'b:=2*a');
-
-    assert.deepEqual(
-        block.dependencies,
-        {
-            reads: ['a'],
-            writes: ['b']
-        }
-    );
+    assert.equal(block.source, 'b:=(');
+    assert.deepEqual(block.dependencies, {reads: [], writes: []});
+    assert.equal(block.calculation.result, null);
+    assert.ok(block.calculation.generation > generation);
+    assert.equal(runtime.deriveSemanticTask().snapshot.blocks[0].parseError !== null, true);
 });
 
 test('empty formula source has no dependencies', () => {
@@ -2393,52 +2376,16 @@ test('insertBlock rejects invalid insertion without mutating document', () => {
     assert.equal(runtime.getBlock('B'), null);
 });
 
-test('insertBlock rejects invalid formula source without mutating document', () => {
-    const runtime = new DocumentRuntime(
-        makeFakeEngine(),
-        'doc-1'
-    );
-
-    runtime.addBlock({
-        id: 'A',
-        type: 'formula',
-        source: 'a:=1'
-    });
-
-    runtime.addBlock({
-        id: 'C',
-        type: 'formula',
-        source: 'c:=a'
-    });
-
-    const beforeBlocks = runtime.getBlocks();
-    const beforeGraph = runtime.getDependencyGraph('default');
-
-    assert.throws(
-        () => runtime.insertBlock(
-            {
-                id: 'B',
-                type: 'formula',
-                source: 'a:='
-            },
-            1
-        )
-    );
-
-    assert.deepEqual(
-        runtime.getBlocks(),
-        beforeBlocks
-    );
-
-    assert.equal(
-        runtime.getBlock('B'),
-        null
-    );
-
-    assert.equal(
-        runtime.getDependencyGraph('default'),
-        beforeGraph
-    );
+test('insertBlock accepts incomplete formula source and preserves valid surrounding bindings', () => {
+    const runtime = new DocumentRuntime(makeFakeEngine(), 'doc-1');
+    runtime.addBlock({id: 'A', type: 'formula', source: 'a:=1'});
+    runtime.addBlock({id: 'C', type: 'formula', source: 'c:=a'});
+    assert.doesNotThrow(() => runtime.insertBlock({id: 'B', type: 'formula', source: 'a:='}, 1));
+    assert.deepEqual(runtime.getBlocks().map(b => b.id), ['A', 'B', 'C']);
+    assert.deepEqual(runtime.getBlock('B').dependencies, {reads: [], writes: []});
+    assert.equal(runtime.getDependencyGraph('default').getUpstream('C')[0], 'A');
+    assert.equal(runtime.deriveSemanticTask().analysis.bindings.get('C').get('a'), 'A');
+    assert.equal(runtime.deriveSemanticTask().snapshot.blocks[1].parseError !== null, true);
 });
 
 test('insertBlock rejects duplicate id without mutating document', () => {

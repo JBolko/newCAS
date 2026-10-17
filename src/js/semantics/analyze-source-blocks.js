@@ -29,6 +29,12 @@ export function analyzeSourceBlocks(blocks, parse, taskScopeId) {
       // not an authoritative document change or a fabricated Value.
       parseError = error instanceof Error ? error.message : String(error);
     }
+    // A formula block is one semantic position. Multiple parsed statements
+    // have no defined internal writer order yet: preserve source, but do not
+    // establish any writer or attempt to bind expressions from it.
+    if (parseError === null && (!Array.isArray(ast) || ast.length !== 1)) {
+      parseError = 'Expected exactly one statement per formula block';
+    }
     if (parseError === null) {
       const established = establishSourceWriters(ast, {
         writerId: block.id, taskScopeId, position,

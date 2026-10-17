@@ -30,8 +30,12 @@ test('s4: missing upstream result refuses premature evaluation',()=>{
 test('s4: execution order cannot put consumer before provider',()=>{
  const s=setup();s.schedule.order=['c','a','b'];assert.throws(()=>prepare(s.snapshot,s.analysis,s.schedule,s.sources),/upstream outcome unavailable/);
 });
-test('s4: invalid syntax cannot be dispatched to evaluator',()=>{
- const s=setup({parseError:{a:'Expected expression'}});assert.throws(()=>prepare(s.snapshot,s.analysis,s.schedule,s.sources),/syntactically invalid/);
+test('s4: invalid syntax remains a local failure task and does not become evaluator input',()=>{
+ const s=setup({parseError:{a:'Expected expression'}});
+ const result=prepare(s.snapshot,s.analysis,s.schedule,s.sources);
+ assert.equal(result.tasks[0].sourceDiagnostic,'Expected expression');
+ assert.equal(result.tasks[1].sourceDiagnostic,undefined);
+ assert.ok(Object.isFrozen(result.tasks[0]));
 });
 test('s4: blocked cycles are carried as facts but not dispatched',()=>{
  const s=setup({ids:['a','b'],edges:[['a','b'],['b','a']],bindings:{a:[['b','b']],b:[['a','a']]}});

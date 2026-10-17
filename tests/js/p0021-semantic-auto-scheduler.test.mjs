@@ -65,9 +65,9 @@ test('S61 separate task edit cannot contaminate other task',async()=>{
  assert.equal(value(rt,'A-call'),'18');assert.equal(value(rt,'B-call'),'10300');
  assert(visits.every(v=>v[0]==='A'));s.dispose();
 });
-test('S61 unsuccessful edit and disposal do not trigger evaluation',async()=>{
+test('S61 invalid source TYPE and disposal do not trigger evaluation',async()=>{
  const rt=make();setup(rt);const visits=[],errors=[];
  const s=createSemanticAutoScheduler({runtime:rt,createEvaluate:instrument(visits),onError:(...e)=>errors.push(e)});
- assert.throws(()=>rt.setBlockSource('default-x','('));await tick();assert.equal(visits.length,0);
+ assert.throws(()=>rt.setBlockSource('default-x',{}),/source must be a string/);await tick();assert.equal(visits.length,0);
  s.dispose();rt.setBlockSource('default-x','x:=3');await tick();assert.equal(visits.length,0);assert.equal(errors.length,0);
 });

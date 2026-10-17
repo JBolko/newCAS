@@ -16,10 +16,12 @@ const retired=[
 test('S81 retired source-call adapter implementations and API-only tests are absent',()=>{
  for(const path of retired) assert.equal(exists(path),false,`historical artifact still present: ${path}`);
 });
-test('S81 current IR batch remains authoritative; real Worker consumer is retained',()=>{
+test('S81/S84 current IR batch remains authoritative; historical bound adapter retired',()=>{
  const batch=read('src/js/semantics/create-runtime-function-batch-evaluator.js');
  assert.match(batch,/createAttestedIRTaskEvaluator/);
  assert.doesNotMatch(batch,/createSource(?:Literal|Variable)FunctionTaskEvaluator/);
- assert.ok(exists('src/js/semantics/create-bound-function-task-evaluator.js'));
- assert.match(read('tests/browser/p0021-function-worker-smoke.mjs'),/createBoundFunctionTaskEvaluator/);
+ assert.equal(exists('src/js/semantics/create-bound-function-task-evaluator.js'),false);
+ assert.equal(exists('tests/browser/p0021-function-worker-smoke.mjs'),false);
+ assert.ok(exists('tests/browser/p0021-slice-83-active-ir-worker.mjs'));
+ assert.match(read('tests/browser/p0021-slice-83-active-ir-worker.mjs'),/createRuntimeFunctionBatchEvaluator/);
 });

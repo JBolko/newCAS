@@ -31,8 +31,10 @@ export function prepareSemanticEvaluationBatch(snapshot, analysis, schedule, sou
   const tasks = [];
   for (const id of order) {
     const block = entries.get(id);
-    if (block.parseError !== null) throw new TypeError(`cannot evaluate syntactically invalid block: ${id}`);
     if (typeof sources.get(id) !== 'string') throw new TypeError(`missing source for block: ${id}`);
+    if (block.parseError !== null && (typeof block.parseError !== 'string' || !block.parseError)) {
+      throw new TypeError('invalid source diagnostic');
+    }
     const upstream = analysis.graph.getUpstream(id);
     if (!Array.isArray(upstream) || upstream.some(dep => !valid.has(dep))) throw new TypeError('invalid upstream edge');
     for (const dep of upstream) {
@@ -46,12 +48,18 @@ export function prepareSemanticEvaluationBatch(snapshot, analysis, schedule, sou
       }
       return Object.freeze({name, providerId});
     }));
+    // Invalid source stays in the ordered batch as a local failure. It must
+    // never reach the IR evaluator, Worker, or historical CASEngine.
+    if (block.parseError !== null && (upstream.length || providers.length)) {
+      throw new TypeError('invalid source must not claim dependencies');
+    }
     tasks.push(Object.freeze({
       blockId: id,
       taskScopeId: snapshot.taskScopeId,
       source: sources.get(id),
       providers,
       upstream: Object.freeze([...upstream]),
+      ...(block.parseError === null ? {} : {sourceDiagnostic: block.parseError}),
     }));
     scheduled.add(id);
   }

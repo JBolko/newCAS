@@ -49,16 +49,8 @@ test('legacy path matching is platform-independent',()=>{
  assert.equal(win.replaceAll('\\','/'),expected);
  assert.ok(legacy.some(file=>expected===`src/js/semantics/${file}`));
 });
-test('remaining bound-function adapter consumers are explicit migration witnesses only',()=>{
- const users=directConsumers();
- const bound='src/js/semantics/create-bound-function-task-evaluator.js';
- const expected=[
-  {path:'tests/browser/p0021-function-worker-smoke.mjs',target:bound},
-  {path:'tests/js/p0021-bound-function-batch.test.mjs',target:bound},
- ];
- assert.deepEqual(users.sort((a,b)=>a.path.localeCompare(b.path)),
-   expected.sort((a,b)=>a.path.localeCompare(b.path)),
-   `unexpected historical adapter consumers: ${JSON.stringify(users)}`);
+test('S84: retired adapter modules have no remaining direct consumers',()=>{
+ assert.deepEqual(directConsumers(),[], 'retired adapter imported after active-IR migration');
 });
 test('active production batch is outside the direct legacy import set',()=>{
  assert.ok(!directConsumers().some(x=>x.path.endsWith('create-runtime-function-batch-evaluator.js')));

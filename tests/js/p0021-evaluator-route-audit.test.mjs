@@ -53,7 +53,7 @@ test('historical evaluator adapters are not statically reachable from active bat
  const graph=localReachable(batch);
  for(const file of legacy) assert.ok(!graph.has(resolve(root,'src/js/semantics',file)),`legacy route reintroduced: ${file}`);
 });
-test('S81: retired source adapters are absent after migration',()=>{
+test('S84: all retired source adapters are absent after migration',()=>{
  for(const file of [
   'create-source-integer-assignment-task-evaluator.js',
   'create-source-expression-task-evaluator.js',
@@ -61,7 +61,6 @@ test('S81: retired source adapters are absent after migration',()=>{
   'create-source-literal-function-task-evaluator.js',
   'create-source-variable-function-task-evaluator.js',
  ]) assert.ok(!existsSync(resolve(root,'src/js/semantics',file)),`retired adapter still present: ${file}`);
- for(const file of [
-  'create-bound-function-task-evaluator.js',
- ]) assert.ok(existsSync(resolve(root,'src/js/semantics',file)),`still-required contract consumer missing: ${file}`);
+ assert.ok(!existsSync(resolve(root,'src/js/semantics/create-bound-function-task-evaluator.js')),
+   'S84 retired bound-function adapter must be absent');
 });
