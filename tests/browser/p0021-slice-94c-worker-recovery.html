@@ -1,0 +1,10 @@
+<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>newCAS P0021 S94c — eksplicit Worker-genstart</title>
+<style>body{font:16px/1.55 system-ui,sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem}button{padding:.7rem 1rem;font:inherit}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f3f3;padding:1rem;border-radius:.5rem}.pass{color:#08743c}.fail{color:#b02531}.pending{color:#876400}</style>
+</head><body>
+<h1>S94c — kontrolleret genstart af Web Worker</h1>
+<p>Afprøver timeout, nedbrud og eksplicit genstart i rigtige Web Workers. Der sker ingen automatisk gentagelse af beregninger. Testen anvender ikke Pyodide; den uændrede SymPy-vej er verificeret i Slice 94b.</p>
+<button id="run" type="button">Kør genstartstest</button>
+<p id="status" role="status" aria-live="polite">Ikke kørt</p><pre id="log" role="log" aria-live="polite"></pre>
+<script type="module" src="./p0021-slice-94c-worker-recovery.mjs"></script>
+</body></html>

@@ -1,52 +1,88 @@
 # newCAS Frozen-Architecture Implementation Roadmap
 
-**Status:** Living implementation roadmap (sequencing may change).  
-**Numbering:** Implementation series `P0001` onward.  
-**Rule:** Frozen architecture is normative; roadmap sequencing is not.  
-**Progress (2026-10-13):** P0001–P0011 complete as originally audited. Subsequent implementation deliberately crossed roadmap phases; P0021 Slices 14–38 established selected scalar, symbolic, FunctionValue and Worker paths. **713/713 JavaScript tests and the Slice 38 real-browser regression were reported green by the developer.** This is an evidence snapshot, not a claim that P0012–P0025 have met all their exits.
-**Git baseline:** `6a6ee24` (`architecture-v1-implementation`) covers work through Slice 35; Slices 36–38 are locally validated but require the next commit.
-**Current priority:** Integrate the established semantics/evaluator boundary into the real DocumentRuntime, then verify document edits, dependency binding, invalidation, ordering and stale-result protection.
-**Test totals are snapshots, not exit conditions.**
+**Status:** Living implementation roadmap, updated 2026-10-18 after S94f acceptance.
+**Numbering:** Preserve capability/ownership landmarks `P0001`–`P0050`. `P0021` slices are incremental implementation/test deliveries, **not** new roadmap phase identifiers.
+**Authority:** The three frozen v1.0 architecture documents and applicable ADRs remain normative. This roadmap is not.
+**Git baseline:** `440fea3` (`architecture-v1-implementation`) — *P0021 checkpoint: parser, safety gates and S93 semantic IR consolidation* (committed 2026-10-17).
+**Latest reported full acceptance:** S94f on the developer's Node 24.11.0 checkout: **1,125 JS PASS, 0 FAIL, 0 CANCELLED, 7 TODO, 1 SKIPPED; 264 Python PASS**; focused S94f test gate 143/143. Real browser supervision (S94b), recovery (S94c), DocumentRuntime recovery (S94e), and real Pyodide/SymPy (S94b) were separately reported PASS. These are dated evidence snapshots, **not** complete phase exits.
+**Immediate priority:** S95 active legacy-route/call-graph audit, selected mathematical operation coverage, real UI cutover and systematic retirement. S94a–f closes the opt-in Worker supervision/recovery tranche, **not** all product hardening or active UI migration.
 
-## Purpose
+## Purpose and governing principles
 
-This roadmap provides stable landmarks after architecture freeze without
-pretending that implementation can be predicted in full detail.
+This roadmap records **capability, ownership, evidence, and open work** after architecture freeze. It is not a strictly chronological implementation queue. Slices may be split or reordered when evidence demands it; a green slice does **not** close a P-phase unless its exit is demonstrated.
 
-A phase may be split, merged or reordered when implementation evidence
-requires it. A roadmap change does not change architecture. Any
-implementation discovery that would change frozen mathematical semantics
-requires an explicit architecture decision/ADR before coding proceeds.
+- **No architectural shortcuts:** Canonical source → Peggy AST → source roles/attestation → Semantic IR → Value/selected evaluator → Worker transport → controlled SymPy backend. Document resolution, mathematical semantics, backend execution, and presentation retain separate ownership.
+- **No additional evaluator and no Python string-code generation in the selected path.** Legacy can be temporarily contained, but its `exec`/`eval`/codegen model must not migrate into the IR engine.
+- **Frozen contracts outrank roadmap convenience.** Any change in frozen mathematical or document semantics requires an explicit version/ADR decision before implementation.
+- **RED → GREEN with traceable evidence:** Small repo-relative ZIP slices, controlled PowerShell verifiers, full JS/Python gates, and real browser/Pyodide tests where applicable. A TODO is never silently counted as an implemented case.
+- **Release hygiene:** Build student distributions by allowlist; never ship `tools/`, test reports, one-shot migration scripts, transport ZIPs, tests, repomix dumps, or developer-only dependencies.
 
-## Implementation checkpoint — 13 October 2026
+## Implementation checkpoint — 18 October 2026
 
-The originally numbered phases remain useful **capability and ownership landmarks**, not a strictly chronological queue. Slices are experimental/incremental implementation steps, **not** replacement roadmap project identifiers. A green slice does not close a roadmap phase without its stated exit criteria.
-
-| Track | Verified / implemented so far | Remaining before exit |
+| Track | Demonstrated implementation / evidence | Remaining before exit |
 | --- | --- | --- |
-| Contracts P0001–P0011 | Originally closed / green; frozen architecture remains authoritative. | Preserve invariants as integration broadens. |
-| Scalar evaluator P0012 | Selected `add`, `multiply`, `power`, signed-source and trigonometric/scalar-family paths; real Pyodide Worker smoke checks. | Full agreed capability/diagnostic coverage and exit audit. |
-| FunctionValue P0013 | Definition compilation, lexical binders, immutable materialization, application, provider-selected evaluation, capture and shadowing checks; real Worker checks. | Full document integration, multi-argument/higher-order/arity cases as required by scope. |
-| Symbolic P0014 | `diff` through selected symbolic request → SymPy → immutable result; differentiated FunctionValue and invocation verified in real browser (`f'(12)=436`). | Broader selected symbolic capabilities (`integrate`, `sum`, `solve`, `limit`), robust diagnostics and exit audit. |
-| P0015–P0017 | Earlier capability probes/contract foundations may exist. | Containers, units, statistics/regression end-to-end paths are not yet evidenced as complete. |
-| Parser/resolution P0018–P0020 | Selected source AST and signed precedence, symbolic argument roles, lexical function definitions and source/provider binding slices. | Full grammar/resolver coverage and normative boundary audit; P0018 i18n/grammar RED probe outstanding. |
-| Document P0021–P0025 | Selected binding/DAG/batch/worker plumbing, revision-guarded provider outcomes and fail-closed checks demonstrated. | **Next:** actual DocumentRuntime end-to-end orchestration, source edit/rebinding, dirty propagation, task boundaries, generation/stale protection and normative stress suite. |
-| UI/persistence/legacy removal/hardening P0026–P0050 | Planned landmarks retained. | Not claimed complete on the basis of evaluator smoke tests. |
+| **P0001–P0011: frozen contracts/adapter** | Originally closed and tested; frozen v1.0 remains unchanged. | Continue invariant regression at every integration boundary. |
+| **P0012: scalar evaluator** | Selected arithmetic, trigonometric, numeric Value/Worker paths; S93a–b consolidated duplicated expression lowering/traversal. | Complete agreed OperationSpec coverage, diagnostics, and exit audit. |
+| **P0013: FunctionValue** | Lexical binders, immutable captures, derived functions, and attested composed calls (S93c RED → S93d GREEN); prior real Pyodide smoke. | Full document/function-capability audit, higher-order/arity cases as required by scope. |
+| **P0014: symbolic operations** | Selected `diff` via real-browser SymPy; S93f–h project symbolic occurrence identities and providers through IR into Value materialization. | Active attested Worker execution of `integrate`/`tangentline` and other selected operations, actual browser coverage, diagnostics and capability exit. **F7 remains partly open.** |
+| **P0015–P0017: containers, quantities, statistics** | Original contract foundations and backend capability probes. | No full end-to-end exits demonstrated for the three evaluator tracks. |
+| **P0018: grammar/parser** | Canonical Peggy source/generated-parser sync gates; S91a packrat cache protects selected pathological parses. | Complete language/i18n audit, Danish decimal comma vs. argument comma, exact numeric-literal precision, other grammar stress cases. |
+| **P0019–P0020: semantic resolution/writers** | Source/provider attestation, positional binding, function scopes; S93e RED → S93f GREEN, S93g symbolic identity separation within one expression. | Complete normative audit and consistency across **active** evaluator routes. |
+| **P0021–P0025: DocumentRuntime** | Selected reactive document/generation slices (especially S39–S60): nearest-predecessor binding, invalidation, and overlapping async generations demonstrated. | Normative end-to-end audit of the **active** document/UI/Worker route, including applicable frozen stress cases and failure boundaries. |
+| **P0026–P0037: editor, presentation, persistence** | Roadmap ownership landmarks and partial prototype support; the real UI still depends on legacy. | No complete selected-runtime editing, plotting/tables, `.ncas`, or export acceptance. |
+| **P0038–P0042: legacy retirement** | S80–S84 targeted legacy-route removal; S92a restricted Python builtins as temporary containment. | `main.js` and old `CASEngine`/Python codegen/`exec`/`eval` have not been demonstrably eliminated end-to-end. **Containment is not a sandbox.** |
+| **P0043–P0050: hardening/release** | S92b mandatory `npm test` gates; parser integrity checks; S89 student-release allowlist; S94a–f supervised transport, explicit recovery, P0009 diagnostics, revision fail-stop; real Worker and real Pyodide browser evidence. | Active UI/real Pyodide recovery cutover, payload/memory/CPU budgets, offline release, performance, normative browser matrix, student UX, and Release-1 audits. |
 
-### Verified integration examples (not full document-runtime exits)
+### Milestones since the former Slice-38 checkpoint
 
-- Browser: local parameter vs. document `x:=12`; `f(t):=t^3+4t`; `f(12)=1776`; repeat application and provider mismatch rejected.
-- Browser: actual SymPy derivative retains lexical binder; derived immutable `FunctionValue` evaluates at 0, 1 and 12 to **4, 7, 436**.
-- Slice 37 exposed JSON transport losing `Object.freeze`; Slice 38 moved decoding/validation into the shared Worker client boundary. The resulting browser path passed without caller-local repair.
-- Node full suite: **713 green** as reported by the developer after Slice 38; this is a timestamped verification point, **not** an exit condition.
+| Slices | Delivered boundary | Qualification |
+| --- | --- | --- |
+| **S39–S60** | Selected document source/runtime, binding/invalidation models, async generations, and stale-result protection expanded and exercised. | Selected routes/tests are not a complete normative browser/document exit. |
+| **S80–S84** | Legacy-retirement and routing cleanup toward selected runtime. | Legacy user-facing execution remains. |
+| **S85–S90a** | Independent RED/stress probes; F1/F2 incomplete-source handling closed; F4 legacy-injection surface partially contained; canonical parser generation, student allowlist, and pure positional multi-statement analysis. | No active semicolon evaluation; residual legacy-F4 risk. |
+| **S91a** | Peggy packrat/memoization for nested parse cases. | Not a general CPU/memory/time-budget solution. |
+| **S92a–b** | Restricted legacy builtin namespace; `npm test` now mandates JS+Python and preserves visible TODO status. | Legacy `exec`/`eval` remains; seven TODOs are not passes. |
+| **S93a–b** | Shared arithmetic IR lowering and expression-tree walk across two compiler routes. | Routes retain separate lexical/attestation ownership; not one fully merged compiler. |
+| **S93c–d** | RED→GREEN attested composed functions, positional immutable captures, and redefinition behavior. | Broader capability audit still pending. |
+| **S93e–h** | RED→GREEN source-symbol occurrence roles; attested IR identity; shared IR→Value symbolic materialization. | Active symbolic Worker integration not enabled by this checkpoint. |
+| **S94a–f** | Opt-in Worker deadline/max-pending/fatal supervision; real-browser probes; explicit owner restart; P0009 diagnosis bridge; revision-coupled selective DocumentRuntime retry; revision-reader fail-stop. | Verified in Node 24; S94b, S94c and S94e browser tests PASS. Still **not** active student UI recovery, a full resource/memory budget, or proof of student release readiness. |
 
-### Immediate next execution order
+### Representative accepted scenarios (not full exits)
 
-1. **Checkpoint commit:** Stage only Slice 36–38 production changes, tests and architecture notes; check staged diff and run `git diff --cached --check`. Exclude transport ZIPs and the separate P0018 RED probe.
-2. **DocumentRuntime integration, first vertical slice:** real document sources `x:=12`, `f(t):=t^3+4t`, then selected application `f(x)` → 1776 with nearest-predecessor provider identity, ordered Value evaluation and no Python scope. Keep the first slice small and testable.
-3. **Reactive behavior:** changing `x` or `f` invalidates only downstream dependents; revisions prevent stale asynchronous commits; wrong/unavailable providers fail closed.
-4. **Derived-function document path:** incorporate derived `FunctionValue` into document orchestration, then test the equivalent of `g(t):=diff(f(t),t)` and `g(x)=436`. Resolve precise language syntax/semantics against the frozen contracts rather than assuming this illustrative syntax is already supported.
-5. **Normative end-to-end audit:** exercise the 53+ architecture stress tests through actual DocumentRuntime before closing P0021–P0025. Then resume missing Phase C operations and grammar gaps in priority order.
+- **Earlier real Pyodide/browser:** With document `x:=12`, a function-local binder stays local and `f(12)=1776`; real SymPy/Worker returned `f'(0)=4`, `f'(1)=7`, and `f'(12)=436`.
+- **S93d attested function composition (test evaluator):** Separate document blocks `f(x):=x+1`, `g(x):=2*f(x)`, `g(3)` produce 8; captures and subsequent redefinitions are covered.
+- **S93f–h binding/Value contract:** For `x:=17` followed by `integrate(x^2,x,0,x)`, the integrand/target `x` is local while the upper-bound `x` references the document's provider 17. This does **not** demonstrate active symbolic integration in the Worker.
+- **S93h acceptance (17 October):** 1,063 JS PASS, seven TODO, one SKIPPED, zero FAIL; 264 Python PASS; Git checkpoint `440fea3`. The frozen normative stress suite is not claimed closed.
+- **S94f acceptance (18 October):** 1,125 JS PASS, seven TODO, one SKIPPED, zero FAIL; 264 Python PASS. Browser: S94b real supervised Worker plus real Pyodide/SymPy; S94c explicit Worker restart; S94e DocumentRuntime recovery — all reported PASS. S94f introduces no new browser bootstrap path.
+
+## Next execution plan — proposed sequencing, not a new normative contract
+
+1. **S94 accepted as an opt-in Worker hardening tranche (S94a–f):** Supervised timeout/restart, P0009 transport diagnoses, caller-owned revision coordination, and fail-stop all verified. **Next S95:** inventory every still-active legacy route from UI/DocumentRuntime through CASEngine/Transformer/Python task scope. Record chosen new-path replacement and a regression for each caller. Leave payload/output limits, comprehensive budgets and active UI wiring explicitly open.
+2. **Selected symbolic IR → evaluator/Worker integration:** Activate only operations whose selected OperationSpec, evaluator, Value adapter, and backend contracts agree. Test local symbolic identities versus provider bounds, actual SymPy/Pyodide, transport, and stale-result rejection. Start with a few selected operations rather than a generic AST→Python shortcut.
+3. **Retirement call-graph inventory before cutover:** Audit the active path from `main.js`/UI to Worker, `CASEngine`, `Transformer`, Python `run_in_task`/scope registry, reset/replay, and implicit fallbacks. Record every remaining legacy caller, its owning replacement, and a regression test.
+4. **User-facing cutover to selected runtime:** Fill the agreed Release-1 capability gaps; route the active UI exclusively through attested IR/Value. Test edits, dependencies, and asymmetric errors in an actual browser and Worker. **No student release with an active legacy fallback.**
+5. **Legacy deletion and normative audit:** Remove Python string codegen/`exec`/`eval` and persistent task-scope ownership once their callers are gone. Run full JS/Python, the 53+ applicable normative stress cases, real browser/Pyodide, student allowlist, and offline smoke tests. Only then consider P0038–P0042 COMPLETE.
+6. **Independent external review after cutover:** Re-run Claude review after legacy is removed (or unequivocally unreachable), so the reviewer can focus on the actual new production path. Narrow external architectural review remains possible earlier when a specific contract question warrants it.
+
+**Stop/replan rule:** If S94 or symbolic Worker integration requires changes to frozen Value, SemanticIdentity, IR, or document semantics, prepare a versioned decision/ADR before coding. A precise `UNSUPPORTED` response for a not-yet-shipped operation is preferable to a hidden parallel evaluator.
+
+### Open risks and decisions at this checkpoint
+
+| Area | Current gap | Required evidence / decision |
+| --- | --- | --- |
+| **F5 — Worker lifecycle** | S94a–f provides opt-in timeout/terminal stop, explicit restart, P0009 diagnosis, caller-owned revision recovery and real-browser evidence. | Wire into the actual student UI, confirm real Pyodide timeout/recovery, guard payload size and resource budgets, and test versioned/offline deployment. |
+| **F4 — legacy code execution** | Restricted builtins are only containment; dynamic Python and active legacy UI path remain. | Caller-by-caller cutover, deletion, and browser regression. |
+| **F7 — symbolic binding during active evaluation** | S93g/h can compile/materialize scoped occurrences, but do not enable every symbolic Worker operation. | Selected OperationSpec/evaluator/Value/transport real end-to-end tests. |
+| **F8 / P0018 — input accuracy/i18n** | Known Danish decimal-comma and literal-exactness probes. | Explicit source-language policy, canonical PEG tests, and Value roundtrips. |
+| **Semicolon/multi-statement** | S90a positional analysis exists, but active sequential evaluation and atomic commit do not. | Versioned contract/ADR addendum: per-statement identities, ordering, failure, dependencies, rollback, invalidation. Do not retroactively reinterpret frozen ADR-0006 v1. |
+| **Security/distribution** | Worker message/output validation, HTML injection, third-party/offline dependencies, and student artifacts lack one complete gate. | Adversarial tests and a fresh-machine student package audit without development files. |
+| **Normative tests and TODOs** | Seven TODO and one skip in S93h JS; 53+ normative cases not accepted through the active UI path. | Case-by-case disposition of TODO/skip and a traceable browser/document stress matrix. |
+
+### Pedagogical/UI backlog — not a change to frozen mathematical semantics
+
+- **Monotonicity line as guided scaffolding:** The UI could complete a monotonicity line only after the student has established the derivative, zeroes or other critical derivative points, breaks in the function's domain, derivative signs on relevant intervals, and pertinent function values. Validate those prerequisites **semantically**, not by matching commands or source strings. Future P0026–P0033/UX planning, not S94.
+- **Book-like notation:** Make dot/cross products discoverable and display prime notation where appropriate without conflating presentation with internal OperationSpec/IR semantics.
+- **Semicolon sequences:** Desired left-to-right behavior should match a sequence of separate blocks, but active multi-statement blocks are not authorized under frozen v1. See the ADR decision above.
 
 ### Capability-extension note: one-sided limits
 
@@ -129,7 +165,7 @@ Define backend-independent immutable public Values:
 
 ### P0007 --- Semantic IR v1
 
-**Status:** COMPLETE / GREEN — 172/172 JS tests at closure
+**Status:** COMPLETE / GREEN — 172/172 JS tests at original closure
 
 Define the smallest resolved IR needed by the frozen semantics.
 
@@ -137,7 +173,7 @@ Define the smallest resolved IR needed by the frozen semantics.
 
 ### P0008 --- OperationSpec v1
 
-**Status:** COMPLETE / GREEN — 220/220 JS tests at closure
+**Status:** COMPLETE / GREEN — 220/220 JS tests at original closure
 
 Define declarative public-operation metadata:
 
@@ -221,7 +257,7 @@ the locked browser backend. **MET.**
 
 ### P0012 --- Core scalar/expression operations
 
-**Status (2026-10-13): PARTIAL / selected scalar-family Worker paths GREEN; exit audit pending.**
+**Status (2026-10-18): PARTIAL / selected scalar-family Worker paths GREEN; S93a–b consolidated compilation; exit audit pending.**
 
 Arithmetic, simplification where officially supported, exact/approximate
 behavior.
@@ -231,34 +267,34 @@ tests, without document authority or persistent Python task scope.
 
 ### P0013 --- FunctionValue evaluation
 
-**Status (2026-10-13): PARTIAL / lexical FunctionValue, capture/application and real Worker smoke GREEN; document integration and full capability exit pending.**
+**Status (2026-10-18): PARTIAL / lexical FunctionValue, immutable captures, real Worker smoke and S93d attested function composition GREEN; full document/capability exit pending.**
 
 Immutable resolved closures, application, higher-order Values,
 wrong-arity diagnostics.
 
 ### P0014 --- Symbolic operations
 
-**Status (2026-10-13): PARTIAL / selected symbolic `diff` and derived FunctionValue via actual SymPy GREEN; remaining symbolic operations and exit pending.**
+**Status (2026-10-18): PARTIAL / selected `diff` via real SymPy GREEN; S93f–h symbolic occurrence binding and IR→Value materialization GREEN; active integration and other Worker operations plus exit audit pending.**
 
 diff/integral/sum/solve/limit according to OperationSpec symbolic-target
 rules.
 
 ### P0015 --- Containers and linear algebra
 
-**Status (2026-10-13): NOT AUDITED COMPLETE; initial contracts/probes are not a verified full container/linear-algebra path.**
+**Status (2026-10-18): NOT AUDITED COMPLETE; initial contracts/probes are not a verified full container/linear-algebra path.**
 
 List/Vector/Matrix semantics and backend error adaptation.
 
 ### P0016 --- Quantity/unit evaluator path
 
-**Status (2026-10-13): NOT AUDITED COMPLETE; unit/Quantity evaluator path remains on the roadmap.**
+**Status (2026-10-18): NOT AUDITED COMPLETE; unit/Quantity evaluator path remains on the roadmap.**
 
 Compose Quantity with ordinary Values; backend capability limited to
 officially supported unit behavior.
 
 ### P0017 --- Statistics/regression/distributions
 
-**Status (2026-10-13): NOT AUDITED COMPLETE; statistics/regression/distributions remain on the roadmap.**
+**Status (2026-10-18): NOT AUDITED COMPLETE; statistics/regression/distributions remain on the roadmap.**
 
 Use natural backend (often NumPy/SymPy) behind stable public Values.
 
@@ -269,52 +305,52 @@ task scope. **NOT YET MET AS A FULL-PHASE EXIT:** selected paths have passed, bu
 
 ### P0018 --- Parser/grammar alignment
 
-**Status (2026-10-13): PARTIAL / selected PEG source paths tested; grammar/i18n RED probe outstanding.**
+**Status (2026-10-18): PARTIAL / canonical PEG generator and generated parser sync; S91a packrat GREEN; language/i18n RED probes, including Danish decimal comma, remain open.**
 
 Adjust PEG grammar only where frozen semantics require it.
 
 ### P0019 --- AST → Semantic Resolution
 
-**Status (2026-10-13): PARTIAL / selected lexical and symbolic argument-role resolution; complete generic AST resolution and normative audit pending.**
+**Status (2026-10-18): PARTIAL / lexical resolution, selected symbolic argument roles and S93f–g occurrence identities GREEN; full normative audit pending.**
 
 Resolve lexical binders, symbolic targets, nearest predecessor and free
 symbols.
 
 ### P0020 --- Writer/binding analysis
 
-**Status (2026-10-13): PARTIAL / selected document-writer/source binding and fail-closed provider tests; full document-source coverage pending.**
+**Status (2026-10-18): PARTIAL / writer/source binding, provider attestation, positional projection and S93f role-aware binding GREEN; full document-source coverage pending.**
 
 Implement exact parse/structural writer boundary and no
 success-dependent fallback.
 
 ### P0021 --- Dependency model v2
 
-**Status (2026-10-13): PARTIAL / selected binding, dependency and task batch seams GREEN; full DocumentRuntime exit unverified.**
+**Status (2026-10-18): PARTIAL / selected document DAG, binding, task batches, stale gates and async generations GREEN; full normative active DocumentRuntime/Worker exit unverified.**
 
 Generate bindings + DAG from the same semantic analysis.
 
 ### P0022 --- Calculation state v2
 
-**Status (2026-10-13): NOT CLOSED / selected outcome envelopes and result plumbing exist; full calculation state projection pending.**
+**Status (2026-10-18): NOT CLOSED / selected outcome envelopes and document projections exist; complete UI/calculation-state audit pending.**
 
 idle/running/success/error/dirty/blocked as derived runtime state.
 
 ### P0023 --- Reactive invalidation
 
-**Status (2026-10-13): NOT CLOSED / need real-document downstream invalidation regression.**
+**Status (2026-10-18): PARTIAL / selected reactive downstream invalidation and redefinition tests GREEN; full normative end-to-end audit pending.**
 
 Provider changes, structural mutations, downstream invalidation.
 
 ### P0024 --- Evaluation orchestration
 
-**Status (2026-10-13): NEXT INTEGRATION FOCUS / selected async batch dispatch GREEN; wire into actual DocumentRuntime.**
+**Status (2026-10-18): PARTIAL / selected DocumentRuntime batches, attested evaluator dispatch and Worker path exist; active UI cutover and normative stress audit pending.**
 
 DocumentRuntime sends resolved instructions/Values to evaluator in
 correct dependency/order semantics.
 
 ### P0025 --- Async epoch/generation protection
 
-**Status (2026-10-13): PARTIAL / selected revision-stale guard tests GREEN; full runtime generation/epoch stress tests pending.**
+**Status (2026-10-18): PARTIAL / selected revision, generation and overlap gates GREEN; S94 Worker timeout/restart and full browser stale-result matrix pending.**
 
 Pure, volatile and external results use identical stale-result
 protection.
@@ -323,6 +359,9 @@ protection.
 through DocumentRuntime. **NOT YET MET:** isolated/batch/Worker tests are not equivalent to this exit.
 
 ## Phase E --- Editing and presentation
+
+**Checkpoint 2026-10-18:** P0026–P0033 remain planned landmarks; real user-facing editor cutover is **not** accepted. Guided monotonicity lines belong to the UI backlog, not to the frozen Value/IR contracts.
+
 
 ### P0026 --- EditingSession commit boundary
 
@@ -362,6 +401,9 @@ state/presentation ownership rule.
 
 ## Phase F --- Persistence and reproducibility
 
+**Checkpoint 2026-10-18:** P0034–P0037 await complete selected-runtime evidence for `.ncas`, save/load, versioning and PDF export.
+
+
 ### P0034 --- `.ncas` format v1
 
 Authoritative document only plus version metadata and permitted
@@ -380,6 +422,9 @@ fileFormatVersion, languageVersion, engineVersion and migration policy.
 Frozen presentation export for school submission.
 
 ## Phase G --- Remove legacy execution model
+
+**Checkpoint 2026-10-18:** PARTIAL. S80–S84 retired selected legacy adapters; S92a added limited containment. `main.js`/`CASEngine`/Python codegen and `exec`/`eval` are not verified as removed. Close P0038–P0042 only after actual UI/Worker cutover, dependency audit and deletion without regression.
+
 
 ### P0038 --- Compatibility bridge audit
 
@@ -406,21 +451,40 @@ than historical executor layout.
 
 ## Phase H --- Product hardening
 
+**Checkpoint 2026-10-18:** PARTIAL. S89 release allowlist, S91 parser cache and S92 mandatory JS/Python gates exist. F5 Worker lifecycle/budgeting is prioritized for S94. Product release remains blocked by the legacy UI route and missing normative browser audit.
+
+
 ### P0043 --- Full regression matrix
+
+**Status (2026-10-18): PARTIAL.** `npm test` now requires JS and Python;
+S93h reported 1,063 JS PASS and 264 Python PASS. Seven JS TODOs and one skip
+remain visible and incomplete; normative stress cases still need end-to-end
+coverage through the active browser/Worker/DocumentRuntime path.
 
 Python + JS + end-to-end + normative architecture cases.
 
 ### P0044 --- Performance baseline
+
+**Status (2026-10-18): NOT CLOSED.** S91a improved parser behavior with
+packrat caching but does not establish CPU, memory, or Worker budgets.
 
 Representative 100--500 block documents; dirty recalculation; large
 symbolic/numeric cases.
 
 ### P0045 --- Worker/off-main-thread evaluation
 
-Only if measurements justify it; architecture boundary should make this
-transport change non-semantic.
+**Status (2026-10-18): PARTIAL / selected Pyodide Web Worker and Value transport demonstrated.**
+
+Worker transport does not own document-semantic authority. S94 must
+strengthen supervision (timeout, actual terminate/restart, message validation,
+input/output budgets and stale cancellation); document generations still
+decide whether late results may commit. Full active-browser and offline
+release gates remain open.
 
 ### P0046 --- Offline packaging
+
+**Status (2026-10-18): PARTIAL / S89 introduced a student-distribution allowlist;
+full offline and fresh-install audits are not accepted.**
 
 Pyodide/packages/assets/service-worker path tested without network.
 
@@ -459,12 +523,12 @@ concrete.
 -   **M1 --- Frozen architecture:** P0001
 -   **M2 --- Known backend/toolchain:** P0004
 -   **M3 --- Stable semantic/evaluator contracts:** P0009
--   **M4 --- Pure evaluator works:** P0017 (selected evaluator paths GREEN; milestone not yet closed)
--   **M5 --- Reactive document runtime works:** P0025 (next integration focus; milestone not yet closed)
+-   **M4 --- Pure evaluator works:** P0017 (selected evaluator paths GREEN; P0015–P0017 and full capability exit remain open)
+-   **M5 --- Reactive document runtime works:** P0025 (selected reactive/batch/generation paths GREEN; active normative DocumentRuntime/browser exit not yet met)
 -   **M6 --- Student editing/presentation works:** P0033
 -   **M7 --- Save/load/export works:** P0037
--   **M8 --- Legacy Task Scope gone:** P0042
--   **M9 --- Release candidate:** P0050
+-   **M8 --- Legacy Task Scope gone:** P0042 (**OPEN** — S80–S84 delivered partial retirement; S93 did not close this milestone)
+-   **M9 --- Release candidate:** P0050 (**BLOCKED** by active UI cutover, normative browser tests, offline/hardening, and legacy retirement)
 
 ## Governing rule
 

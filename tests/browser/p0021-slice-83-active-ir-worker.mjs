@@ -24,12 +24,6 @@ function populate(runtime,taskId,initial){
   ]) runtime.addBlock({id:`${taskId}-${suffix}`,taskId,type:'formula',source});
 }
 const value=(runtime,id)=>runtime.getBlock(id).calculation.result?.data?.expr?.value;
-function timed(promise,ms,label){
-  let timer;
-  return Promise.race([promise,new Promise((_,reject)=>{
-    timer=setTimeout(()=>reject(new Error(`${label}: timeout after ${ms} ms`)),ms);
-  })]).finally(()=>clearTimeout(timer));
-}
 run.addEventListener('click',async()=>{
   run.disabled=true;log.textContent='';status.className='pending';status.textContent='Starter rigtig Pyodide-Worker…';
   let worker,client,operations=0;
@@ -38,11 +32,17 @@ run.addEventListener('click',async()=>{
     // DocumentRuntime remains sole authority for the actual document generations.
     worker=new Worker(new URL('../../src/js/evaluation/selected-pyodide-worker.js',import.meta.url),{type:'module'});
     let workerRevision='s83-init';
-    client=createWorkerEvaluationClient({worker,getCurrentRevision:()=>workerRevision});
+    // S94b: this client exclusively owns the selected Worker. Every actual
+    // backend request is supervised, including initial Pyodide startup.
+    client=createWorkerEvaluationClient({
+      worker,
+      getCurrentRevision:()=>workerRevision,
+      supervision:{timeoutMs:180_000,maxPending:1},
+    });
     const evaluate=async(envelope,selection)=>{
       operations++;
       // This is the real selected-worker transport, not a fake Python computation.
-      return timed(client.evaluate(envelope,selection),180000,'Selected Worker operation');
+      return client.evaluate(envelope,selection);
     };
     const rt=new DocumentRuntime({calculate:async()=>{throw Error('Legacy CASEngine called');}},'slice83');
     populate(rt,'A',2);populate(rt,'B',10);
@@ -50,9 +50,9 @@ run.addEventListener('click',async()=>{
       workerRevision=revision;
       const {snapshot}=rt.deriveSemanticTask(taskId);
       const execute=createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evaluate,revision});
-      return timed(rt.evaluateAndCommitSemanticTask(taskId,{
+      return rt.evaluateAndCommitSemanticTask(taskId,{
         revision,getCurrentRevision:()=>workerRevision,evaluate:execute,
-      }),180000,`DocumentRuntime ${taskId}`);
+      });
     }
     assert((await batch('A','s83-A-1')).kind==='complete','Task A: active IR batch with actual Pyodide Worker');
     assert(value(rt,'A-result')==='146'&&value(rt,'A-read')==='147','Task A: f(g(4))=146; answer=147');
@@ -68,5 +68,11 @@ run.addEventListener('click',async()=>{
     status.className='pass';status.textContent='PASS — aktiv IR gennem rigtig Pyodide/SymPy-Worker';
   }catch(error){
     status.className='fail';status.textContent='FAIL — se log';write(`ERROR: ${error?.stack??error}`);
-  }finally{client?.close();worker?.terminate();run.disabled=false;}
+  }finally{
+    // Only the supervising client terminates an accepted, exclusively owned Worker.
+    // If client construction failed, its caller still owns the unclaimed Worker.
+    if(client) client.close();
+    else worker?.terminate();
+    run.disabled=false;
+  }
 });

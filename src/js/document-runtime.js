@@ -14,6 +14,7 @@ import {orderSemanticRecomputation} from './semantics/order-semantic-recomputati
 import {prepareSemanticEvaluationBatch} from './semantics/prepare-semantic-evaluation-batch.js';
 import {dispatchSemanticEvaluationBatch} from './semantics/dispatch-semantic-evaluation-batch.js';
 import {isValue} from './values/value.js';
+import {isDiagnostic} from './diagnostics/diagnostic.js';
 import { analyzeDependencies } from './dependency-analyzer.js';
 import {
     buildDocumentDependencyAnalysis,
@@ -435,7 +436,10 @@ export class DocumentRuntime {
                 status: result.status === 'success' ? 'success' : 'error',
                 generation: block.calculation.generation,
                 result: result.status === 'success' ? result.value : null,
-                error: result.status === 'failure' ? {code: result.code, message: result.message} : null,
+                error: result.status === 'failure' ? {
+                    code: result.code, message: result.message,
+                    ...(isDiagnostic(result.diagnostic) ? {diagnostic: result.diagnostic} : {}),
+                } : null,
             };
         }
         return outcome;

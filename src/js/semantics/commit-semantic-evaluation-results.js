@@ -1,3 +1,4 @@
+import {isDiagnostic} from '../diagnostics/diagnostic.js';
 /** P0021 Slice 5 — pure, serializable evaluation-outcome gate.
  * No Python calls, DOM, DocumentRuntime mutation or persistent backend state.
  * Revisions are caller-owned opaque tokens; the caller MUST advance them on
@@ -39,7 +40,10 @@ function assertState(batch, state) {
 function validOutcome(outcome) {
   if (!outcome || typeof outcome !== 'object') return false;
   if (outcome.status === 'success') return own(outcome, 'value') && portable(outcome.value);
-  if (outcome.status === 'failure') return typeof outcome.code === 'string' && !!outcome.code && typeof outcome.message === 'string';
+  if (outcome.status === 'failure') return typeof outcome.code === 'string' && !!outcome.code &&
+    typeof outcome.message === 'string' &&
+    (!own(outcome, 'diagnostic') || (isDiagnostic(outcome.diagnostic) &&
+      outcome.diagnostic.code === outcome.code));
   return false;
 }
 export function beginSemanticEvaluationResults(batch, revision) {

@@ -8,6 +8,7 @@ import {
   nextSemanticEvaluationDecision,
   commitSemanticEvaluationOutcome,
 } from './commit-semantic-evaluation-results.js';
+import {isDiagnostic} from '../diagnostics/diagnostic.js';
 
 export async function dispatchSemanticEvaluationBatch(batch, {
   revision, getCurrentRevision, evaluate, cachedOutcomes = new Map(),
@@ -37,8 +38,15 @@ export async function dispatchSemanticEvaluationBatch(batch, {
         // No parallel execution: each outcome is committed before next dispatch.
         outcome = await evaluate(decision.task);
       } catch (error) {
+        // Preserve a P0009 diagnostic from a trusted evaluator/transport boundary.
+        // Generic failures remain legacy EVALUATOR_ERROR; we do not infer
+        // codes by parsing arbitrary Error.message or localize here.
         outcome = {blockId:decision.task.blockId, status:'failure', code:'EVALUATOR_ERROR',
           message: error instanceof Error ? error.message : String(error)};
+        if (isDiagnostic(error?.diagnostic)) {
+          outcome.code = error.diagnostic.code;
+          outcome.diagnostic = error.diagnostic;
+        }
       }
     }
     // Never commit late results, even if an evaluator ignores cancellation.
