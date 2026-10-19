@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>newCAS S95f — dynamisk dokumenttest (ikke elev-UI)</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:870px;margin:2rem auto;padding:0 1rem}
+input[type=text]{font:1rem ui-monospace,monospace;padding:.45rem;width:min(90%,27rem)}
+button{font:inherit;padding:.45rem .8rem;margin:.35rem .3rem .35rem 0}
+.row{display:grid;grid-template-columns:6rem 1fr 10rem;align-items:center;gap:.5rem;margin:.4rem 0}
+output{overflow-wrap:anywhere}.pass{color:#08743c}.fail{color:#b02531}.pending{color:#875d00}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f5f5;padding:1rem}
+</style></head><body>
+<h1>S95f — dokument med variabelt antal blokke</h1>
+<p><strong>Kun midlertidig udviklingstest.</strong> Ikke elev-UI, ikke .ncas og ikke release. Testfilen udfylder kladde; kun Beregn, Enter en S95m-strukturhandling eller en S95p-dokumenttransaktion ændrer DocumentRuntime. Matematikken udføres via attesteret IR og rigtig Pyodide/SymPy-Worker.</p>
+<section id="cells" aria-label="Formelkladder"></section>
+<p><label for="fixture-file">Lokal v2-testfil (1–32 blokke):</label>
+<input id="fixture-file" type="file" accept=".json,application/json">
+<button id="load-fixture" type="button">Indlæs fil som kladde</button></p>
+<button id="evaluate" type="button">Beregn dokumentet</button>
+<button id="restart" type="button">Genstart Worker eksplicit</button>
+<button id="accept-95f" type="button">Kør S95f-browseraccept</button>
+<button id="accept-95k" type="button">Kør S95k-Enter-browseraccept</button>
+<button id="accept-95m" type="button">Kør S95m-struktur-browseraccept</button>
+<button id="accept-95p" type="button">Kør S95p-Undo/Redo-browseraccept</button>
+<p id="status" role="status" aria-live="polite">Ikke kørt</p>
+<pre id="log" role="log" aria-live="polite"></pre>
+<script type="module" src="./p0021-slice-95f-dynamic-document.mjs"></script>
+</body></html>

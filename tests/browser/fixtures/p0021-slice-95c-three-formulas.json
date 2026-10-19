@@ -1,0 +1,8 @@
+{
+  "fixtureVersion": "newCAS-test-sources-v1",
+  "blocks": [
+    { "id": "pilot-a", "source": "a:=2" },
+    { "id": "pilot-f", "source": "f(t):=t^2+a" },
+    { "id": "pilot-result", "source": "f(3)" }
+  ]
+}

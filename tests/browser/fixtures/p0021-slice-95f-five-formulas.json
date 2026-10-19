@@ -1,0 +1,10 @@
+{
+  "fixtureVersion": "newCAS-test-sources-v2",
+  "blocks": [
+    {"id": "a", "source": "a:=5"},
+    {"id": "f", "source": "f(t):=t^2+a"},
+    {"id": "r3", "source": "f(3)"},
+    {"id": "r4", "source": "f(4)"},
+    {"id": "r5", "source": "f(5)"}
+  ]
+}

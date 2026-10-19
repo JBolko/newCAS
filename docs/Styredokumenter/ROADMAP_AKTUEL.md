@@ -1,11 +1,11 @@
 # newCAS Frozen-Architecture Implementation Roadmap
 
-**Status:** Living implementation roadmap, updated 2026-10-18 after S94f acceptance.
+**Status:** Living implementation roadmap, updated 2026-10-19 after S95p acceptance (checkpoint preparation).
 **Numbering:** Preserve capability/ownership landmarks `P0001`–`P0050`. `P0021` slices are incremental implementation/test deliveries, **not** new roadmap phase identifiers.
 **Authority:** The three frozen v1.0 architecture documents and applicable ADRs remain normative. This roadmap is not.
-**Git baseline:** `440fea3` (`architecture-v1-implementation`) — *P0021 checkpoint: parser, safety gates and S93 semantic IR consolidation* (committed 2026-10-17).
-**Latest reported full acceptance:** S94f on the developer's Node 24.11.0 checkout: **1,125 JS PASS, 0 FAIL, 0 CANCELLED, 7 TODO, 1 SKIPPED; 264 Python PASS**; focused S94f test gate 143/143. Real browser supervision (S94b), recovery (S94c), DocumentRuntime recovery (S94e), and real Pyodide/SymPy (S94b) were separately reported PASS. These are dated evidence snapshots, **not** complete phase exits.
-**Immediate priority:** S95 active legacy-route/call-graph audit, selected mathematical operation coverage, real UI cutover and systematic retirement. S94a–f closes the opt-in Worker supervision/recovery tranche, **not** all product hardening or active UI migration.
+**Git baseline:** `296fbbe` (`architecture-v1-implementation`) — *P0021 checkpoint: S94 supervised Worker and revision-coupled recovery*. **S95a–p accepted in the developer checkout but not yet committed as of Git status supplied 2026-10-19.** Replace this provisional line with the actual new hash only after a verified commit.
+**Latest reported full acceptance:** S95p on the developer's Node 24 checkout (2026-10-19): **1,309 JS PASS, 0 FAIL, 7 TODO, 1 SKIPPED; 264 Python PASS**; S95p focused suite **151/151 PASS**; canonical Peggy parser check PASS. The developer separately reported **real Pyodide/SymPy browser PASS** for S95f, S95k, S95m and S95p. These are dated integration proofs, **not** complete P-phase or student-release exits.
+**Immediate priority:** Verify and commit the accepted S95a–p checkpoint with explicit Git allowlist; audit seven TODOs and normative coverage; then extend the selected mathematical capability and integrate **all** authoritative edits through the transaction/history boundary before designing the real student UI. Existing `main.js` is a disposable prototype, **not** a UI design constraint. Legacy execution is not retired.
 
 ## Purpose and governing principles
 
@@ -28,9 +28,9 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 | **P0015–P0017: containers, quantities, statistics** | Original contract foundations and backend capability probes. | No full end-to-end exits demonstrated for the three evaluator tracks. |
 | **P0018: grammar/parser** | Canonical Peggy source/generated-parser sync gates; S91a packrat cache protects selected pathological parses. | Complete language/i18n audit, Danish decimal comma vs. argument comma, exact numeric-literal precision, other grammar stress cases. |
 | **P0019–P0020: semantic resolution/writers** | Source/provider attestation, positional binding, function scopes; S93e RED → S93f GREEN, S93g symbolic identity separation within one expression. | Complete normative audit and consistency across **active** evaluator routes. |
-| **P0021–P0025: DocumentRuntime** | Selected reactive document/generation slices (especially S39–S60): nearest-predecessor binding, invalidation, and overlapping async generations demonstrated. | Normative end-to-end audit of the **active** document/UI/Worker route, including applicable frozen stress cases and failure boundaries. |
-| **P0026–P0037: editor, presentation, persistence** | Roadmap ownership landmarks and partial prototype support; the real UI still depends on legacy. | No complete selected-runtime editing, plotting/tables, `.ncas`, or export acceptance. |
-| **P0038–P0042: legacy retirement** | S80–S84 targeted legacy-route removal; S92a restricted Python builtins as temporary containment. | `main.js` and old `CASEngine`/Python codegen/`exec`/`eval` have not been demonstrably eliminated end-to-end. **Containment is not a sandbox.** |
+| **P0021–P0025: DocumentRuntime** | Earlier reactive/generation slices; S95d engine-free `DocumentRuntime.createSemantic()`; S95n atomic FormulaBlock transactions; S95p demonstrated epoch-safe Undo/Redo and binding recalculation in real Pyodide. | Normative end-to-end audit of **all** required document states, error/stale cases, task boundaries and the future active UI remains open. |
+| **P0026–P0037: editor, presentation, persistence** | S95e explicit calculate; S95f dynamic test documents; S95g existing renderer projection; S95i–k EditingSession/Enter; S95l–p FormulaBlock structural edits, transactions, history and real-browser proofs. | **Temporary TEST UI only**; all-authoritative-edit integration, full P0026–P0028 contracts, actual student UX, graphs/tables, `.ncas` integration and export remain open. |
+| **P0038–P0042: legacy retirement** | S80–S84 partial retirement; S92a limited containment; S95a active-route audit and S95h UI event/authority audit; semantic-only browser pilot works without legacy. | Prototype `main.js` still invokes legacy `CASEngine`/codegen; no active full cutover or verified deletion. **A successful TEST UI path is not retirement.** |
 | **P0043–P0050: hardening/release** | S92b mandatory `npm test` gates; parser integrity checks; S89 student-release allowlist; S94a–f supervised transport, explicit recovery, P0009 diagnostics, revision fail-stop; real Worker and real Pyodide browser evidence. | Active UI/real Pyodide recovery cutover, payload/memory/CPU budgets, offline release, performance, normative browser matrix, student UX, and Release-1 audits. |
 
 ### Milestones since the former Slice-38 checkpoint
@@ -46,6 +46,10 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 | **S93c–d** | RED→GREEN attested composed functions, positional immutable captures, and redefinition behavior. | Broader capability audit still pending. |
 | **S93e–h** | RED→GREEN source-symbol occurrence roles; attested IR identity; shared IR→Value symbolic materialization. | Active symbolic Worker integration not enabled by this checkpoint. |
 | **S94a–f** | Opt-in Worker deadline/max-pending/fatal supervision; real-browser probes; explicit owner restart; P0009 diagnosis bridge; revision-coupled selective DocumentRuntime retry; revision-reader fail-stop. | Verified in Node 24; S94b, S94c and S94e browser tests PASS. Still **not** active student UI recovery, a full resource/memory budget, or proof of student release readiness. |
+| **S95a–d** | Read-only legacy/UI route audits, temporary selected-runtime browser pilot, draft-only test-file ingress and engine-free semantic DocumentRuntime construction. | Test-only route; legacy `main.js` unchanged, no `.ncas` format change. |
+| **S95e–h** | Explicit calculate action; 1–32 FormulaBlock test-file UI; selected Value/P0009 rendering through existing `renderer.js`; prototype Enter/identity/authority audit. | Test infrastructure and presentation subset, not a production student editor. |
+| **S95i–m** | Formula EditingSession, Enter submit, single insert/move/remove operations; real Pyodide browser proof for Enter and order-sensitive provider capture. | Stable block IDs and draft/authority separation demonstrated; no full editor or all-task editing coverage. |
+| **S95n–p** | Prevalidated atomic FormulaBlock document transactions, session Undo/Redo history, real Pyodide history/epoch/browser proof. | Only transactional edits are recorded. External mutation makes Undo fail closed; histories are not `.ncas` payloads; text/graphs/settings/task-boundary completeness remains open. |
 
 ### Representative accepted scenarios (not full exits)
 
@@ -54,19 +58,21 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 - **S93f–h binding/Value contract:** For `x:=17` followed by `integrate(x^2,x,0,x)`, the integrand/target `x` is local while the upper-bound `x` references the document's provider 17. This does **not** demonstrate active symbolic integration in the Worker.
 - **S93h acceptance (17 October):** 1,063 JS PASS, seven TODO, one SKIPPED, zero FAIL; 264 Python PASS; Git checkpoint `440fea3`. The frozen normative stress suite is not claimed closed.
 - **S94f acceptance (18 October):** 1,125 JS PASS, seven TODO, one SKIPPED, zero FAIL; 264 Python PASS. Browser: S94b real supervised Worker plus real Pyodide/SymPy; S94c explicit Worker restart; S94e DocumentRuntime recovery — all reported PASS. S94f introduces no new browser bootstrap path.
+- **S95p acceptance (19 October):** 1,309 JS PASS, seven TODO, one SKIPPED, zero FAIL; 264 Python PASS; focused 151/151, parser check PASS. Real browser S95f (test file), S95k (EditingSession/Enter), S95m (insert/move/remove), S95p (Undo/Redo, history branching) each reported PASS with genuine Pyodide/SymPy. Node full-suite results and browser observations are separate evidence.
+- **S95p document-history browser example:** `a:=2; f(t):=t^2+a` in separate blocks gives 11/18; insertion of `a:=5` ahead of function gives 14/21; Undo gives 11/18, Redo 14/21; moving definition changes provider back to 11/18; further source edit `a:=8` yields 17/24; undo and a fresh `a:=6` changes result to 15/22 and truncates redo branch. Epoch always advances; historical Values/Worker state are not restored.
 
 ## Next execution plan — proposed sequencing, not a new normative contract
 
-1. **S94 accepted as an opt-in Worker hardening tranche (S94a–f):** Supervised timeout/restart, P0009 transport diagnoses, caller-owned revision coordination, and fail-stop all verified. **Next S95:** inventory every still-active legacy route from UI/DocumentRuntime through CASEngine/Transformer/Python task scope. Record chosen new-path replacement and a regression for each caller. Leave payload/output limits, comprehensive budgets and active UI wiring explicitly open.
-2. **Selected symbolic IR → evaluator/Worker integration:** Activate only operations whose selected OperationSpec, evaluator, Value adapter, and backend contracts agree. Test local symbolic identities versus provider bounds, actual SymPy/Pyodide, transport, and stale-result rejection. Start with a few selected operations rather than a generic AST→Python shortcut.
-3. **Retirement call-graph inventory before cutover:** Audit the active path from `main.js`/UI to Worker, `CASEngine`, `Transformer`, Python `run_in_task`/scope registry, reset/replay, and implicit fallbacks. Record every remaining legacy caller, its owning replacement, and a regression test.
-4. **User-facing cutover to selected runtime:** Fill the agreed Release-1 capability gaps; route the active UI exclusively through attested IR/Value. Test edits, dependencies, and asymmetric errors in an actual browser and Worker. **No student release with an active legacy fallback.**
-5. **Legacy deletion and normative audit:** Remove Python string codegen/`exec`/`eval` and persistent task-scope ownership once their callers are gone. Run full JS/Python, the 53+ applicable normative stress cases, real browser/Pyodide, student allowlist, and offline smoke tests. Only then consider P0038–P0042 COMPLETE.
-6. **Independent external review after cutover:** Re-run Claude review after legacy is removed (or unequivocally unreachable), so the reviewer can focus on the actual new production path. Narrow external architectural review remains possible earlier when a specific contract question warrants it.
+1. **S95 checkpoint gate:** inspect/selectively stage S95a–p runtime, presentation, analysis, browser fixtures, tests and documentation. Exclude one-shot verifiers, report ZIPs, root ZIPs, cache directories, `node_modules/`, repomix outputs and local workspace files. Confirm branch `architecture-v1-implementation`, baseline `296fbbe`, Node 24, canonical Peggy check, full `npm test`, staged diff and `git diff --cached --check` before committing. Record real commit hash afterward; this roadmap currently names only the *pre-commit* baseline.
+2. **Review P0026–P0028 completeness:** the S95n–p history is a selected FormulaBlock implementation, not every document transaction. Close gaps for task boundaries, copy/duplicate, text/settings/graph mutations, consistently routed source commits, active-draft conflicts, history branching, and adversarial asynchronous races. Ensure **all** authoritative edit entrypoints use a single transaction/history owner before announcing editor-wide Undo/Redo.
+3. **UI design as new work:** do not optimize for historical `main.js` layout or legacy error rendering. Build the new student UX above EditingSession/DocumentRuntime and existing renderer, with humane P0009 diagnostic localization; graphs/PlotSpecs and guided teaching features must retain presentation-only ownership.
+4. **Capability and normative gates:** audit seven TODOs and one skip case by case; expand selected OperationSpec/evaluator/Worker support, especially active symbolic routes, containers/units/statistics as required by Release 1; run applicable 53+ frozen stress cases against the actual document/Worker path, with real browser/recovery tests.
+5. **Legacy retirement:** use S95a and S95h route inventories to remove, caller by caller, remaining `main.js` → legacy `CASEngine`/Transformer/Python `exec`/`eval` dependencies. The successful S95 temporary browser route is **not** proof that existing legacy is unreachable. No student release with an active legacy fallback.
+6. **Persistence and external review:** preserve `.ncas` as a versioned authoritative-document format, extensible for future graph specifications without Python/Worker snapshots; verify save/reload and reconstruction. A narrow Claude review can inspect S95 transaction/epoch contracts after the checkpoint, while full retirement review is more valuable once legacy is removed or proven unreachable.
 
 **Stop/replan rule:** If S94 or symbolic Worker integration requires changes to frozen Value, SemanticIdentity, IR, or document semantics, prepare a versioned decision/ADR before coding. A precise `UNSUPPORTED` response for a not-yet-shipped operation is preferable to a hidden parallel evaluator.
 
-### Open risks and decisions at this checkpoint
+### Open risks and decisions at the S95 checkpoint
 
 | Area | Current gap | Required evidence / decision |
 | --- | --- | --- |
@@ -77,6 +83,8 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 | **Semicolon/multi-statement** | S90a positional analysis exists, but active sequential evaluation and atomic commit do not. | Versioned contract/ADR addendum: per-statement identities, ordering, failure, dependencies, rollback, invalidation. Do not retroactively reinterpret frozen ADR-0006 v1. |
 | **Security/distribution** | Worker message/output validation, HTML injection, third-party/offline dependencies, and student artifacts lack one complete gate. | Adversarial tests and a fresh-machine student package audit without development files. |
 | **Normative tests and TODOs** | Seven TODO and one skip in S93h JS; 53+ normative cases not accepted through the active UI path. | Case-by-case disposition of TODO/skip and a traceable browser/document stress matrix. |
+| **Editing / history completeness** | S95i–p covers selected FormulaBlock editing and transactions, but old test actions can still change document source outside the history owner. | Unify authoritative mutation entrypoints, test mixed edits, conflicts, task-boundary semantics, text/graph additions and future all-content Undo/Redo. |
+| **UI vs. `.ncas`** | The S95f browser page is developer-only; future student UI is expected to be redesigned substantially. `.ncas` has not been changed by S95. | Design human-readable localized diagnostics and usable student UI independently; version `.ncas` extensions for graph/table content with explicit persistence/migration tests. |
 
 ### Pedagogical/UI backlog — not a change to frozen mathematical semantics
 
@@ -325,7 +333,7 @@ success-dependent fallback.
 
 ### P0021 --- Dependency model v2
 
-**Status (2026-10-18): PARTIAL / selected document DAG, binding, task batches, stale gates and async generations GREEN; full normative active DocumentRuntime/Worker exit unverified.**
+**Status (2026-10-19): PARTIAL / selected document DAG, binding, task batches, stale gates, S95d engine-free semantic creation, S95n atomic FormulaBlock transactions and S95p real Pyodide history proof GREEN; full normative active DocumentRuntime/Worker exit unverified.**
 
 Generate bindings + DAG from the same semantic analysis.
 
@@ -350,7 +358,7 @@ correct dependency/order semantics.
 
 ### P0025 --- Async epoch/generation protection
 
-**Status (2026-10-18): PARTIAL / selected revision, generation and overlap gates GREEN; S94 Worker timeout/restart and full browser stale-result matrix pending.**
+**Status (2026-10-19): PARTIAL / generation/epoch protections, S94 Worker timeout/recovery and S95p late-result-after-Undo rejection demonstrated; full browser stale-result and hardening matrix pending.**
 
 Pure, volatile and external results use identical stale-result
 protection.
@@ -360,18 +368,24 @@ through DocumentRuntime. **NOT YET MET:** isolated/batch/Worker tests are not eq
 
 ## Phase E --- Editing and presentation
 
-**Checkpoint 2026-10-18:** P0026–P0033 remain planned landmarks; real user-facing editor cutover is **not** accepted. Guided monotonicity lines belong to the UI backlog, not to the frozen Value/IR contracts.
+**Checkpoint 2026-10-19:** S95e–p implements a **selected, test-only FormulaBlock editing/presentation path**; real student-UI design, complete P0026–P0033 exit and all-content Undo/Redo are **not** accepted. `main.js` is a disposable legacy prototype, not a design constraint. Guided monotonicity belongs to pedagogical UI planning, not frozen Value/IR contracts.
 
 
 ### P0026 --- EditingSession commit boundary
+
+**Status (2026-10-19): PARTIAL.** S95i adds a single active FormulaBlock draft with stale/identity/task guards; S95j/k validates Enter and real Pyodide submit. Not a complete multi-editor or student UI implementation.
 
 Editor buffers are separate from authoritative source.
 
 ### P0027 --- Document transactions / Undo/Redo
 
+**Status (2026-10-19): PARTIAL, selected FormulaBlock path GREEN.** S95n prevalidates and atomically publishes source/insert/remove/move; S95o stores reversible session history; S95p real-Pyodide Undo/Redo/epoch/redo-branch proof PASS. Untracked external mutations fail closed. Not all document content/entrypoints supported.
+
 Reversible authoritative changes; no runtime snapshots.
 
 ### P0028 --- Structural editing
+
+**Status (2026-10-19): PARTIAL.** S95l/m and S95n/p prove insert/remove/move for FormulaBlocks, stable opaque IDs and order-dependent bindings in real Pyodide. Copy/duplicate, cross-task semantics and complete transaction/UI workflows are open.
 
 Insert/remove/move/copy/duplicate, including task-boundary semantics.
 
@@ -387,6 +401,8 @@ presentation.
 
 ### P0031 --- Formula/result presentation
 
+**Status (2026-10-19): PARTIAL.** S95g reuses existing `renderer.js` for supported Value forms and structured P0009 codes in the test UI. Neither complete Value coverage nor student-facing localization/layout is accepted.
+
 Stable renderer consumes Value/diagnostic contracts, not backend
 objects.
 
@@ -401,7 +417,7 @@ state/presentation ownership rule.
 
 ## Phase F --- Persistence and reproducibility
 
-**Checkpoint 2026-10-18:** P0034–P0037 await complete selected-runtime evidence for `.ncas`, save/load, versioning and PDF export.
+**Checkpoint 2026-10-19:** P0034–P0037 remain open; **S95 did not change `.ncas`**. Preserve authoritative document/versioned persistence and plan explicit extensibility for future graph/table specification, without serializing Worker/derived history state.
 
 
 ### P0034 --- `.ncas` format v1
@@ -423,7 +439,7 @@ Frozen presentation export for school submission.
 
 ## Phase G --- Remove legacy execution model
 
-**Checkpoint 2026-10-18:** PARTIAL. S80–S84 retired selected legacy adapters; S92a added limited containment. `main.js`/`CASEngine`/Python codegen and `exec`/`eval` are not verified as removed. Close P0038–P0042 only after actual UI/Worker cutover, dependency audit and deletion without regression.
+**Checkpoint 2026-10-19:** PARTIAL. S95a/h inventories active legacy/event boundaries; S95b–p proves a separate semantic test-UI route. `main.js`/`CASEngine`/Python codegen and `exec`/`eval` are **not** verified as removed. Do not confuse test-route success with retirement or production UI cutover.
 
 
 ### P0038 --- Compatibility bridge audit
@@ -456,10 +472,7 @@ than historical executor layout.
 
 ### P0043 --- Full regression matrix
 
-**Status (2026-10-18): PARTIAL.** `npm test` now requires JS and Python;
-S93h reported 1,063 JS PASS and 264 Python PASS. Seven JS TODOs and one skip
-remain visible and incomplete; normative stress cases still need end-to-end
-coverage through the active browser/Worker/DocumentRuntime path.
+**Status (2026-10-19): PARTIAL.** `npm test` requires JS and Python; S95p on Node 24 reported **1,309 JS PASS, zero FAIL, seven TODO, one skip; 264 Python PASS**. Real Pyodide browser proofs S95f/k/m/p exist, but normative stress cases still need traceable end-to-end coverage and TODO-by-TODO decisions.
 
 Python + JS + end-to-end + normative architecture cases.
 
@@ -473,7 +486,7 @@ symbolic/numeric cases.
 
 ### P0045 --- Worker/off-main-thread evaluation
 
-**Status (2026-10-18): PARTIAL / selected Pyodide Web Worker and Value transport demonstrated.**
+**Status (2026-10-19): PARTIAL / selected Pyodide Web Worker and Value transport, S94 supervision/recovery and S95f/k/m/p real browser path demonstrated.**
 
 Worker transport does not own document-semantic authority. S94 must
 strengthen supervision (timeout, actual terminate/restart, message validation,
@@ -483,8 +496,7 @@ release gates remain open.
 
 ### P0046 --- Offline packaging
 
-**Status (2026-10-18): PARTIAL / S89 introduced a student-distribution allowlist;
-full offline and fresh-install audits are not accepted.**
+**Status (2026-10-19): PARTIAL / S89 student allowlist exists; the S95 browser UI and helper files are developer tests and must not enter the student package. Full offline/fresh-install audits remain open.**
 
 Pyodide/packages/assets/service-worker path tested without network.
 

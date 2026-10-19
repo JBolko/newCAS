@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>newCAS P0021 S95b — afgrænset UI-cutover-pilot</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:830px;margin:2rem auto;padding:0 1rem}
+label{display:block;margin:1rem 0 .3rem;font-weight:600}input{font:1rem ui-monospace,monospace;width:min(95%,30rem);padding:.5rem}
+button{font:inherit;padding:.55rem 1rem;margin:.7rem .5rem .7rem 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f5f5;padding:1rem;border-radius:.5rem}
+.pass{color:#08743c}.fail{color:#b02531}.pending{color:#875d00}output{display:inline-block;min-width:10rem}
+</style></head><body>
+<h1>S95b — lille UI-pilot gennem den nye motor</h1>
+<p><strong>Ikke elev-UI eller release.</strong> Kun en afgrænset browserprøve. S95c-testfiler er ikke .ncas-dokumenter. Kilden ejes af DocumentRuntime, og valgt aritmetik beregnes i rigtig Pyodide/SymPy-Worker. Ingen legacy-engine eller alternativ evaluator.</p>
+<section id="cells" aria-label="Tre formelblokke">
+<div><label for="source-a">Blok a</label><input id="source-a" data-block-id="pilot-a" value="a:=2" autocomplete="off"><output id="result-a"></output></div>
+<div><label for="source-f">Blok f</label><input id="source-f" data-block-id="pilot-f" value="f(t):=t^2+a" autocomplete="off"><output id="result-f"></output></div>
+<div><label for="source-result">Blok resultat</label><input id="source-result" data-block-id="pilot-result" value="f(3)" autocomplete="off"><output id="result-result"></output></div>
+</section>
+<p><label for="fixture-file">S95c: Lokal JSON-testfil (tre blokke; kun kladde)</label>
+<input type="file" id="fixture-file" accept=".json,application/json">
+<button type="button" id="load-fixture">Indlæs testfil som kladde</button>
+<button type="button" id="accept-95c">Kør S95c-browseraccept</button></p>
+<button type="button" id="evaluate">Beregn dokumentet</button>
+<button type="button" id="restart">Genstart Worker eksplicit</button>
+<button type="button" id="accept">Kør S95b-browseraccept</button>
+<p id="status" role="status" aria-live="polite">Ikke kørt</p><pre id="log" role="log" aria-live="polite"></pre>
+<script type="module" src="./p0021-slice-95b-selected-ui-pilot.mjs"></script>
+</body></html>

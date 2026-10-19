@@ -5,6 +5,8 @@
  */
 
 import { getFriendlyMessage } from './error-catalog.js';
+import { isValue } from './values/value.js';
+import { isDiagnostic } from './diagnostics/diagnostic.js';
 
 // ─── Hoved-dispatcher ────────────────────────────────────────────────────────
 
@@ -43,6 +45,57 @@ export function renderResult(result, latexDiv, decimalDiv, settings) {
 export function renderParseError(err, latexDiv, decimalDiv) {
     decimalDiv.textContent = '';
     latexDiv.innerHTML = `<span class="cas-error">${getFriendlyMessage(err)}</span>`;
+}
+
+/**
+ * S95g — selected semantic result presentation through the EXISTING UI renderer.
+ *
+ * Only DocumentRuntime's calculation projection is accepted.  This routine
+ * does not evaluate, interpret source text, format arbitrary symbolic trees or
+ * localize P0009 diagnostics. Unsupported Values fail visibly and safely.
+ * No legacy result envelope, Python object or backend message is adapted here.
+ */
+export function renderSemanticCalculation(calculation, output, decimalOutput = null) {
+    if (!output || typeof output !== 'object' || !('textContent' in output) ||
+        (decimalOutput !== null && (typeof decimalOutput !== 'object' || !('textContent' in decimalOutput)))) {
+        throw new TypeError('S95G_PRESENTATION_TARGET');
+    }
+    if (decimalOutput) decimalOutput.textContent = '';
+
+    const write = value => { output.textContent = value; };
+    if (calculation == null) { write('kladde'); return; }
+    if (typeof calculation !== 'object' || Array.isArray(calculation)) {
+        throw new TypeError('S95G_CALCULATION_CONTRACT');
+    }
+    if (calculation.status === 'success') {
+        const value = calculation.result;
+        if (!isValue(value)) { write('PRESENTATION_INVALID_VALUE'); return; }
+        if (value.kind === 'function') { write('OK (function)'); return; }
+        if (value.kind !== 'expression') { write('PRESENTATION_UNSUPPORTED_VALUE'); return; }
+        const expr = value.data.expr;
+        if (expr.op === 'integer') { write(`= ${expr.value}`); return; }
+        if (expr.op === 'rational') { write(`= ${expr.numerator}/${expr.denominator}`); return; }
+        if (expr.op === 'approx') { write(`≈ ${expr.value}`); return; }
+        write('PRESENTATION_UNSUPPORTED_VALUE');
+        return;
+    }
+    if (calculation.status === 'error') {
+        const error = calculation.error;
+        const d = error?.diagnostic;
+        // A malformed or contradictory attached diagnostic may not silently
+        // fall back to a different code. Error messages are never executed.
+        if (d !== undefined && (!isDiagnostic(d) || d.code !== error?.code)) {
+            write('error: DIAGNOSTIC_UNAVAILABLE'); return;
+        }
+        const code = d?.code ?? error?.code;
+        write(typeof code === 'string' && /^[A-Z][A-Z0-9_]*$/.test(code)
+            ? `error: ${code}` : 'error: DIAGNOSTIC_UNAVAILABLE');
+        return;
+    }
+    if (['idle','running','dirty','blocked'].includes(calculation.status)) {
+        write(calculation.status); return;
+    }
+    write('PRESENTATION_INVALID_STATUS');
 }
 
 // ─── KaTeX-rendering ─────────────────────────────────────────────────────────

@@ -1,10 +1,10 @@
 /**
  * document-runtime.js
  *
- * Dokumentlagets grænse mod CASEngine.
- *
- * DocumentRuntime ejer document/task-identitet, så UI og senere
- * persistence ikke behøver kende CASEngine's globale task namespace.
+ * DocumentRuntime owns authoritative document sources, identities, dependencies
+ * and calculation projections. The attested Semantic IR path does not need a
+ * legacy engine. Historical CASEngine delegation stays explicit until cutover.
+ * No evaluator, Python scope or alternate document state is created here.
  */
 
 import { parse } from './parser.mjs';
@@ -36,17 +36,44 @@ function sourceDependencies(source) {
     }
 }
 
+// S95n: prepared transactions are opaque capabilities, scoped to one runtime.
+// These are ephemeral validation products, never an alternative document model.
+const preparedDocumentTransactions = new WeakMap();
+
+// Private factory token: callers cannot silently opt out of legacy-engine
+// validation by passing null or a lookalike options object.
+const SEMANTIC_ONLY = Symbol('DocumentRuntime.semantic-only');
+
 export class DocumentRuntime {
-    constructor(engine, documentId) {
-        if (!engine) {
+    /** Preferred for the selected IR/Value/Worker pipeline; no CASEngine. */
+    static createSemantic(documentId) {
+        return new DocumentRuntime(null, documentId, SEMANTIC_ONLY);
+    }
+
+    constructor(engine, documentId, constructionToken) {
+        const semanticOnly = constructionToken === SEMANTIC_ONLY;
+        if (constructionToken !== undefined && !semanticOnly) {
+            throw new TypeError('Unsupported DocumentRuntime construction mode');
+        }
+        if (!semanticOnly && !engine) {
             throw new Error('DocumentRuntime kræver en CASEngine.');
+        }
+        if (semanticOnly && engine != null) {
+            throw new TypeError('Semantic-only DocumentRuntime cannot receive a legacy engine');
         }
 
         if (!documentId || typeof documentId !== 'string') {
             throw new Error('DocumentRuntime kræver et documentId.');
         }
 
-        this.engine = engine;
+        if (semanticOnly) {
+            // This capability must not be attached to a legacy engine later.
+            Object.defineProperty(this, 'engine', {
+                value: null, enumerable: true, writable: false, configurable: false,
+            });
+        } else {
+            this.engine = engine;
+        }
         this.documentId = documentId;
         this.blocks = [];
         this.dependencyAnalysis = new Map();
@@ -66,8 +93,14 @@ export class DocumentRuntime {
         }
     }
 
+    // Legacy entrypoints are deliberately unavailable in semantic-only mode.
+    // In particular, reject BEFORE legacy calculateBlock changes a result slot.
+    #requireLegacyEngine() {
+        if (!this.engine) throw new Error('LEGACY_ENGINE_UNAVAILABLE');
+    }
+
     /**
-     * Oversætter et dokument-lokalt taskId til CASEngine's globale namespace.
+     * Legacy-only task namespace bridge; not used by the semantic evaluator.
      */
     taskKey(taskId = 'default') {
         return `${this.documentId}:${taskId}`;
@@ -77,6 +110,7 @@ export class DocumentRuntime {
      * Beregn et AST i dokumentets task-scope.
      */
     async calculate(ast, taskId = 'default') {
+        this.#requireLegacyEngine();
         return this.engine.calculate(
             ast,
             this.taskKey(taskId)
@@ -87,12 +121,14 @@ export class DocumentRuntime {
      * Hent state for et task-scope i dokumentet.
      */
     async getTaskState(taskId = 'default') {
+        this.#requireLegacyEngine();
         return this.engine.getTaskState(
             this.taskKey(taskId)
         );
     }
 
     async resetTask(taskId = 'default') {
+        this.#requireLegacyEngine();
         await this.engine.resetTask(
             this.taskKey(taskId)
         );
@@ -145,6 +181,7 @@ export class DocumentRuntime {
     }
 
     async calculateBlock(blockId) {
+        this.#requireLegacyEngine();
         const block = this.getBlock(blockId);
 
         if (!block) {
@@ -204,6 +241,7 @@ export class DocumentRuntime {
     }
 
     async recalculateDirty(taskId = 'default', skip = new Set()) {
+        this.#requireLegacyEngine();
         const graph = this.getDependencyGraph(taskId);
         const skipped = new Set(skip);
 
@@ -231,6 +269,7 @@ export class DocumentRuntime {
     }
 
     async recalculateFrom(blockId) {
+        this.#requireLegacyEngine();
         const block = this.getBlock(blockId);
 
         if (!block) {
@@ -653,4 +692,157 @@ export class DocumentRuntime {
         if (storedBlock.type === 'formula') this.notifySemanticChange([storedBlock.taskId]);
         return affected;
     }
+
+    /**
+     * S95n/P0027: prevalidate an atomic formula-document transaction.
+     * No document, result slot, revision, dependency or listener is touched.
+     * One user action may contain several ordered primitive changes.
+     */
+    prepareDocumentTransaction(operations) {
+        if (this.engine !== null) throw new Error('S95N_SEMANTIC_RUNTIME_REQUIRED');
+        if (!Array.isArray(operations) || operations.length === 0 ||
+            operations.some(op => !op || typeof op !== 'object' || Array.isArray(op))) {
+            throw new TypeError('S95N_TRANSACTION_INVALID');
+        }
+        const base = this.blocks.map(block => Object.freeze({
+            ref: block, id: block.id, source: block.source, taskId: block.taskId,
+            type: block.type, generation: block.calculation?.generation,
+        }));
+        const staged = [...this.blocks]; // temporary working references; not authoritative
+        const forward = [], inverse = [], changedSources = new Set();
+        let changed = false;
+        for (const raw of operations) {
+            const fields = Object.keys(raw).sort().join(',');
+            const id = raw.blockId;
+            if (typeof id !== 'string' || !id) throw new TypeError('S95N_BLOCK_ID_INVALID');
+            const index = staged.findIndex(block => block.id === id);
+            const found = staged[index];
+            if (raw.kind === 'source') {
+                if (fields !== 'blockId,kind,source' || index < 0 ||
+                    found.type !== 'formula' || typeof raw.source !== 'string')
+                    throw new TypeError('S95N_SOURCE_INVALID');
+                if (found.source === raw.source) continue;
+                const dependencies = sourceDependencies(raw.source);
+                const next = {...found, source: raw.source, dependencies,
+                    calculation: {status:'idle',generation:found.calculation.generation + 1,
+                        result:null,error:null}};
+                staged[index] = next;
+                forward.push(Object.freeze({kind:'source',blockId:id,source:raw.source}));
+                inverse.unshift(Object.freeze({kind:'source',blockId:id,source:found.source}));
+                changedSources.add(id); changed = true;
+            } else if (raw.kind === 'insert') {
+                if (fields !== 'blockId,index,kind,source,taskId' || index !== -1 ||
+                    typeof raw.source !== 'string' || typeof raw.taskId !== 'string' ||
+                    !raw.taskId || !Number.isSafeInteger(raw.index) ||
+                    raw.index < 0 || raw.index > staged.length)
+                    throw new TypeError('S95N_INSERT_INVALID');
+                const block = {id,type:'formula',taskId:raw.taskId,source:raw.source,
+                    dependencies:sourceDependencies(raw.source),
+                    calculation:{status:'idle',generation:0,result:null,error:null}};
+                staged.splice(raw.index,0,block);
+                forward.push(Object.freeze({kind:'insert',blockId:id,index:raw.index,
+                    source:raw.source,taskId:raw.taskId}));
+                inverse.unshift(Object.freeze({kind:'remove',blockId:id}));
+                changedSources.add(id); changed = true;
+            } else if (raw.kind === 'remove') {
+                if (fields !== 'blockId,kind' || index < 0 || found.type !== 'formula')
+                    throw new TypeError('S95N_REMOVE_INVALID');
+                staged.splice(index,1);
+                forward.push(Object.freeze({kind:'remove',blockId:id}));
+                inverse.unshift(Object.freeze({kind:'insert',blockId:id,index,
+                    source:found.source,taskId:found.taskId}));
+                changedSources.add(id); changed = true;
+            } else if (raw.kind === 'move') {
+                if (fields !== 'blockId,index,kind' || index < 0 ||
+                    found.type !== 'formula' || !Number.isSafeInteger(raw.index) ||
+                    raw.index < 0 || raw.index >= staged.length)
+                    throw new TypeError('S95N_MOVE_INVALID');
+                if (index === raw.index) continue;
+                staged.splice(index,1);
+                staged.splice(raw.index,0,found); // preserve unchanged block object
+                forward.push(Object.freeze({kind:'move',blockId:id,index:raw.index}));
+                inverse.unshift(Object.freeze({kind:'move',blockId:id,index}));
+                changed = true;
+            } else {
+                throw new TypeError('S95N_OPERATION_INVALID');
+            }
+        }
+        const plan = Object.freeze({changed,
+            forward:Object.freeze(forward), inverse:Object.freeze(inverse)});
+        preparedDocumentTransactions.set(plan,{runtime:this,base,staged,changedSources});
+        return plan;
+    }
+
+    /** Publish a prevalidated transaction with one graph rebuild and notification. */
+    applyDocumentTransaction(plan) {
+        const prepared = preparedDocumentTransactions.get(plan);
+        if (!prepared || prepared.runtime !== this)
+            throw new TypeError('S95N_PLAN_INVALID');
+        // Single-use, even if a guarded apply fails. No reusable stale plans.
+        preparedDocumentTransactions.delete(plan);
+        const {base,staged,changedSources} = prepared;
+        if (base.length !== this.blocks.length || base.some((old,i) => {
+            const current = this.blocks[i];
+            return current !== old.ref || current.id !== old.id ||
+                current.source !== old.source || current.type !== old.type ||
+                current.taskId !== old.taskId ||
+                current.calculation?.generation !== old.generation;
+        })) throw new Error('S95N_STALE_PLAN');
+        if (!plan.changed) return Object.freeze({kind:'unchanged',affectedBlockIds:Object.freeze([])});
+        const previousBlocks = this.blocks;
+        const previousAnalysis = this.dependencyAnalysis;
+        const previousCalcs = new Map(previousBlocks.filter(b => b.type === 'formula')
+            .map(b => [b, b.calculation]));
+        const previousSemantic = this.captureSemanticAnalyses();
+        const formerDownstream = new Set();
+        for (const id of changedSources) {
+            const old = previousBlocks.find(block => block.id === id);
+            if (!old || old.type !== 'formula') continue;
+            for (const downstream of previousSemantic.get(old.taskId)?.graph.getAllDownstream(id) ?? [])
+                formerDownstream.add(downstream);
+        }
+        // Rebuild before publishing. A failure here cannot leave the staged
+        // sources or graph authoritative.
+        try {
+            this.blocks = staged;
+            this.rebuildDependencyAnalysis();
+            const nextSemantic = this.captureSemanticAnalyses();
+            const affected = new Set([...changedSources]);
+            for (const id of changedSources) {
+                const block = this.getBlock(id);
+                if (block?.type !== 'formula') continue;
+                for (const child of nextSemantic.get(block.taskId)?.graph.getAllDownstream(id) ?? [])
+                    affected.add(child);
+            }
+            for (const child of formerDownstream) affected.add(child);
+            for (const id of this.invalidateStructuralChanges(previousAnalysis)) affected.add(id);
+            for (const id of this.invalidateSemanticChanges(previousSemantic)) affected.add(id);
+            for (const id of affected) this.markBlockDirty(id);
+            const tasks = new Set();
+            for (const op of plan.forward) {
+                const before = previousBlocks.find(b => b.id === op.blockId);
+                const after = staged.find(b => b.id === op.blockId);
+                if (before?.type === 'formula') tasks.add(before.taskId);
+                if (after?.type === 'formula') tasks.add(after.taskId);
+            }
+            // Rebuild/invalidation completed; only now send notifications.
+            // A throwing observer cannot undo an already published transaction
+            // or make the session lose its Undo record.
+            let notificationErrors = 0;
+            for (const listener of this.semanticChangeListeners) {
+                try { listener(Object.freeze([...tasks])); }
+                catch { notificationErrors++; }
+            }
+            return Object.freeze({kind:'applied',notificationErrors,
+                affectedBlockIds:Object.freeze([...affected])});
+        } catch (error) {
+            // The prepared transaction never partially publishes block order or
+            // source. Unexpected renderer/listener errors are caller failures.
+            this.blocks = previousBlocks;
+            this.dependencyAnalysis = previousAnalysis;
+            for (const [block, calculation] of previousCalcs) block.calculation = calculation;
+            throw error;
+        }
+    }
+
 }
