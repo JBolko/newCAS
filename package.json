@@ -17,13 +17,14 @@
     "tools:runtime": "python -m tools.analyze.runtime_report",
     "test:js": "node --test",
     "pack:docs": "npx repomix --include \"docs/**/*,README.md\" --output repomix-docs.md",
-    "pack:tools": "npx repomix --include \"tools/**/*,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,tools/reports/*.json,repomix-*.md\" --output repomix-tools.md",
+    "pack:tools": "npx repomix --include \"tools/**/*,package.json,.gitignore\" --ignore \"tools/reports/**,tools/migrations/**,**/__pycache__/**,**/*.pyc,**/*.zip,repomix-*.md\" --output repomix-tools.md",
     "pack:engine": "npx repomix --include \"src/js/**/*,src/python/**/*,docs/Grammatik.pegjs,package.json\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-engine.md",
-    "pack:handover": "npx repomix --include \"src/python/**/*,src/js/cas-engine.js,src/js/transformer.js,tools/**/*,docs/Styredokumenter/**/*,docs/adr/**/*,docs/Grammatik.pegjs,package.json,README.md\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-handover.md",
+    "pack:handover": "npx repomix --include \"docs/architecture/v1.0/**/*,docs/adr/**/*,docs/Styredokumenter/ROADMAP_AKTUEL.md,docs/Styredokumenter/NEW_THREAD_HANDOVER_S95.md,docs/architecture/P0021-slice-95*.md,docs/architecture/P0005-value-contract-v1.md,docs/architecture/P0006-semantic-identity-contract-v1.md,docs/architecture/P0007-semantic-ir-contract-v1.md,docs/architecture/P0008-operation-spec-contract-v1.md,docs/architecture/P0009-diagnostic-contract-v1.md,docs/architecture/P0010-evaluation-transport-contract-v1.md,docs/Grammatik.pegjs,README.md,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,**/*.zip,repomix-*.md\" --output repomix-handover.md",
     "pack:architecture": "npx repomix --include \"src/js/**/*,src/python/**/*,tests/js/**/*,docs/architecture/**/*,docs/Styredokumenter/**/*,docs/adr/**/*,docs/Grammatik.pegjs,package.json,README.md\" --ignore \"lib/**,**/__pycache__/**,**/*.pyc,**/*.ttf,**/*.woff,**/*.woff2,src/js/parser.mjs,package-lock.json,repomix-*.md\" --output repomix-architecture.md",
     "pack:tests": "npx repomix --include \"tests/**/*,src/js/parser.mjs,docs/Grammatik.pegjs,package.json\" --ignore \"**/__pycache__/**,**/*.pyc,**/node_modules/**,repomix-*.md\" --output repomix-tests.md",
     "pack:all": "npm run pack:docs && npm run pack:engine && npm run pack:tools && npm run pack:tests && npm run pack:architecture",
-    "test:python": "python -m unittest discover -s tests/python -p test_*.py"
+    "test:python": "python -m unittest discover -s tests/python -p test_*.py",
+    "pack:transfer": "npm run pack:handover && npm run pack:engine && npm run pack:tests && npm run pack:tools"
   },
   "keywords": [
     "cas",

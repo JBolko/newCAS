@@ -22,3 +22,24 @@ __pycache__/
 
 # Zip files
 /*.zip
+
+# Generated test reports and archives
+/tools/reports/
+
+# One-shot slice verification and checkpoint scripts
+/tools/migrations/p0021-s*-verify.ps1
+/tools/migrations/p0021-s*-checkpoint*.ps1
+
+# Temporary S94 packaging and S95a cleanup files
+/tools/migrations/P0021-S94-*
+/tools/migrations/p0021-s95a-archive-untracked.ps1
+
+# Temporary repository inventories
+/root-files.txt
+/root-tree.txt
+/untracked-files.txt
+
+# Python virtual environments and caches
+/.venv/
+/venv/
+/.pytest_cache/
