@@ -1,11 +1,11 @@
 # newCAS Frozen-Architecture Implementation Roadmap
 
-**Status:** Living implementation roadmap, updated 2026-10-19 after S95p acceptance (checkpoint preparation).
+**Status:** Living implementation roadmap, updated 2026-10-20 after S96a.1/a.2/b.1/b.2 acceptance and closure review; Git checkpoint prepared, not staged or committed.
 **Numbering:** Preserve capability/ownership landmarks `P0001`–`P0050`. `P0021` slices are incremental implementation/test deliveries, **not** new roadmap phase identifiers.
 **Authority:** The three frozen v1.0 architecture documents and applicable ADRs remain normative. This roadmap is not.
-**Git baseline:** `296fbbe` (`architecture-v1-implementation`) — *P0021 checkpoint: S94 supervised Worker and revision-coupled recovery*. **S95a–p accepted in the developer checkout but not yet committed as of Git status supplied 2026-10-19.** Replace this provisional line with the actual new hash only after a verified commit.
-**Latest reported full acceptance:** S95p on the developer's Node 24 checkout (2026-10-19): **1,309 JS PASS, 0 FAIL, 7 TODO, 1 SKIPPED; 264 Python PASS**; S95p focused suite **151/151 PASS**; canonical Peggy parser check PASS. The developer separately reported **real Pyodide/SymPy browser PASS** for S95f, S95k, S95m and S95p. These are dated integration proofs, **not** complete P-phase or student-release exits.
-**Immediate priority:** Verify and commit the accepted S95a–p checkpoint with explicit Git allowlist; audit seven TODOs and normative coverage; then extend the selected mathematical capability and integrate **all** authoritative edits through the transaction/history boundary before designing the real student UI. Existing `main.js` is a disposable prototype, **not** a UI design constraint. Legacy execution is not retired.
+**Git baseline:** Verified branch `architecture-v1-implementation`, HEAD `8a7b0d47131b9004855fb64205a2fa13dde07a9d`. S95 implementation was committed as `9aa6ab0`; `8a7b0d4` is the subsequent handover/ignore checkpoint. **S96 remains uncommitted.** Do not invent a new checkpoint hash before an authorized commit.
+**Latest actual acceptance:** Node v24.11.0: **1,345 PASS, 0 FAIL, 7 TODO, 1 SKIP** (1,353 tests); Python **264 PASS**. S96b.2: **13/13**; focused S95/S96: **106/106**. Real Chrome 155 / supervised Pyodide/SymPy: **3/3** S96b.2 scenarios. Closure reran full Node and classified all seven TODO as actual failing probes; SKIP is Windows real-symlink creation EPERM. See [S96 closure](S96_CLOSURE.md) for scope and exclusions. These results do not close a P-phase or authorize a student release.
+**Immediate priority:** Review the explicit S96 checkpoint allowlist and closure, then commit only upon user authorization. Next recommended slice: review monotonic mutation/incarnation divergence detection in HistorySession and route authoritative edit commands through the existing transaction/history owner, before editor-wide Undo/Redo integration. Keep capability/precision/security release blockers visible; do not implement multi-statement evaluation without a versioned ADR.
 
 ## Purpose and governing principles
 
@@ -17,7 +17,7 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 - **RED → GREEN with traceable evidence:** Small repo-relative ZIP slices, controlled PowerShell verifiers, full JS/Python gates, and real browser/Pyodide tests where applicable. A TODO is never silently counted as an implemented case.
 - **Release hygiene:** Build student distributions by allowlist; never ship `tools/`, test reports, one-shot migration scripts, transport ZIPs, tests, repomix dumps, or developer-only dependencies.
 
-## Implementation checkpoint — 18 October 2026
+## Implementation checkpoint — 20 October 2026
 
 | Track | Demonstrated implementation / evidence | Remaining before exit |
 | --- | --- | --- |
@@ -49,7 +49,8 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 | **S95a–d** | Read-only legacy/UI route audits, temporary selected-runtime browser pilot, draft-only test-file ingress and engine-free semantic DocumentRuntime construction. | Test-only route; legacy `main.js` unchanged, no `.ncas` format change. |
 | **S95e–h** | Explicit calculate action; 1–32 FormulaBlock test-file UI; selected Value/P0009 rendering through existing `renderer.js`; prototype Enter/identity/authority audit. | Test infrastructure and presentation subset, not a production student editor. |
 | **S95i–m** | Formula EditingSession, Enter submit, single insert/move/remove operations; real Pyodide browser proof for Enter and order-sensitive provider capture. | Stable block IDs and draft/authority separation demonstrated; no full editor or all-task editing coverage. |
-| **S95n–p** | Prevalidated atomic FormulaBlock document transactions, session Undo/Redo history, real Pyodide history/epoch/browser proof. | Only transactional edits are recorded. External mutation makes Undo fail closed; histories are not `.ncas` payloads; text/graphs/settings/task-boundary completeness remains open. |
+| **S95n–p** | Prevalidated atomic FormulaBlock document transactions, session Undo/Redo history, real Pyodide history/epoch/browser proof. | Only transactional edits are recorded. Content-changing external mutation makes Undo fail closed; same-content ABA/recreation is not detected; histories are not `.ncas` payloads; text/graphs/settings/task-boundary completeness remains open. |
+| **S96a.1–b.2** | Source rollback and guarded publication; atomic multi-draft Calculate; exact pending Enter through history; runtime-owned ephemeral source/incarnation identity; synchronous source acceptance releases history Enter before Worker settlement. | Non-history behavior and single-flight remain. Content-based history divergence still misses external ABA/recreation; mixed-route all-edit integration, complete normative coverage and offline release remain open. |
 
 ### Representative accepted scenarios (not full exits)
 
@@ -63,10 +64,10 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 
 ## Next execution plan — proposed sequencing, not a new normative contract
 
-1. **S95 checkpoint gate:** inspect/selectively stage S95a–p runtime, presentation, analysis, browser fixtures, tests and documentation. Exclude one-shot verifiers, report ZIPs, root ZIPs, cache directories, `node_modules/`, repomix outputs and local workspace files. Confirm branch `architecture-v1-implementation`, baseline `296fbbe`, Node 24, canonical Peggy check, full `npm test`, staged diff and `git diff --cached --check` before committing. Record real commit hash afterward; this roadmap currently names only the *pre-commit* baseline.
-2. **Review P0026–P0028 completeness:** the S95n–p history is a selected FormulaBlock implementation, not every document transaction. Close gaps for task boundaries, copy/duplicate, text/settings/graph mutations, consistently routed source commits, active-draft conflicts, history branching, and adversarial asynchronous races. Ensure **all** authoritative edit entrypoints use a single transaction/history owner before announcing editor-wide Undo/Redo.
+1. **S96 checkpoint gate:** S95 is already committed. Review [S96 closure](S96_CLOSURE.md) and `tools/dev/s96-checkpoint-allowlist.txt` (23 exact paths, including the explicit `claude.md.txt` deletion). Nothing is staged or committed. Preserve local historical packages, but exclude them from the checkpoint; include the pre-existing `claude.md.txt` deletion as explicit retirement of obsolete project instructions. The permanent GREEN note is `docs/architecture/P0021-slice-96b2-history-enter-source-identity.md`. Require separate approvals for staging, commit and post-commit archival; follow S96_POST_COMMIT_CLEANUP.md and verify exact staged paths/whitespace. S97 readiness requires clean Git status and passing checks after archival, not just a commit.
+2. **Next slice proposal — history divergence and authoritative edit integration:** Specify expected behavior for external source ABA, same-ID recreation, mixed direct/history edits, and source versus structural mutation identity. Add RED probes first; preserve host epoch, source identity and calculation generation as separate concepts. Current content-only fingerprint limitation exists at HEAD and is not an S96 regression; it blocks general mixed-route history acceptance for student release, not this scoped development checkpoint. Do not silently extend the contract.
 3. **UI design as new work:** do not optimize for historical `main.js` layout or legacy error rendering. Build the new student UX above EditingSession/DocumentRuntime and existing renderer, with humane P0009 diagnostic localization; graphs/PlotSpecs and guided teaching features must retain presentation-only ownership.
-4. **Capability and normative gates:** audit seven TODOs and one skip case by case; expand selected OperationSpec/evaluator/Worker support, especially active symbolic routes, containers/units/statistics as required by Release 1; run applicable 53+ frozen stress cases against the actual document/Worker path, with real browser/recovery tests.
+4. **Capability and normative gates:** disposition of all seven TODOs and the Windows symlink SKIP is recorded in [S96 closure](S96_CLOSURE.md); none counts as PASS. Close the applicable release blockers; expand selected OperationSpec/evaluator/Worker support, especially active symbolic routes, containers/units/statistics as required by Release 1; run applicable 53+ frozen stress cases against the actual document/Worker path, with real browser/recovery tests.
 5. **Legacy retirement:** use S95a and S95h route inventories to remove, caller by caller, remaining `main.js` → legacy `CASEngine`/Transformer/Python `exec`/`eval` dependencies. The successful S95 temporary browser route is **not** proof that existing legacy is unreachable. No student release with an active legacy fallback.
 6. **Persistence and external review:** preserve `.ncas` as a versioned authoritative-document format, extensible for future graph specifications without Python/Worker snapshots; verify save/reload and reconstruction. A narrow Claude review can inspect S95 transaction/epoch contracts after the checkpoint, while full retirement review is more valuable once legacy is removed or proven unreachable.
 
@@ -82,8 +83,8 @@ This roadmap records **capability, ownership, evidence, and open work** after ar
 | **F8 / P0018 — input accuracy/i18n** | Known Danish decimal-comma and literal-exactness probes. | Explicit source-language policy, canonical PEG tests, and Value roundtrips. |
 | **Semicolon/multi-statement** | S90a positional analysis exists, but active sequential evaluation and atomic commit do not. | Versioned contract/ADR addendum: per-statement identities, ordering, failure, dependencies, rollback, invalidation. Do not retroactively reinterpret frozen ADR-0006 v1. |
 | **Security/distribution** | Worker message/output validation, HTML injection, third-party/offline dependencies, and student artifacts lack one complete gate. | Adversarial tests and a fresh-machine student package audit without development files. |
-| **Normative tests and TODOs** | Seven TODO and one skip in S93h JS; 53+ normative cases not accepted through the active UI path. | Case-by-case disposition of TODO/skip and a traceable browser/document stress matrix. |
-| **Editing / history completeness** | S95i–p covers selected FormulaBlock editing and transactions, but old test actions can still change document source outside the history owner. | Unify authoritative mutation entrypoints, test mixed edits, conflicts, task-boundary semantics, text/graph additions and future all-content Undo/Redo. |
+| **Normative tests and TODOs** | S96 closure: all seven TODO are actual failing probes (S90 gate, two F7, three F8, one F4); one real-symlink SKIP is Windows EPERM. | Detailed classification in S96_CLOSURE.md; retain release gates for symbolic bindings, grammar/precision and legacy containment. S90 is deferred behind an ADR, not an authorized v1 feature. |
+| **Editing / history completeness** | S96 connects history Enter and protects ACK identity/early release; non-history routes still exist. Content fingerprints miss external ABA and same-ID recreation at both HEAD and S96. | Next scoped RED/contract review for mutation divergence and all-edit routing. Block editor-wide mixed-route history acceptance until resolved. |
 | **UI vs. `.ncas`** | The S95f browser page is developer-only; future student UI is expected to be redesigned substantially. `.ncas` has not been changed by S95. | Design human-readable localized diagnostics and usable student UI independently; version `.ncas` extensions for graph/table content with explicit persistence/migration tests. |
 
 ### Pedagogical/UI backlog — not a change to frozen mathematical semantics
@@ -373,13 +374,15 @@ through DocumentRuntime. **NOT YET MET:** isolated/batch/Worker tests are not eq
 
 ### P0026 --- EditingSession commit boundary
 
-**Status (2026-10-19): PARTIAL.** S95i adds a single active FormulaBlock draft with stale/identity/task guards; S95j/k validates Enter and real Pyodide submit. Not a complete multi-editor or student UI implementation.
+**Status (2026-10-20): PARTIAL / selected history Enter GREEN.** S96b.1/b.2 records exact pending Enter through HistorySession, checks runtime-owned source/incarnation identity and releases accepted drafts before asynchronous Worker settlement. Non-history Enter retains its previous lifecycle. Real S96b.2 browser proof passed; no complete multi-editor/student UI exit.
 
 Editor buffers are separate from authoritative source.
 
 ### P0027 --- Document transactions / Undo/Redo
 
-**Status (2026-10-19): PARTIAL, selected FormulaBlock path GREEN.** S95n prevalidates and atomically publishes source/insert/remove/move; S95o stores reversible session history; S95p real-Pyodide Undo/Redo/epoch/redo-branch proof PASS. Untracked external mutations fail closed. Not all document content/entrypoints supported.
+**S96 update (2026-10-20):** Source/transaction publication is guarded; multi-source Calculate is atomic in the semantic route; history Enter creates one Undo entry and revision. Content-only divergence misses external ABA/recreation; next slice must review this before editor-wide mixed-route release acceptance.
+
+**Status (2026-10-19): PARTIAL, selected FormulaBlock path GREEN.** S95n prevalidates and atomically publishes source/insert/remove/move; S95o stores reversible session history; S95p real-Pyodide Undo/Redo/epoch/redo-branch proof PASS. Content-changing external mutations fail closed; same-content ABA/recreation remains undetected. Not all document content/entrypoints supported.
 
 Reversible authoritative changes; no runtime snapshots.
 

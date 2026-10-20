@@ -45,6 +45,25 @@ const preparedDocumentTransactions = new WeakMap();
 const SEMANTIC_ONLY = Symbol('DocumentRuntime.semantic-only');
 
 export class DocumentRuntime {
+    // S96a.1: synchronous publication gate. Not an extra document model.
+    #publishing = false;
+    // Ephemeral source/incarnation tokens. Never serialized or restored by Undo.
+    // Transaction source replacements and insertions are fresh block objects;
+    // unchanged/moved blocks retain their token. No parallel document state.
+    #sourceIdentities = new WeakMap();
+
+    getBlockSourceIdentity(blockId) {
+        const block = this.getBlock(blockId);
+        if (block?.type !== 'formula') return null;
+        if (!this.#sourceIdentities.has(block))
+            this.#sourceIdentities.set(block, Symbol('DocumentRuntime.source'));
+        return this.#sourceIdentities.get(block);
+    }
+
+    #assertNoReentrantMutation() {
+        if (this.#publishing) throw new Error('S96A_REENTRANT_MUTATION');
+    }
+
     /** Preferred for the selected IR/Value/Worker pipeline; no CASEngine. */
     static createSemantic(documentId) {
         return new DocumentRuntime(null, documentId, SEMANTIC_ONLY);
@@ -88,9 +107,19 @@ export class DocumentRuntime {
     }
 
     notifySemanticChange(taskIds) {
+        const payload = Object.freeze([...taskIds]);
+        let notificationErrors = 0;
         for (const listener of this.semanticChangeListeners) {
-            listener(Object.freeze([...taskIds]));
+            if (this.engine !== null) {
+                // Legacy notification contract is unchanged until its retirement.
+                listener(payload);
+            } else {
+                // A listener is not an authority for rejecting an accepted edit.
+                try { listener(payload); }
+                catch { notificationErrors++; }
+            }
         }
+        return notificationErrors;
     }
 
     // Legacy entrypoints are deliberately unavailable in semantic-only mode.
@@ -171,6 +200,7 @@ export class DocumentRuntime {
     }
     
     addBlock(block) {
+        this.#assertNoReentrantMutation();
         const storedBlock = this.prepareBlock(block);
 
         this.blocks.push(storedBlock);
@@ -309,6 +339,7 @@ export class DocumentRuntime {
     }
 
     setBlockSource(blockId, source) {
+        this.#assertNoReentrantMutation();
         const block = this.getBlock(blockId);
 
         if (!block) {
@@ -322,53 +353,78 @@ export class DocumentRuntime {
         // Validate input type and derive optional dependencies before mutation.
         // Syntax-invalid or unsupported source is still committed as source data.
         const dependencies = sourceDependencies(source);
+        const previousIdentity = this.getBlockSourceIdentity(blockId);
+        const previousSource = block.source;
+        const previousDependencies = block.dependencies;
+        const previousAnalysis = this.dependencyAnalysis;
+        const previousCalculations = new Map(this.blocks
+            .filter(candidate => candidate.type === 'formula')
+            .map(candidate => [candidate, candidate.calculation]));
 
-        const oldSemantic = this.captureSemanticAnalyses();
+        // Preserve the non-history S95i live-block contract. Source identity
+        // independently tracks edits; S95n transactions replace block objects.
+        this.#publishing = true;
+        try {
+            const oldSemantic = this.captureSemanticAnalyses();
 
-        // Preserve semantic downstream as well: provider IDs may stay the same
-        // while the writer's VALUE changes (e.g. editing f(t)'s body).
-        const oldSemanticDownstream = oldSemantic.get(block.taskId)?.graph.getAllDownstream(blockId) ?? [];
-        // Gem downstream fra den gamle graph før dependencies ændres.
-        const oldGraph = this.getDependencyGraph(block.taskId);
-        const oldDownstream =
-            oldGraph?.getAllDownstream(blockId) ?? [];
+            // Preserve semantic downstream as well: provider IDs may stay the same
+            // while the writer's VALUE changes (e.g. editing f(t)'s body).
+            const oldSemanticDownstream = oldSemantic.get(block.taskId)?.graph.getAllDownstream(blockId) ?? [];
+            // Gem downstream fra den gamle graph før dependencies ændres.
+            const oldGraph = this.getDependencyGraph(block.taskId);
+            const oldDownstream =
+                oldGraph?.getAllDownstream(blockId) ?? [];
 
-        // Ny source invaliderer enhver beregning af denne block.
-        const nextGeneration =
-            block.calculation.generation + 1;
+            // Ny source invaliderer enhver beregning af denne block.
+            const nextGeneration =
+                block.calculation.generation + 1;
 
-        // Commit den nye source.
-        block.source = source;
-        block.dependencies = dependencies;
+            // Commit den nye source.
+            block.source = source;
+            block.dependencies = dependencies;
 
-        block.calculation = {
-            status: 'idle',
-            generation: nextGeneration,
-            result: null,
-            error: null
-        };
+            block.calculation = {
+                status: 'idle',
+                generation: nextGeneration,
+                result: null,
+                error: null
+            };
 
-        // Den nye source kan have ændret graph-strukturen.
-        this.rebuildDependencyAnalysis();
+            // Den nye source kan have ændret graph-strukturen.
+            this.rebuildDependencyAnalysis();
 
-        const newGraph = this.getDependencyGraph(block.taskId);
-        const newDownstream =
-            newGraph?.getAllDownstream(blockId) ?? [];
+            const newGraph = this.getDependencyGraph(block.taskId);
+            const newDownstream =
+                newGraph?.getAllDownstream(blockId) ?? [];
 
-        // Både tidligere og nye downstream blocks er nu potentielt ugyldige.
-        const newSemanticDownstream = this.deriveSemanticTask(block.taskId).analysis.graph.getAllDownstream(blockId);
-        const affected = new Set([
-            ...oldDownstream,
-            ...newDownstream,
-            ...oldSemanticDownstream,
-            ...newSemanticDownstream,
-        ]);
+            // Både tidligere og nye downstream blocks er nu potentielt ugyldige.
+            const newSemanticDownstream = this.deriveSemanticTask(block.taskId).analysis.graph.getAllDownstream(blockId);
+            const affected = new Set([
+                ...oldDownstream,
+                ...newDownstream,
+                ...oldSemanticDownstream,
+                ...newSemanticDownstream,
+            ]);
 
-        for (const affectedBlockId of affected) {
-            this.markBlockDirty(affectedBlockId);
+            for (const affectedBlockId of affected) {
+                this.markBlockDirty(affectedBlockId);
+            }
+            this.invalidateSemanticChanges(oldSemantic);
+            this.#sourceIdentities.set(block, Symbol('DocumentRuntime.source'));
+            this.notifySemanticChange([block.taskId]);
+        } catch (error) {
+            // All synchronous semantic/graph failures leave the original
+            // authoritative source, graph and calculation slots unchanged.
+            this.#sourceIdentities.set(block, previousIdentity);
+            block.source = previousSource;
+            block.dependencies = previousDependencies;
+            this.dependencyAnalysis = previousAnalysis;
+            for (const [candidate, calculation] of previousCalculations)
+                candidate.calculation = calculation;
+            throw error;
+        } finally {
+            this.#publishing = false;
         }
-        this.invalidateSemanticChanges(oldSemantic);
-        this.notifySemanticChange([block.taskId]);
     }
 
     rebuildDependencyAnalysis() {
@@ -615,6 +671,7 @@ export class DocumentRuntime {
     }
 
     moveBlock(blockId, newIndex) {
+        this.#assertNoReentrantMutation();
         const oldIndex =
             this.blocks.findIndex(block => block.id === blockId);
 
@@ -649,6 +706,7 @@ export class DocumentRuntime {
     }
 
     removeBlock(blockId) {
+        this.#assertNoReentrantMutation();
         const index =
             this.blocks.findIndex(block => block.id === blockId);
 
@@ -671,6 +729,7 @@ export class DocumentRuntime {
     }
 
     insertBlock(block, index) {
+        this.#assertNoReentrantMutation();
         if (
             !Number.isInteger(index) ||
             index < 0 ||
@@ -699,6 +758,7 @@ export class DocumentRuntime {
      * One user action may contain several ordered primitive changes.
      */
     prepareDocumentTransaction(operations) {
+        this.#assertNoReentrantMutation();
         if (this.engine !== null) throw new Error('S95N_SEMANTIC_RUNTIME_REQUIRED');
         if (!Array.isArray(operations) || operations.length === 0 ||
             operations.some(op => !op || typeof op !== 'object' || Array.isArray(op))) {
@@ -775,73 +835,79 @@ export class DocumentRuntime {
 
     /** Publish a prevalidated transaction with one graph rebuild and notification. */
     applyDocumentTransaction(plan) {
-        const prepared = preparedDocumentTransactions.get(plan);
-        if (!prepared || prepared.runtime !== this)
-            throw new TypeError('S95N_PLAN_INVALID');
-        // Single-use, even if a guarded apply fails. No reusable stale plans.
-        preparedDocumentTransactions.delete(plan);
-        const {base,staged,changedSources} = prepared;
-        if (base.length !== this.blocks.length || base.some((old,i) => {
-            const current = this.blocks[i];
-            return current !== old.ref || current.id !== old.id ||
-                current.source !== old.source || current.type !== old.type ||
-                current.taskId !== old.taskId ||
-                current.calculation?.generation !== old.generation;
-        })) throw new Error('S95N_STALE_PLAN');
-        if (!plan.changed) return Object.freeze({kind:'unchanged',affectedBlockIds:Object.freeze([])});
-        const previousBlocks = this.blocks;
-        const previousAnalysis = this.dependencyAnalysis;
-        const previousCalcs = new Map(previousBlocks.filter(b => b.type === 'formula')
-            .map(b => [b, b.calculation]));
-        const previousSemantic = this.captureSemanticAnalyses();
-        const formerDownstream = new Set();
-        for (const id of changedSources) {
-            const old = previousBlocks.find(block => block.id === id);
-            if (!old || old.type !== 'formula') continue;
-            for (const downstream of previousSemantic.get(old.taskId)?.graph.getAllDownstream(id) ?? [])
-                formerDownstream.add(downstream);
-        }
-        // Rebuild before publishing. A failure here cannot leave the staged
-        // sources or graph authoritative.
+        this.#assertNoReentrantMutation();
+        this.#publishing = true;
         try {
-            this.blocks = staged;
-            this.rebuildDependencyAnalysis();
-            const nextSemantic = this.captureSemanticAnalyses();
-            const affected = new Set([...changedSources]);
+            const prepared = preparedDocumentTransactions.get(plan);
+            if (!prepared || prepared.runtime !== this)
+                throw new TypeError('S95N_PLAN_INVALID');
+            // Single-use, even if a guarded apply fails. No reusable stale plans.
+            preparedDocumentTransactions.delete(plan);
+            const {base,staged,changedSources} = prepared;
+            if (base.length !== this.blocks.length || base.some((old,i) => {
+                const current = this.blocks[i];
+                return current !== old.ref || current.id !== old.id ||
+                    current.source !== old.source || current.type !== old.type ||
+                    current.taskId !== old.taskId ||
+                    current.calculation?.generation !== old.generation;
+            })) throw new Error('S95N_STALE_PLAN');
+            if (!plan.changed) return Object.freeze({kind:'unchanged',affectedBlockIds:Object.freeze([])});
+            const previousBlocks = this.blocks;
+            const previousAnalysis = this.dependencyAnalysis;
+            const previousCalcs = new Map(previousBlocks.filter(b => b.type === 'formula')
+                .map(b => [b, b.calculation]));
+            const previousSemantic = this.captureSemanticAnalyses();
+            const formerDownstream = new Set();
             for (const id of changedSources) {
-                const block = this.getBlock(id);
-                if (block?.type !== 'formula') continue;
-                for (const child of nextSemantic.get(block.taskId)?.graph.getAllDownstream(id) ?? [])
-                    affected.add(child);
+                const old = previousBlocks.find(block => block.id === id);
+                if (!old || old.type !== 'formula') continue;
+                for (const downstream of previousSemantic.get(old.taskId)?.graph.getAllDownstream(id) ?? [])
+                    formerDownstream.add(downstream);
             }
-            for (const child of formerDownstream) affected.add(child);
-            for (const id of this.invalidateStructuralChanges(previousAnalysis)) affected.add(id);
-            for (const id of this.invalidateSemanticChanges(previousSemantic)) affected.add(id);
-            for (const id of affected) this.markBlockDirty(id);
-            const tasks = new Set();
-            for (const op of plan.forward) {
-                const before = previousBlocks.find(b => b.id === op.blockId);
-                const after = staged.find(b => b.id === op.blockId);
-                if (before?.type === 'formula') tasks.add(before.taskId);
-                if (after?.type === 'formula') tasks.add(after.taskId);
+            // Rebuild before publishing. A failure here cannot leave the staged
+            // sources or graph authoritative.
+            try {
+                this.blocks = staged;
+                this.rebuildDependencyAnalysis();
+                const nextSemantic = this.captureSemanticAnalyses();
+                const affected = new Set([...changedSources]);
+                for (const id of changedSources) {
+                    const block = this.getBlock(id);
+                    if (block?.type !== 'formula') continue;
+                    for (const child of nextSemantic.get(block.taskId)?.graph.getAllDownstream(id) ?? [])
+                        affected.add(child);
+                }
+                for (const child of formerDownstream) affected.add(child);
+                for (const id of this.invalidateStructuralChanges(previousAnalysis)) affected.add(id);
+                for (const id of this.invalidateSemanticChanges(previousSemantic)) affected.add(id);
+                for (const id of affected) this.markBlockDirty(id);
+                const tasks = new Set();
+                for (const op of plan.forward) {
+                    const before = previousBlocks.find(b => b.id === op.blockId);
+                    const after = staged.find(b => b.id === op.blockId);
+                    if (before?.type === 'formula') tasks.add(before.taskId);
+                    if (after?.type === 'formula') tasks.add(after.taskId);
+                }
+                // Rebuild/invalidation completed; only now send notifications.
+                // A throwing observer cannot undo an already published transaction
+                // or make the session lose its Undo record.
+                let notificationErrors = 0;
+                for (const listener of this.semanticChangeListeners) {
+                    try { listener(Object.freeze([...tasks])); }
+                    catch { notificationErrors++; }
+                }
+                return Object.freeze({kind:'applied',notificationErrors,
+                    affectedBlockIds:Object.freeze([...affected])});
+            } catch (error) {
+                // The prepared transaction never partially publishes block order or
+                // source. Unexpected renderer/listener errors are caller failures.
+                this.blocks = previousBlocks;
+                this.dependencyAnalysis = previousAnalysis;
+                for (const [block, calculation] of previousCalcs) block.calculation = calculation;
+                throw error;
             }
-            // Rebuild/invalidation completed; only now send notifications.
-            // A throwing observer cannot undo an already published transaction
-            // or make the session lose its Undo record.
-            let notificationErrors = 0;
-            for (const listener of this.semanticChangeListeners) {
-                try { listener(Object.freeze([...tasks])); }
-                catch { notificationErrors++; }
-            }
-            return Object.freeze({kind:'applied',notificationErrors,
-                affectedBlockIds:Object.freeze([...affected])});
-        } catch (error) {
-            // The prepared transaction never partially publishes block order or
-            // source. Unexpected renderer/listener errors are caller failures.
-            this.blocks = previousBlocks;
-            this.dependencyAnalysis = previousAnalysis;
-            for (const [block, calculation] of previousCalcs) block.calculation = calculation;
-            throw error;
+        } finally {
+            this.#publishing = false;
         }
     }
 

@@ -14,6 +14,7 @@ const validRevision = value => typeof value === 'string' && value.length > 0;
 
 export function createSemanticCalculateAction({
   runtime, session, taskId = 'default', getCurrentRevision, advanceRevision,
+  commitOperations,
 } = {}) {
   if (!runtime || typeof runtime.getBlock !== 'function' ||
       typeof runtime.setBlockSource !== 'function' ||
@@ -21,7 +22,9 @@ export function createSemanticCalculateAction({
       typeof taskId !== 'string' || !taskId ||
       typeof getCurrentRevision !== 'function' ||
       typeof advanceRevision !== 'function' ||
-      !validRevision(getCurrentRevision())) {
+      !validRevision(getCurrentRevision()) ||
+      (commitOperations !== undefined &&
+        (typeof commitOperations !== 'function' || runtime.engine !== null))) {
     throw new TypeError('S95E_ACTION_CONTRACT');
   }
   let running = false;
@@ -52,12 +55,40 @@ export function createSemanticCalculateAction({
     return Object.freeze(changes);
   }
 
-  async function calculate(drafts) {
+  async function calculate(drafts, {onSourceAccepted} = {}) {
     if (running) throw new Error('S95E_ACTION_ALREADY_RUNNING');
+    if (onSourceAccepted !== undefined && typeof onSourceAccepted !== 'function')
+      throw new TypeError('S95E_ACTION_CONTRACT');
     running = true;
     try {
       const changes = plan(drafts);
-      if (changes.length) {
+      // S96a.2 (temporary S95i-compatible boundary): a multi-source user action
+      // must publish through the existing atomic S95n transaction. Prepare
+      // BEFORE advancing the host epoch, so invalid operations cannot consume
+      // a revision, and an intervening host edit is rejected as a stale plan.
+      // The non-history single-source S95i route retains its live-block
+      // contract; source identity is tracked independently by DocumentRuntime.
+      const batchPlan = commitOperations === undefined &&
+        changes.length > 1 && runtime.engine === null
+        ? runtime.prepareDocumentTransaction(changes.map(change => ({
+            kind:'source', blockId:change.blockId, source:change.source,
+          })))
+        : null;
+      if (commitOperations !== undefined && (changes.length || onSourceAccepted)) {
+        // HistorySession owns both revision advancement and one Undo entry.
+        // Never double-increment the epoch or write through setBlockSource.
+        // An unchanged Enter must also cross history's exact-proposal guard.
+        // Its no-op transaction preserves revision, history and the redo branch.
+        const proposals = changes.length ? changes : drafts;
+        const accepted = commitOperations(proposals.map(change => Object.freeze({
+          kind:'source',blockId:change.blockId,source:change.source,
+        })));
+        if (accepted?.kind !== 'applied' && accepted?.kind !== 'unchanged')
+          throw new Error('S96B_SOURCE_NOT_ACCEPTED');
+        // This synchronous event is separate from the evaluation promise.
+        // Callback failure cannot roll back accepted source or recorded history.
+        onSourceAccepted?.();
+      } else if (changes.length) {
         const previous = getCurrentRevision();
         if (!validRevision(previous)) throw new TypeError('S95E_REVISION_INVALID');
         advanceRevision(); // MUST be synchronous, before the first source edit
@@ -65,8 +96,15 @@ export function createSemanticCalculateAction({
         if (!validRevision(current) || current === previous) {
           throw new TypeError('S95E_REVISION_UNCHANGED');
         }
-        for (const change of changes) {
-          runtime.setBlockSource(change.blockId,change.source);
+        if (batchPlan !== null) {
+          runtime.applyDocumentTransaction(batchPlan);
+        } else {
+          // The single-formula selected route preserves S95i object identity.
+          // Explicit legacy-engine compatibility retains its existing sequential
+          // behavior until retirement; it is NOT a fallback from an S95n error.
+          for (const change of changes) {
+            runtime.setBlockSource(change.blockId,change.source);
+          }
         }
       }
       // No automatic retry, fallback evaluator, result conversion or UI text.
@@ -103,11 +141,20 @@ export async function submitFormulaEditorEnter({event, editingSession, calculate
   }
   event.preventDefault();
   const proposal = editingSession.prepareCommit(); // Verify block identity/base first.
+  let sourceAccepted = false;
   try {
-    const result = await calculateAction.calculate([proposal]);
-    editingSession.finishCommit(); // Source authority remains in DocumentRuntime.
+    const result = await calculateAction.calculate([proposal], {
+      onSourceAccepted: () => {
+        // Only the history-integrated action invokes this callback.
+        // Once accepted, late settlement must never touch another draft.
+        sourceAccepted = true;
+        editingSession.finishCommit();
+      },
+    });
+    if (!sourceAccepted) editingSession.finishCommit(); // Source authority remains in DocumentRuntime.
     return result;
   } catch (error) {
+    if (sourceAccepted) throw error;
     // Evaluation may fail AFTER the source has been committed. In that case
     // close the draft: an old buffer must not be used to undo authoritative
     // source merely because the Worker is unavailable.

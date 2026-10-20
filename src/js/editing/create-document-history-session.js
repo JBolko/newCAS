@@ -27,11 +27,25 @@ export function createDocumentHistorySession({runtime, editingSession,
   ])); // Short-lived divergence token, NOT a second document model.
   let expected = fingerprint();
 
-  function guard() {
+  function guard(operations = null, allowPendingSource = false) {
     if (busy) throw new Error('S95O_HISTORY_BUSY');
-    if (editingSession?.snapshot() !== null && editingSession !== undefined)
-      throw new Error('S95O_ACTIVE_DRAFT');
+    const draft = editingSession?.snapshot();
+    let acknowledge = null;
+    if (draft != null) {
+      // No structure, compound operations, Undo or Redo with a live draft.
+      // Even the sole exception must match the already prepared proposal.
+      const op = allowPendingSource && Array.isArray(operations) &&
+        operations.length === 1 ? operations[0] : null;
+      if (!draft.pending || !op || op.kind !== 'source' ||
+          Object.keys(op).sort().join(',') !== 'blockId,kind,source' ||
+          op.blockId !== draft.blockId || op.source !== draft.source ||
+          typeof editingSession.prepareHistoryCommit !== 'function') {
+        throw new Error('S95O_ACTIVE_DRAFT');
+      }
+      acknowledge = editingSession.prepareHistoryCommit({blockId:op.blockId,source:op.source});
+    }
     if (fingerprint() !== expected) throw new Error('S95O_HISTORY_DIVERGED');
+    return acknowledge;
   }
   function commit(operations) {
     const plan = runtime.prepareDocumentTransaction(operations); // zero mutation
@@ -45,23 +59,28 @@ export function createDocumentHistorySession({runtime, editingSession,
     const outcome = runtime.applyDocumentTransaction(plan); // single staged publication
     return {plan, outcome};
   }
-  function exclusive(fn) {
-    guard();
+  function exclusive(fn, operations = null, allowPendingSource = false) {
+    const acknowledge = guard(operations, allowPendingSource);
     busy = true;
-    try {return fn();} finally {busy = false;}
+    try {return fn(acknowledge);} finally {busy = false;}
   }
   function execute(operations) {
-    return exclusive(() => {
+    return exclusive((acknowledge) => {
       const before = expected;
       const {plan,outcome} = commit(operations);
-      if (outcome.kind === 'unchanged') return outcome;
+      if (outcome.kind === 'unchanged') {
+        acknowledge?.(); // An unchanged draft is still an accepted Enter.
+        return outcome;
+      }
       const after = fingerprint();
       history.splice(cursor); // new authoritative edit discards redo branch
       history.push(Object.freeze({forward:plan.forward,inverse:plan.inverse,before,after}));
       cursor++;
       expected = after;
+      // Acknowledge only after history has recorded a successful source commit.
+      acknowledge?.();
       return Object.freeze({...outcome,cursor});
-    });
+    }, operations, true);
   }
   function undo() {
     return exclusive(() => {
