@@ -246,12 +246,9 @@ export class DocumentRuntime {
     addBlock(block) {
         this.#assertNoReentrantMutation();
         const storedBlock = this.#prepareOwnedBlock(block);
-
-        this.#blocks.push(storedBlock);
-        // Direct structural APIs may throw after writing; never hide that write.
-        this.#recordDocumentMutation();
-        this.rebuildDependencyAnalysis();
-        if (storedBlock.type === 'formula') this.notifySemanticChange([storedBlock.taskId]);
+        this.#publishDocumentStructure([...this.#blocks,storedBlock], {
+            taskIds:storedBlock.type === 'formula' ? [storedBlock.taskId] : [],
+        });
 
         return this.#blockView(storedBlock);
     }
@@ -740,19 +737,12 @@ export class DocumentRuntime {
             return new Set();
         }
 
-        const oldSemantic = this.captureSemanticAnalyses();
-        const oldAnalysis = this.#dependencyAnalysis;
-
-        const [block] = this.#blocks.splice(oldIndex, 1);
-        this.#blocks.splice(newIndex, 0, block);
-        this.#recordDocumentMutation();
-
-        this.rebuildDependencyAnalysis();
-
-        const affected = this.invalidateStructuralChanges(oldAnalysis);
-        for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
-        this.notifySemanticChange([block.taskId]);
-        return affected;
+        const staged = [...this.#blocks];
+        const [block] = staged.splice(oldIndex, 1);
+        staged.splice(newIndex, 0, block);
+        return new Set(this.#publishDocumentStructure(staged, {
+            taskIds:[block.taskId],
+        }).affectedBlockIds);
     }
 
     removeBlock(blockId) {
@@ -764,19 +754,12 @@ export class DocumentRuntime {
             throw new Error(`Block '${blockId}' findes ikke`);
         }
 
-        const oldSemantic = this.captureSemanticAnalyses();
-        const oldAnalysis = this.#dependencyAnalysis;
         const removedTaskId = this.#blocks[index].taskId;
-
-        this.#blocks.splice(index, 1);
-        this.#recordDocumentMutation();
-
-        this.rebuildDependencyAnalysis();
-
-        const affected = this.invalidateStructuralChanges(oldAnalysis);
-        for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
-        this.notifySemanticChange([removedTaskId]);
-        return affected;
+        const staged = [...this.#blocks];
+        staged.splice(index, 1);
+        return new Set(this.#publishDocumentStructure(staged, {
+            taskIds:[removedTaskId],
+        }).affectedBlockIds);
     }
 
     insertBlock(block, index) {
@@ -790,18 +773,11 @@ export class DocumentRuntime {
         }
 
         const storedBlock = this.#prepareOwnedBlock(block);
-        const oldSemantic = this.captureSemanticAnalyses();
-        const oldAnalysis = this.#dependencyAnalysis;
-
-        this.#blocks.splice(index, 0, storedBlock);
-        this.#recordDocumentMutation();
-
-        this.rebuildDependencyAnalysis();
-
-        const affected = this.invalidateStructuralChanges(oldAnalysis);
-        for (const id of this.invalidateSemanticChanges(oldSemantic)) affected.add(id);
-        if (storedBlock.type === 'formula') this.notifySemanticChange([storedBlock.taskId]);
-        return affected;
+        const staged = [...this.#blocks];
+        staged.splice(index, 0, storedBlock);
+        return new Set(this.#publishDocumentStructure(staged, {
+            taskIds:storedBlock.type === 'formula' ? [storedBlock.taskId] : [],
+        }).affectedBlockIds);
     }
 
     /**
@@ -909,8 +885,28 @@ export class DocumentRuntime {
                     current.calculation?.generation !== old.generation;
             })) throw new Error('S95N_STALE_PLAN');
             if (!plan.changed) return Object.freeze({kind:'unchanged',affectedBlockIds:Object.freeze([])});
+            const tasks = new Set();
+            for (const op of plan.forward) {
+                const before = this.#getOwnedBlock(op.blockId);
+                const after = staged.find(b => b.id === op.blockId);
+                if (before?.type === 'formula') tasks.add(before.taskId);
+                if (after?.type === 'formula') tasks.add(after.taskId);
+            }
+            return this.#publishDocumentStructure(staged, {changedSources,taskIds:[...tasks]});
+        } finally {
+            this.#publishing = false;
+        }
+    }
+
+    // The existing transaction publication/rollback, shared by direct structure
+    // APIs. Staged references are ephemeral; #blocks remains the sole authority.
+    #publishDocumentStructure(staged, {changedSources = new Set(), taskIds} = {}) {
+        const wasPublishing = this.#publishing;
+        this.#publishing = true;
+        try {
             const previousBlocks = this.#blocks;
             const previousAnalysis = this.#dependencyAnalysis;
+            const mutationIdentity = this.#documentMutationIdentity;
             const previousCalcs = new Map(previousBlocks.filter(b => b.type === 'formula')
                 .map(b => [b, b.calculation]));
             const previousSemantic = this.captureSemanticAnalyses();
@@ -923,11 +919,12 @@ export class DocumentRuntime {
             }
             // Rebuild before publishing. A failure here cannot leave the staged
             // sources or graph authoritative.
+            let affected;
             try {
                 this.#blocks = staged;
                 this.rebuildDependencyAnalysis();
                 const nextSemantic = this.captureSemanticAnalyses();
-                const affected = new Set([...changedSources]);
+                affected = new Set([...changedSources]);
                 for (const id of changedSources) {
                     const block = this.#getOwnedBlock(id);
                     if (block?.type !== 'formula') continue;
@@ -938,39 +935,28 @@ export class DocumentRuntime {
                 for (const id of this.invalidateStructuralChanges(previousAnalysis)) affected.add(id);
                 for (const id of this.invalidateSemanticChanges(previousSemantic)) affected.add(id);
                 for (const id of affected) this.markBlockDirty(id);
-                const tasks = new Set();
-                for (const op of plan.forward) {
-                    const before = previousBlocks.find(b => b.id === op.blockId);
-                    const after = staged.find(b => b.id === op.blockId);
-                    if (before?.type === 'formula') tasks.add(before.taskId);
-                    if (after?.type === 'formula') tasks.add(after.taskId);
-                }
-                // Rebuild/invalidation completed; only now send notifications.
-                // A throwing observer cannot undo an already published transaction
-                // or make the session lose its Undo record.
-                for (const block of staged) {
-                    const incarnation = this.#incarnations.get(block);
-                    if (incarnation) incarnation.current = block;
-                }
-                this.#recordDocumentMutation();
-                let notificationErrors = 0;
-                for (const listener of this.#semanticChangeListeners) {
-                    try { listener(Object.freeze([...tasks])); }
-                    catch { notificationErrors++; }
-                }
-                return Object.freeze({kind:'applied',notificationErrors,
-                    affectedBlockIds:Object.freeze([...affected])});
             } catch (error) {
-                // The prepared transaction never partially publishes block order or
-                // source. Unexpected renderer/listener errors are caller failures.
+                // A failed structural publication restores order, graph, stamp
+                // and slots. Listener delivery occurs after this rollback region.
                 this.#documentMutationIdentity = mutationIdentity;
                 this.#blocks = previousBlocks;
                 this.#dependencyAnalysis = previousAnalysis;
                 for (const [block, calculation] of previousCalcs) block.calculation = calculation;
                 throw error;
             }
+            // Commit precedes listener delivery. Legacy exceptions still
+            // propagate AFTER acceptance; semantic-only listener errors isolate.
+            // Neither kind opens a nested authoritative mutation window.
+            for (const block of staged) {
+                const incarnation = this.#incarnations.get(block);
+                if (incarnation) incarnation.current = block;
+            }
+            this.#recordDocumentMutation();
+            const notificationErrors = taskIds.length ? this.notifySemanticChange(taskIds) : 0;
+            return Object.freeze({kind:'applied',notificationErrors,
+                affectedBlockIds:Object.freeze([...affected])});
         } finally {
-            this.#publishing = false;
+            this.#publishing = wasPublishing;
         }
     }
 

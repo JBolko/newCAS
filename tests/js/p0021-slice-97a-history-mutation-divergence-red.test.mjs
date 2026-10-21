@@ -315,7 +315,7 @@ for(const method of ['add','insert','remove','move']) {
   test('S97a '+method+' failure before authority changes preserves stamp',()=>{
     const s=fixture(),stamp=s.runtime.getDocumentMutationIdentity(),before=s.document();
     const target=method==='add'?'rebuildDependencyAnalysis':'captureSemanticAnalyses';
-    // addBlock mutates before rebuilding; use input validation for its pre-write failure.
+    // Input validation remains addBlock's pre-publication rejection boundary.
     if(method==='add')assert.throws(()=>s.runtime.addBlock({id:'r',type:'text'}));
     else{
       const saved=s.runtime[target];s.runtime[target]=()=>{throw new Error('BEFORE');};
@@ -327,7 +327,7 @@ for(const method of ['add','insert','remove','move']) {
     assert.deepEqual(s.document(),before);assert.equal(s.runtime.getDocumentMutationIdentity(),stamp);
     assert.equal(s.history.execute([source('7+9')]).kind,'applied');
   });
-  test('S97a '+method+' rebuild failure after authority changes leaves a fresh stamp',()=>{
+  test('S98d/S97a '+method+' failed publication restores stamp; later foreign success still diverges',()=>{
     const s=fixture(),stamp=s.runtime.getDocumentMutationIdentity();
     const plan=s.runtime.prepareDocumentTransaction([source('7+9')]);
     const originalBlocks=[...s.runtime.blocks],originalContent=s.document();
@@ -338,14 +338,16 @@ for(const method of ['add','insert','remove','move']) {
         method==='insert'?s.runtime.insertBlock({id:'text',type:'text'},0):
         method==='remove'?s.runtime.removeBlock('r'):s.runtime.moveBlock('r',1),/AFTER/);
     } finally{s.runtime.rebuildDependencyAnalysis=rebuild;}
-    assert.notEqual(s.runtime.getDocumentMutationIdentity(),stamp);
-    // Restore content through supported APIs after S97c closes raw write access.
-    if(method==='add'||method==='insert')s.runtime.removeBlock('text');
-    else if(method==='remove')s.runtime.insertBlock({id:'r',type:'formula',taskId:'T',source:'1+2'},0);
-    else s.runtime.moveBlock('r',0);
+    assert.equal(s.runtime.getDocumentMutationIdentity(),stamp,
+      'S98d replaces the former partial-write limitation with full rollback');
     assert.deepEqual(s.document(),originalContent);
+    for(const view of originalBlocks)assert.equal(s.runtime.getBlock(view.id),view);
+    assert.equal(s.history.execute([source('1+2')]).kind,'unchanged');
+    const otherPlan=s.runtime.prepareDocumentTransaction([source('8+9')]);
+    assert.equal(s.runtime.applyDocumentTransaction(plan).kind,'applied',
+      'a failed direct edit does not stale a pre-existing valid plan');
     assert.throws(()=>s.history.execute([source('8+9')]),/S95O_HISTORY_DIVERGED/);
-    assert.throws(()=>s.runtime.applyDocumentTransaction(plan),/S95N_STALE_PLAN/);
+    assert.throws(()=>s.runtime.applyDocumentTransaction(otherPlan),/S95N_STALE_PLAN/);
   });
 }
 
