@@ -1,3 +1,4 @@
+import {seedSemanticTask} from '../helpers/runtime-fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DocumentRuntime} from '../../src/js/document-runtime.js';
@@ -85,12 +86,9 @@ test('95n cannot accept plan belonging to another runtime',()=>{
   assert.throws(()=>b.runtime.applyDocumentTransaction(p),/S95N_PLAN_INVALID/);
   assert.equal(a.runtime.getBlock('a').id,'a');
 });
-test('95n source commit increments generation and dirties downstream',()=>{
+test('95n source commit increments generation and dirties downstream',async()=>{
   const s=setup(),runtime=s.runtime;
-  for(const id of ['a','f','r']) {
-    const b=runtime.getBlock(id);
-    b.calculation={status:'success',generation:3,result:{fake:'old'},error:null};
-  }
+  await seedSemanticTask(runtime,'t',{generation:3});
   const p=runtime.prepareDocumentTransaction([{kind:'source',blockId:'a',source:'a:=9'}]);
   runtime.applyDocumentTransaction(p);
   assert.equal(runtime.getBlock('a').calculation.generation,4);

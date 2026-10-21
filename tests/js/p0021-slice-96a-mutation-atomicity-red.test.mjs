@@ -1,3 +1,4 @@
+import {seedSemanticTask} from '../helpers/runtime-fixtures.js';
 /**
  * S96a RED contracts, from the S95 snapshot at 8a7b0d4.
  *
@@ -15,18 +16,14 @@ import {createDocumentHistorySession} from '../../src/js/editing/create-document
 import {createSemanticCalculateAction} from '../../src/js/ui/create-semantic-calculate-action.js';
 import {expression} from '../../src/js/values/value.js';
 
-function fixture() {
+async function fixture() {
   const runtime = DocumentRuntime.createSemantic('s96a-red');
   for (const [id, source] of [
     ['a', 'a:=2'], ['f', 'f(t):=t^2+a'], ['r', 'f(3)'],
   ]) runtime.addBlock({id, type:'formula', taskId:'T', source});
   // Use genuine immutable Values rather than success with fake result objects.
   const value = expression({op:'integer', value:'1'});
-  for (const block of runtime.getBlocks()) {
-    runtime.getBlock(block.id).calculation = {
-      status:'success', generation:3, result:value, error:null,
-    };
-  }
+  await seedSemanticTask(runtime,'T',{generation:3,value});
   let epoch = 0;
   return {
     runtime,
@@ -61,8 +58,8 @@ function failOnSecondSemanticDerivation(runtime) {
 
 // RED 1 / observational P4: exception during semantic rebuilding must NOT
 // leave a changed source, valid-looking downstream result, or altered graph.
-test('S96a RED: setBlockSource rollback is all-or-nothing on semantic failure', () => {
-  const {runtime} = fixture();
+test('S96a RED: setBlockSource rollback is all-or-nothing on semantic failure', async () => {
+  const {runtime} = await fixture();
   const before = authoritativeAndCalculationState(runtime);
   const previousGraph = runtime.getDependencyGraph('T');
   let notifications = 0;
@@ -81,8 +78,8 @@ test('S96a RED: setBlockSource rollback is all-or-nothing on semantic failure', 
 
 // RED 2 / observational P2: a synchronous notification observer cannot
 // perform a nested authoritative edit and corrupt an Undo/Redo entry.
-test('S96a RED: reentrant observer mutation is refused and Undo stays coherent', () => {
-  const d = fixture();
+test('S96a RED: reentrant observer mutation is refused and Undo stays coherent', async () => {
+  const d = await fixture();
   let attempts = 0;
   d.runtime.subscribeSemanticChanges(() => {
     if (++attempts === 1) d.runtime.setBlockSource('r','f(5)');
@@ -109,7 +106,7 @@ test('S96a RED: reentrant observer mutation is refused and Undo stays coherent',
 // RED 3 / observational P5: Calculate receives two separately valid proposals;
 // a throwing listener is isolated from the one atomic document mutation.
 test('S96a RED: multi-draft Calculate commits together despite a throwing observer', async () => {
-  const d = fixture();
+  const d = await fixture();
   let notices = 0;
   d.runtime.subscribeSemanticChanges(() => {
     notices++;
@@ -136,8 +133,8 @@ test('S96a RED: multi-draft Calculate commits together despite a throwing observ
 
 // GREEN baseline / observational P3: a transaction already rolls back when
 // a semantic derivation throws after its temporary staged publication.
-test('S96a baseline: prepared transaction rollback restores all state and graph', () => {
-  const {runtime} = fixture();
+test('S96a baseline: prepared transaction rollback restores all state and graph', async () => {
+  const {runtime} = await fixture();
   const before = authoritativeAndCalculationState(runtime);
   const previousGraph = runtime.getDependencyGraph('T');
   let notifications = 0;

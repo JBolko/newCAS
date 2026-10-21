@@ -55,12 +55,60 @@ export function createSemanticCalculateAction({
     return Object.freeze(changes);
   }
 
-  async function calculate(drafts, {onSourceAccepted} = {}) {
+  // Explicit whole-document formula fixture mode. The list below is only a
+  // transient transaction proposal; DocumentRuntime remains the authority.
+  function documentOperations(drafts) {
+    if (commitOperations === undefined || runtime.engine !== null)
+      throw new TypeError('S97B_DOCUMENT_CONTRACT');
+    const blocks = runtime.getBlocks();
+    if (blocks.some(b => b.type !== 'formula' || b.taskId !== taskId))
+      throw new TypeError('S97B_DOCUMENT_CONTRACT');
+    if (!Array.isArray(drafts) || drafts.length === 0)
+      throw new TypeError('S95E_DRAFTS_INVALID');
+    const seen = new Set();
+    for (const row of drafts) {
+      if (!row || typeof row !== 'object' || Array.isArray(row) ||
+          typeof row.blockId !== 'string' || !row.blockId ||
+          typeof row.source !== 'string' || seen.has(row.blockId))
+        throw new TypeError('S95E_DRAFTS_INVALID');
+      seen.add(row.blockId);
+    }
+    const operations = blocks.filter(b => !seen.has(b.id))
+      .map(b => ({kind:'remove',blockId:b.id}));
+    const order = blocks.filter(b => seen.has(b.id)).map(b => b.id);
+    for (const [index,row] of drafts.entries()) {
+      const oldIndex = order.indexOf(row.blockId);
+      if (oldIndex === -1) {
+        operations.push({kind:'insert',blockId:row.blockId,index,taskId,source:row.source});
+        order.splice(index,0,row.blockId);
+      } else {
+        if (oldIndex !== index) {
+          operations.push({kind:'move',blockId:row.blockId,index});
+          order.splice(oldIndex,1); order.splice(index,0,row.blockId);
+        }
+        if (runtime.getBlock(row.blockId).source !== row.source)
+          operations.push({kind:'source',blockId:row.blockId,source:row.source});
+      }
+    }
+    return operations.length ? operations : drafts.map(row =>
+      ({kind:'source',blockId:row.blockId,source:row.source}));
+  }
+
+  async function calculate(drafts, {onSourceAccepted,reconcileStructure=false} = {}) {
     if (running) throw new Error('S95E_ACTION_ALREADY_RUNNING');
     if (onSourceAccepted !== undefined && typeof onSourceAccepted !== 'function')
       throw new TypeError('S95E_ACTION_CONTRACT');
+    if (typeof reconcileStructure !== 'boolean') throw new TypeError('S97B_DOCUMENT_CONTRACT');
     running = true;
     try {
+      if (reconcileStructure) {
+        const operations = documentOperations(drafts);
+        const accepted = commitOperations(operations);
+        if (accepted?.kind !== 'applied' && accepted?.kind !== 'unchanged')
+          throw new Error('S96B_SOURCE_NOT_ACCEPTED');
+        onSourceAccepted?.();
+        return await session.run();
+      }
       const changes = plan(drafts);
       // S96a.2 (temporary S95i-compatible boundary): a multi-source user action
       // must publish through the existing atomic S95n transaction. Prepare

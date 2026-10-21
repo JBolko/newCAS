@@ -1,3 +1,4 @@
+import {snapshotData} from '../helpers/runtime-fixtures.js';
 /** P0021 S95d: semantic-only DocumentRuntime is explicit, without an engine-shaped sentinel. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -67,14 +68,14 @@ test('S95d semantic-only legacy getTaskState and resetTask are fail-closed',asyn
 });
 test('S95d calculateBlock rejects BEFORE changing source or calculation slot',async()=>{
   const rt=create();row(rt,'a','a:=2');
-  const state=structuredClone(rt.getBlock('a').calculation);
+  const state=snapshotData(rt.getBlock('a').calculation);
   await assert.rejects(rt.calculateBlock('a'),/LEGACY_ENGINE_UNAVAILABLE/);
   assert.deepEqual(rt.getBlock('a').calculation,state);
   assert.equal(rt.getBlock('a').source,'a:=2');
 });
 test('S95d recalculateFrom and recalculateDirty reject BEFORE mutating',async()=>{
   const rt=create();row(rt,'a','a:=2');
-  const before=structuredClone(rt.getBlock('a').calculation);
+  const before=snapshotData(rt.getBlock('a').calculation);
   await assert.rejects(rt.recalculateFrom('a'),/LEGACY_ENGINE_UNAVAILABLE/);
   await assert.rejects(rt.recalculateDirty('pilot'),/LEGACY_ENGINE_UNAVAILABLE/);
   assert.deepEqual(rt.getBlock('a').calculation,before);

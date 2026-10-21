@@ -1,3 +1,4 @@
+import {seedLegacyCalculation,failLegacyCalculation} from '../helpers/runtime-fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -667,7 +668,7 @@ test('DocumentRuntime keeps task dependency graphs isolated', () => {
     assert.equal(graph2.hasEdge('A', 'Y'), false);
 });
 
-test('markBlockDirty marks successful formula block dirty', () => {
+test('markBlockDirty marks successful formula block dirty', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
@@ -679,8 +680,7 @@ test('markBlockDirty marks successful formula block dirty', () => {
 
     const block = runtime.getBlock('A');
 
-    block.calculation.status = 'success';
-    block.calculation.result = { type: 'scalar', value: '2' };
+    await seedLegacyCalculation(runtime,block.id,{result:{type:'scalar',value:'2'}});
 
     runtime.markBlockDirty('A');
 
@@ -688,7 +688,7 @@ test('markBlockDirty marks successful formula block dirty', () => {
 });
 
 
-test('markBlockDirty clears obsolete result', () => {
+test('markBlockDirty clears obsolete result', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
@@ -701,8 +701,7 @@ test('markBlockDirty clears obsolete result', () => {
     const block = runtime.getBlock('A');
     const result = { type: 'scalar', value: '2' };
 
-    block.calculation.status = 'success';
-    block.calculation.result = result;
+    await seedLegacyCalculation(runtime,block.id,{result});
 
     runtime.markBlockDirty('A');
 
@@ -743,14 +742,14 @@ test('markBlockDirty ignores text block', () => {
     });
 });
 
-test('changing source marks downstream block dirty', () => {
+test('changing source marks downstream block dirty', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
     runtime.addBlock({ id:'A', type:'formula', source:'a:=2', taskId:'task-1' });
     runtime.addBlock({ id:'B', type:'formula', source:'b:=a+1', taskId:'task-1' });
 
-    runtime.getBlock('B').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
 
     runtime.setBlockSource('A', 'a:=3');
 
@@ -758,7 +757,7 @@ test('changing source marks downstream block dirty', () => {
     assert.equal(runtime.getBlock('B').calculation.status, 'dirty');
 });
 
-test('changing source marks transitive downstream blocks dirty', () => {
+test('changing source marks transitive downstream blocks dirty', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
@@ -766,8 +765,8 @@ test('changing source marks transitive downstream blocks dirty', () => {
     runtime.addBlock({ id:'B', type:'formula', source:'b:=a+1', taskId:'task-1' });
     runtime.addBlock({ id:'C', type:'formula', source:'c:=b*10', taskId:'task-1' });
 
-    runtime.getBlock('B').calculation.status = 'success';
-    runtime.getBlock('C').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
 
     runtime.setBlockSource('A', 'a:=3');
 
@@ -775,7 +774,7 @@ test('changing source marks transitive downstream blocks dirty', () => {
     assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
 });
 
-test('changing dependencies dirties blocks from old dependency graph', () => {
+test('changing dependencies dirties blocks from old dependency graph', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
@@ -783,7 +782,7 @@ test('changing dependencies dirties blocks from old dependency graph', () => {
     runtime.addBlock({ id:'B', type:'formula', source:'b:=a+1', taskId:'task-1' });
     runtime.addBlock({ id:'C', type:'formula', source:'c:=b*10', taskId:'task-1' });
 
-    runtime.getBlock('C').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
 
     // B skriver ikke længere b, så B -> C forsvinder fra den nye graph.
     runtime.setBlockSource('B', 'd:=a+1');
@@ -791,7 +790,7 @@ test('changing dependencies dirties blocks from old dependency graph', () => {
     assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
 });
 
-test('changing dependencies dirties blocks from new dependency graph', () => {
+test('changing dependencies dirties blocks from new dependency graph', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
@@ -799,7 +798,7 @@ test('changing dependencies dirties blocks from new dependency graph', () => {
     runtime.addBlock({ id:'B', type:'formula', source:'b:=3', taskId:'task-1' });
     runtime.addBlock({ id:'C', type:'formula', source:'c:=a+1', taskId:'task-1' });
 
-    runtime.getBlock('C').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
 
     // B bliver nu nearest preceding writer af a for C.
     runtime.setBlockSource('B', 'a:=3');
@@ -807,7 +806,7 @@ test('changing dependencies dirties blocks from new dependency graph', () => {
     assert.equal(runtime.getBlock('C').calculation.status, 'dirty');
 });
 
-test('source change only dirties blocks in the same task', () => {
+test('source change only dirties blocks in the same task', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-17');
 
@@ -817,8 +816,8 @@ test('source change only dirties blocks in the same task', () => {
     runtime.addBlock({ id:'X', type:'formula', source:'a:=100', taskId:'task-2' });
     runtime.addBlock({ id:'Y', type:'formula', source:'b:=a+1', taskId:'task-2' });
 
-    runtime.getBlock('B').calculation.status = 'success';
-    runtime.getBlock('Y').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
+    await seedLegacyCalculation(runtime,'Y',{status:'success'});
 
     runtime.setBlockSource('A', 'a:=3');
 
@@ -826,7 +825,7 @@ test('source change only dirties blocks in the same task', () => {
     assert.equal(runtime.getBlock('Y').calculation.status, 'success');
 });
 
-test('structural invalidation dirties block with changed binding', () => {
+test('structural invalidation dirties block with changed binding', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-25');
 
@@ -851,22 +850,36 @@ test('structural invalidation dirties block with changed binding', () => {
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
 
     const oldAnalysis = runtime.dependencyAnalysis;
 
     // A, B, C  ->  A, C, B
     // B skifter provider for a fra A til C.
-    runtime.blocks = [
-        runtime.getBlock('A'),
-        runtime.getBlock('C'),
-        runtime.getBlock('B')
-    ];
+    for (const [index,id] of ['A','C','B'].entries()) runtime.moveBlock(id,index);
 
     runtime.rebuildDependencyAnalysis();
 
+    // R2: moveBlock already invalidates; re-prime before testing this method alone.
+    const isolatedBefore = new Map();
+    for (const id of ['B']) {
+        await seedLegacyCalculation(runtime,id,{status:'success'});
+        const calculation=runtime.getBlock(id).calculation;
+        assert.equal(calculation.status,'success');
+        assert.notEqual(calculation.result,null);
+        assert.equal(calculation.error,null);
+        isolatedBefore.set(id,calculation.generation);
+    }
     const affected =
         runtime.invalidateStructuralChanges(oldAnalysis);
+    for (const [id,generation] of isolatedBefore) {
+        const calculation=runtime.getBlock(id).calculation;
+        assert.equal(calculation.status,'dirty');
+        assert.equal(calculation.generation,generation+1);
+        assert.equal(calculation.result,null);
+        assert.equal(calculation.error,null);
+    }
+
 
     assert.deepEqual(affected, new Set(['B']));
     assert.equal(
@@ -875,7 +888,7 @@ test('structural invalidation dirties block with changed binding', () => {
     );
 });
 
-test('structural invalidation dirties downstream blocks', () => {
+test('structural invalidation dirties downstream blocks', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-26');
 
@@ -907,8 +920,8 @@ test('structural invalidation dirties downstream blocks', () => {
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'success';
-    runtime.getBlock('C').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
 
     const oldAnalysis = runtime.dependencyAnalysis;
 
@@ -919,17 +932,30 @@ test('structural invalidation dirties downstream blocks', () => {
     //
     // B skal derfor findes via bindings,
     // mens C skal findes via downstream.
-    runtime.blocks = [
-        runtime.getBlock('A'),
-        runtime.getBlock('D'),
-        runtime.getBlock('B'),
-        runtime.getBlock('C')
-    ];
+    for (const [index,id] of ['A','D','B','C'].entries()) runtime.moveBlock(id,index);
 
     runtime.rebuildDependencyAnalysis();
 
+    // R2: moveBlock already invalidates; re-prime before testing this method alone.
+    const isolatedBefore = new Map();
+    for (const id of ['B', 'C']) {
+        await seedLegacyCalculation(runtime,id,{status:'success'});
+        const calculation=runtime.getBlock(id).calculation;
+        assert.equal(calculation.status,'success');
+        assert.notEqual(calculation.result,null);
+        assert.equal(calculation.error,null);
+        isolatedBefore.set(id,calculation.generation);
+    }
     const affected =
         runtime.invalidateStructuralChanges(oldAnalysis);
+    for (const [id,generation] of isolatedBefore) {
+        const calculation=runtime.getBlock(id).calculation;
+        assert.equal(calculation.status,'dirty');
+        assert.equal(calculation.generation,generation+1);
+        assert.equal(calculation.result,null);
+        assert.equal(calculation.error,null);
+    }
+
 
     assert.deepEqual(
         affected,
@@ -947,7 +973,7 @@ test('structural invalidation dirties downstream blocks', () => {
     );
 });
 
-test('structural invalidation stays within task boundaries', () => {
+test('structural invalidation stays within task boundaries', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-27');
 
@@ -986,25 +1012,40 @@ test('structural invalidation stays within task boundaries', () => {
         taskId: 'task-2'
     });
 
-    runtime.getBlock('B').calculation.status = 'success';
-    runtime.getBlock('Y').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
+    await seedLegacyCalculation(runtime,'Y',{status:'success'});
 
     const oldAnalysis = runtime.dependencyAnalysis;
 
     // Kun task-1 ændrer semantik:
     // A, B, C -> A, C, B
-    runtime.blocks = [
-        runtime.getBlock('A'),
-        runtime.getBlock('C'),
-        runtime.getBlock('B'),
-        runtime.getBlock('X'),
-        runtime.getBlock('Y')
-    ];
+    for (const [index,id] of ['A','C','B','X','Y'].entries()) runtime.moveBlock(id,index);
 
     runtime.rebuildDependencyAnalysis();
 
+    // R2: moveBlock already invalidates; re-prime before testing this method alone.
+    const isolatedBefore = new Map();
+    for (const id of ['B']) {
+        await seedLegacyCalculation(runtime,id,{status:'success'});
+        const calculation=runtime.getBlock(id).calculation;
+        assert.equal(calculation.status,'success');
+        assert.notEqual(calculation.result,null);
+        assert.equal(calculation.error,null);
+        isolatedBefore.set(id,calculation.generation);
+    }
+    const otherTaskBefore=runtime.getBlock('Y').calculation;
+    assert.equal(otherTaskBefore.status,'success');
     const affected =
         runtime.invalidateStructuralChanges(oldAnalysis);
+    for (const [id,generation] of isolatedBefore) {
+        const calculation=runtime.getBlock(id).calculation;
+        assert.equal(calculation.status,'dirty');
+        assert.equal(calculation.generation,generation+1);
+        assert.equal(calculation.result,null);
+        assert.equal(calculation.error,null);
+    }
+    assert.equal(runtime.getBlock('Y').calculation,otherTaskBefore);
+
 
     assert.deepEqual(affected, new Set(['B']));
 
@@ -1164,8 +1205,7 @@ test('dirty block can be recalculated successfully', async () => {
 
     const block = runtime.getBlock('A');
 
-    block.calculation.status = 'success';
-    block.calculation.result = { type: 'scalar', value: '2' };
+    await seedLegacyCalculation(runtime,block.id,{result:{type:'scalar',value:'2'}});
 
     runtime.markBlockDirty('A');
 
@@ -1176,7 +1216,7 @@ test('dirty block can be recalculated successfully', async () => {
 
     assert.equal(block.calculation.status, 'success');
     assert.equal(block.calculation.generation, 1);
-    assert.strictEqual(block.calculation.result, result);
+    assert.deepEqual(block.calculation.result, result);
 });
 
 test('dirty block can be recalculated into error state', async () => {
@@ -1191,7 +1231,7 @@ test('dirty block can be recalculated into error state', async () => {
 
     const block = runtime.getBlock('A');
 
-    block.calculation.status = 'success';
+    await seedLegacyCalculation(runtime,block.id);
     runtime.markBlockDirty('A');
 
     engine.calculateError = new Error('Ny beregningsfejl');
@@ -1234,8 +1274,8 @@ test('recalculateDirty recalculates dirty dependency chain', async () => {
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'dirty';
-    runtime.getBlock('C').calculation.status = 'dirty';
+    await seedLegacyCalculation(runtime,'B',{status:'dirty'});
+    await seedLegacyCalculation(runtime,'C',{status:'dirty'});
 
     await runtime.recalculateDirty('task-1');
 
@@ -1276,7 +1316,7 @@ test('recalculateDirty follows document order', async () => {
     });
 
     for (const id of ['B', 'D', 'C']) {
-        runtime.getBlock(id).calculation.status = 'dirty';
+        await seedLegacyCalculation(runtime,id,{status:'dirty'});
     }
 
     const order = [];
@@ -1311,8 +1351,8 @@ test('recalculateDirty only recalculates requested task', async () => {
         taskId: 'task-2'
     });
 
-    runtime.getBlock('A').calculation.status = 'dirty';
-    runtime.getBlock('X').calculation.status = 'dirty';
+    await seedLegacyCalculation(runtime,'A',{status:'dirty'});
+    await seedLegacyCalculation(runtime,'X',{status:'dirty'});
 
     await runtime.recalculateDirty('task-1');
 
@@ -1345,8 +1385,8 @@ test('recalculateDirty skips clean formula blocks', async () => {
         taskId: 'task-1'
     });
 
-    runtime.getBlock('A').calculation.status = 'success';
-    runtime.getBlock('B').calculation.status = 'dirty';
+    await seedLegacyCalculation(runtime,'A',{status:'success'});
+    await seedLegacyCalculation(runtime,'B',{status:'dirty'});
 
     await runtime.recalculateDirty('task-1');
 
@@ -1380,8 +1420,8 @@ test('recalculateDirty skips downstream blocks after calculation error', async (
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'dirty';
-    runtime.getBlock('C').calculation.status = 'dirty';
+    await seedLegacyCalculation(runtime,'B',{status:'dirty'});
+    await seedLegacyCalculation(runtime,'C',{status:'dirty'});
 
     const originalCalculateBlock =
         runtime.calculateBlock.bind(runtime);
@@ -1390,16 +1430,7 @@ test('recalculateDirty skips downstream blocks after calculation error', async (
         if (blockId === 'B') {
             const block = runtime.getBlock('B');
 
-            block.calculation = {
-                ...block.calculation,
-                status: 'error',
-                result: null,
-                error: {
-                    message: 'B failed'
-                }
-            };
-
-            throw new Error('B failed');
+            return failLegacyCalculation(runtime,block.id,'B failed');
         }
 
         return originalCalculateBlock(blockId);
@@ -1444,7 +1475,7 @@ test('recalculateDirty continues with independent branch after calculation error
     });
 
     for (const id of ['B', 'C', 'D']) {
-        runtime.getBlock(id).calculation.status = 'dirty';
+        await seedLegacyCalculation(runtime,id,{status:'dirty'});
     }
 
     const originalCalculateBlock =
@@ -1454,16 +1485,7 @@ test('recalculateDirty continues with independent branch after calculation error
         if (blockId === 'B') {
             const block = runtime.getBlock('B');
 
-            block.calculation = {
-                ...block.calculation,
-                status: 'error',
-                result: null,
-                error: {
-                    message: 'B failed'
-                }
-            };
-
-            throw new Error('B failed');
+            return failLegacyCalculation(runtime,block.id,'B failed');
         }
 
         return originalCalculateBlock(blockId);
@@ -1509,7 +1531,7 @@ test('recalculateDirty skips all transitive downstream blocks after calculation 
     });
 
     for (const id of ['B', 'C', 'E']) {
-        runtime.getBlock(id).calculation.status = 'dirty';
+        await seedLegacyCalculation(runtime,id,{status:'dirty'});
     }
 
     const originalCalculateBlock =
@@ -1519,16 +1541,7 @@ test('recalculateDirty skips all transitive downstream blocks after calculation 
         if (blockId === 'B') {
             const block = runtime.getBlock('B');
 
-            block.calculation = {
-                ...block.calculation,
-                status: 'error',
-                result: null,
-                error: {
-                    message: 'B failed'
-                }
-            };
-
-            throw new Error('B failed');
+            return failLegacyCalculation(runtime,block.id,'B failed');
         }
 
         return originalCalculateBlock(blockId);
@@ -1567,8 +1580,8 @@ test('recalculateFrom calculates source block before dirty downstream blocks', a
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'idle';
-    runtime.getBlock('C').calculation.status = 'dirty';
+    assert.equal(runtime.getBlock('B').calculation.status,'idle');
+    await seedLegacyCalculation(runtime,'C',{status:'dirty'});
 
     const order = [];
     const originalCalculateBlock =
@@ -1625,8 +1638,8 @@ test('recalculateFrom recalculates other dirty branches in the same task', async
         taskId: 'task-1'
     });
 
-    runtime.getBlock('C').calculation.status = 'dirty';
-    runtime.getBlock('Y').calculation.status = 'dirty';
+    await seedLegacyCalculation(runtime,'C',{status:'dirty'});
+    await seedLegacyCalculation(runtime,'Y',{status:'dirty'});
 
     await runtime.recalculateFrom('B');
 
@@ -1667,8 +1680,8 @@ test('recalculateFrom skips failed downstream but continues independent dirty br
         taskId: 'task-1'
     });
 
-    runtime.getBlock('C').calculation.status = 'dirty';
-    runtime.getBlock('D').calculation.status = 'dirty';
+    await seedLegacyCalculation(runtime,'C',{status:'dirty'});
+    await seedLegacyCalculation(runtime,'D',{status:'dirty'});
 
     const originalCalculateBlock =
         runtime.calculateBlock.bind(runtime);
@@ -1677,16 +1690,7 @@ test('recalculateFrom skips failed downstream but continues independent dirty br
         if (blockId === 'B') {
             const block = runtime.getBlock('B');
 
-            block.calculation = {
-                ...block.calculation,
-                status: 'error',
-                result: null,
-                error: {
-                    message: 'B failed'
-                }
-            };
-
-            throw new Error('B failed');
+            return failLegacyCalculation(runtime,block.id,'B failed');
         }
 
         return originalCalculateBlock(blockId);
@@ -1734,7 +1738,7 @@ test('recalculateFrom does not recalculate dirty blocks in another task', async 
         taskId: 'task-2'
     });
 
-    runtime.getBlock('Y').calculation.status = 'dirty';
+    await seedLegacyCalculation(runtime,'Y',{status:'dirty'});
 
     await runtime.recalculateFrom('B');
 
@@ -1772,7 +1776,7 @@ test('moveBlock moves block to final document index', () => {
     );
 });
 
-test('moveBlock dirties block when effective provider changes', () => {
+test('moveBlock dirties block when effective provider changes', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-29');
 
@@ -1797,7 +1801,7 @@ test('moveBlock dirties block when effective provider changes', () => {
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
 
     // A, B, C -> A, C, B
     // B's provider for a changes from A to C.
@@ -1819,7 +1823,7 @@ test('moveBlock dirties block when effective provider changes', () => {
     );
 });
 
-test('moveBlock preserves calculation state when bindings do not change', () => {
+test('moveBlock preserves calculation state when bindings do not change', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-30');
 
@@ -1844,7 +1848,7 @@ test('moveBlock preserves calculation state when bindings do not change', () => 
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
 
     // A, B, X -> A, X, B
     //
@@ -1942,7 +1946,7 @@ test('removeBlock removes block from document', () => {
     );
 });
 
-test('removeBlock dirties block when provider falls back to earlier definition', () => {
+test('removeBlock dirties block when provider falls back to earlier definition', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-33');
 
@@ -1967,7 +1971,7 @@ test('removeBlock dirties block when provider falls back to earlier definition',
         taskId: 'task-1'
     });
 
-    runtime.getBlock('C').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
 
     // Før:
     // C: a -> B
@@ -1992,7 +1996,7 @@ test('removeBlock dirties block when provider falls back to earlier definition',
     );
 });
 
-test('removeBlock dirties transitive downstream blocks', () => {
+test('removeBlock dirties transitive downstream blocks', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-34');
 
@@ -2024,8 +2028,8 @@ test('removeBlock dirties transitive downstream blocks', () => {
         taskId: 'task-1'
     });
 
-    runtime.getBlock('C').calculation.status = 'success';
-    runtime.getBlock('D').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
+    await seedLegacyCalculation(runtime,'D',{status:'success'});
 
     // C ændrer binding: a -> B bliver a -> A.
     // D beholder bindingen c -> C,
@@ -2048,7 +2052,7 @@ test('removeBlock dirties transitive downstream blocks', () => {
     );
 });
 
-test('removeBlock preserves calculation state when removed block is semantically irrelevant', () => {
+test('removeBlock preserves calculation state when removed block is semantically irrelevant', async () => {
     const engine = makeFakeEngine();
     const runtime = new DocumentRuntime(engine, 'document-35');
 
@@ -2073,7 +2077,7 @@ test('removeBlock preserves calculation state when removed block is semantically
         taskId: 'task-1'
     });
 
-    runtime.getBlock('B').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'B',{status:'success'});
 
     const affected = runtime.removeBlock('X');
 
@@ -2163,7 +2167,7 @@ test('insertBlock inserts block at requested document index', () => {
     assert.deepEqual([...affected], []);
 });
 
-test('insertBlock dirties existing block when inserted writer becomes its provider', () => {
+test('insertBlock dirties existing block when inserted writer becomes its provider', async () => {
     const runtime = new DocumentRuntime(
         makeFakeEngine(),
         'doc-1'
@@ -2181,7 +2185,7 @@ test('insertBlock dirties existing block when inserted writer becomes its provid
         source: 'c:=a'
     });
 
-    runtime.getBlock('C').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
 
     const affected = runtime.insertBlock(
         {
@@ -2209,7 +2213,7 @@ test('insertBlock dirties existing block when inserted writer becomes its provid
 });
 
 
-test('insertBlock dirties transitive downstream blocks', () => {
+test('insertBlock dirties transitive downstream blocks', async () => {
     const runtime = new DocumentRuntime(
         makeFakeEngine(),
         'doc-1'
@@ -2233,8 +2237,8 @@ test('insertBlock dirties transitive downstream blocks', () => {
         source: 'd:=c+1'
     });
 
-    runtime.getBlock('C').calculation.status = 'success';
-    runtime.getBlock('D').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
+    await seedLegacyCalculation(runtime,'D',{status:'success'});
 
     const affected = runtime.insertBlock(
         {
@@ -2262,7 +2266,7 @@ test('insertBlock dirties transitive downstream blocks', () => {
 });
 
 
-test('insertBlock preserves calculation state when insertion is semantically irrelevant', () => {
+test('insertBlock preserves calculation state when insertion is semantically irrelevant', async () => {
     const runtime = new DocumentRuntime(
         makeFakeEngine(),
         'doc-1'
@@ -2280,7 +2284,7 @@ test('insertBlock preserves calculation state when insertion is semantically irr
         source: 'c:=a'
     });
 
-    runtime.getBlock('C').calculation.status = 'success';
+    await seedLegacyCalculation(runtime,'C',{status:'success'});
 
     const affected = runtime.insertBlock(
         {

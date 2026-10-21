@@ -12,6 +12,7 @@ export function createDocumentHistorySession({runtime, editingSession,
       typeof runtime.prepareDocumentTransaction !== 'function' ||
       typeof runtime.applyDocumentTransaction !== 'function' ||
       typeof runtime.getBlocks !== 'function' ||
+      typeof runtime.getDocumentMutationIdentity !== 'function' ||
       typeof getCurrentRevision !== 'function' ||
       typeof advanceRevision !== 'function' ||
       !validRevision(getCurrentRevision()) ||
@@ -26,6 +27,7 @@ export function createDocumentHistorySession({runtime, editingSession,
     b.id, b.type, b.taskId ?? null, b.source ?? null,
   ])); // Short-lived divergence token, NOT a second document model.
   let expected = fingerprint();
+  let expectedMutationIdentity = runtime.getDocumentMutationIdentity();
 
   function guard(operations = null, allowPendingSource = false) {
     if (busy) throw new Error('S95O_HISTORY_BUSY');
@@ -44,7 +46,8 @@ export function createDocumentHistorySession({runtime, editingSession,
       }
       acknowledge = editingSession.prepareHistoryCommit({blockId:op.blockId,source:op.source});
     }
-    if (fingerprint() !== expected) throw new Error('S95O_HISTORY_DIVERGED');
+    if (runtime.getDocumentMutationIdentity() !== expectedMutationIdentity ||
+        fingerprint() !== expected) throw new Error('S95O_HISTORY_DIVERGED');
     return acknowledge;
   }
   function commit(operations) {
@@ -77,6 +80,7 @@ export function createDocumentHistorySession({runtime, editingSession,
       history.push(Object.freeze({forward:plan.forward,inverse:plan.inverse,before,after}));
       cursor++;
       expected = after;
+      expectedMutationIdentity = runtime.getDocumentMutationIdentity();
       // Acknowledge only after history has recorded a successful source commit.
       acknowledge?.();
       return Object.freeze({...outcome,cursor});
@@ -92,6 +96,7 @@ export function createDocumentHistorySession({runtime, editingSession,
         throw new Error('S95O_INVERSE_MISMATCH');
       cursor--;
       expected = entry.before;
+      expectedMutationIdentity = runtime.getDocumentMutationIdentity();
       return Object.freeze({...outcome,cursor});
     });
   }
@@ -105,6 +110,7 @@ export function createDocumentHistorySession({runtime, editingSession,
         throw new Error('S95O_FORWARD_MISMATCH');
       cursor++;
       expected = entry.after;
+      expectedMutationIdentity = runtime.getDocumentMutationIdentity();
       return Object.freeze({...outcome,cursor});
     });
   }

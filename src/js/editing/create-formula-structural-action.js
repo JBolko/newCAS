@@ -3,8 +3,9 @@
  *
  * The authoritative block list, dependency graph, and invalidation belong only
  * to DocumentRuntime. The UI supplies stable identities and an explicit action.
- * This is NOT a multi-operation transaction, Undo/Redo, ID allocator, or a
- * second document state. Every rejected proposal is checked before any write.
+ * Optional S97b commitOperations delegates the action to the existing history
+ * owner. Without injection, the original single-operation boundary remains.
+ * No ID allocator or second document state is introduced.
  */
 const validRevision = x => typeof x === 'string' && x.length > 0;
 const keys = (v, expected) => Object.keys(v).sort().join('|') === [...expected].sort().join('|');
@@ -12,7 +13,7 @@ const keys = (v, expected) => Object.keys(v).sort().join('|') === [...expected].
 const stableId = x => typeof x === 'string' && x.length > 0;
 
 export function createFormulaStructuralAction({
-  runtime, taskId, getCurrentRevision, advanceRevision, editingSession,
+  runtime, taskId, getCurrentRevision, advanceRevision, editingSession, commitOperations,
 } = {}) {
   if (!runtime || runtime.engine !== null ||
       typeof runtime.getBlocks !== 'function' ||
@@ -24,6 +25,7 @@ export function createFormulaStructuralAction({
       typeof getCurrentRevision !== 'function' ||
       typeof advanceRevision !== 'function' ||
       !validRevision(getCurrentRevision()) ||
+      (commitOperations !== undefined && typeof commitOperations !== 'function') ||
       (editingSession !== undefined &&
         (!editingSession || typeof editingSession.snapshot !== 'function'))) {
     throw new TypeError('S95L_ACTION_CONTRACT');
@@ -71,6 +73,17 @@ export function createFormulaStructuralAction({
     if (editingSession && editingSession.snapshot() !== null)
       throw new Error('S95L_ACTIVE_FORMULA_DRAFT');
     const edit=preflight(proposal);
+    if (commitOperations !== undefined) {
+      const operation = edit.kind === 'insert' ? {...edit,taskId} : edit;
+      const accepted = commitOperations([operation]);
+      if (accepted?.kind !== 'applied' && accepted?.kind !== 'unchanged')
+        throw new Error('S97B_SOURCE_NOT_ACCEPTED');
+      if (accepted.kind === 'unchanged') return Object.freeze({kind:'unchanged'});
+      return Object.freeze({kind:'applied',blockId:edit.blockId,
+        affectedBlockIds:Object.freeze([...(accepted.affectedBlockIds || [])]),
+        revision:getCurrentRevision()});
+    }
+    const mutationIdentity=runtime.getDocumentMutationIdentity?.();
     const before=getCurrentRevision();
     if (!validRevision(before)) throw new TypeError('S95L_REVISION_INVALID');
     const blocks=runtime.getBlocks();
@@ -84,7 +97,7 @@ export function createFormulaStructuralAction({
     if (!validRevision(after) || after===before) throw new TypeError('S95L_REVISION_UNCHANGED');
     // A host revision callback is not allowed to mutate document sources/order.
     const now=runtime.getBlocks();
-    if (now.length!==blocks.length || blocks.some((b,i)=>
+    if (runtime.getDocumentMutationIdentity?.()!==mutationIdentity || now.length!==blocks.length || blocks.some((b,i)=>
       now[i].id!==b.id || now[i].type!==b.type || now[i].source!==b.source ||
       now[i].taskId!==b.taskId || now[i].calculation?.generation!==b.calculation?.generation ||
       runtime.getBlock(b.id)!==originalRefs[i])) {

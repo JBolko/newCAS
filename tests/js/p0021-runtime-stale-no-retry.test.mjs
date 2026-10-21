@@ -1,3 +1,4 @@
+import {seedSemanticTask} from '../helpers/runtime-fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DocumentRuntime} from '../../src/js/document-runtime.js';
@@ -34,9 +35,9 @@ test('S49: source mutation while awaiting evaluator is terminal for that invocat
   assert.equal(runtime.getBlock('b0').calculation.result,null);
 });
 
-test('S49: repeated dirty marking does not bump generation endlessly',()=>{
+test('S49: repeated dirty marking does not bump generation endlessly',async()=>{
   const runtime=runtimeWith('8');const block=runtime.getBlock('b0');
-  block.calculation={status:'success',generation:4,result:value(8),error:null};
+  await seedSemanticTask(runtime,'default',{generation:4,value:value(8)});
   runtime.markBlockDirty('b0');const generation=block.calculation.generation;
   assert.equal(generation,5);assert.equal(block.calculation.result,null);
   for(let i=0;i<100;i++) runtime.markBlockDirty('b0');

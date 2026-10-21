@@ -7,6 +7,7 @@
  * No evaluator, Python scope or alternate document state is created here.
  */
 
+import {createRuntimeReadonlyViews,isolateRuntimeInput} from './runtime-readonly-view.js';
 import { parse } from './parser.mjs';
 import {deriveSourceSemanticSnapshot} from './semantics/derive-source-semantic-snapshot.js';
 import {projectSemanticDependencyAnalysis} from './semantics/project-semantic-dependency-analysis.js';
@@ -45,15 +46,48 @@ const preparedDocumentTransactions = new WeakMap();
 const SEMANTIC_ONLY = Symbol('DocumentRuntime.semantic-only');
 
 export class DocumentRuntime {
+    #blocks = [];
+    #dependencyAnalysis = new Map();
+    #semanticChangeListeners = new Set();
+    #readonly = createRuntimeReadonlyViews();
+    #incarnations = new WeakMap();
+
+    #blockView(block) {
+        if (!block) return null;
+        let incarnation = this.#incarnations.get(block);
+        if (!incarnation) {
+            incarnation = {current:block};
+            incarnation.view = this.#readonly(block, () => incarnation.current);
+            this.#incarnations.set(block,incarnation);
+        }
+        if (!incarnation.view)
+            incarnation.view = this.#readonly(block, () => incarnation.current);
+        return incarnation.view;
+    }
+    #getOwnedBlock(blockId) { return this.#blocks.find(b => b.id === blockId) ?? null; }
+    #getOwnedDependencyGraph(taskId = 'default') { return this.#dependencyAnalysis.get(taskId)?.graph ?? null; }
+
     // S96a.1: synchronous publication gate. Not an extra document model.
     #publishing = false;
+    // Ephemeral document publication identity, independent of source tokens,
+    // calculation generations and caller-owned evaluation revisions.
+    #documentMutationIdentity = Symbol('DocumentRuntime.mutation');
+
+    getDocumentMutationIdentity() {
+        return this.#documentMutationIdentity;
+    }
+
+    #recordDocumentMutation() {
+        this.#documentMutationIdentity = Symbol('DocumentRuntime.mutation');
+    }
+
     // Ephemeral source/incarnation tokens. Never serialized or restored by Undo.
     // Transaction source replacements and insertions are fresh block objects;
     // unchanged/moved blocks retain their token. No parallel document state.
     #sourceIdentities = new WeakMap();
 
     getBlockSourceIdentity(blockId) {
-        const block = this.getBlock(blockId);
+        const block = this.#getOwnedBlock(blockId);
         if (block?.type !== 'formula') return null;
         if (!this.#sourceIdentities.has(block))
             this.#sourceIdentities.set(block, Symbol('DocumentRuntime.source'));
@@ -93,23 +127,28 @@ export class DocumentRuntime {
         } else {
             this.engine = engine;
         }
+        Object.defineProperties(this, {
+            blocks: {enumerable:true,get:() => Object.freeze(this.#blocks.map(b => this.#blockView(b)))},
+            dependencyAnalysis: {enumerable:true,get:() => this.#readonly(this.#dependencyAnalysis)},
+            semanticChangeListeners: {enumerable:true,get:() => this.#readonly(this.#semanticChangeListeners)},
+        });
         this.documentId = documentId;
-        this.blocks = [];
-        this.dependencyAnalysis = new Map();
-        this.semanticChangeListeners = new Set();
+        this.#blocks = [];
+        this.#dependencyAnalysis = new Map();
+        this.#semanticChangeListeners = new Set();
     }
 
     /** Opt-in notification: edits only, never calculation outcomes. */
     subscribeSemanticChanges(listener) {
         if (typeof listener !== 'function') throw new TypeError('listener must be a function');
-        this.semanticChangeListeners.add(listener);
-        return () => this.semanticChangeListeners.delete(listener);
+        this.#semanticChangeListeners.add(listener);
+        return () => this.#semanticChangeListeners.delete(listener);
     }
 
     notifySemanticChange(taskIds) {
         const payload = Object.freeze([...taskIds]);
         let notificationErrors = 0;
-        for (const listener of this.semanticChangeListeners) {
+        for (const listener of this.#semanticChangeListeners) {
             if (this.engine !== null) {
                 // Legacy notification contract is unchanged until its retirement.
                 listener(payload);
@@ -163,7 +202,10 @@ export class DocumentRuntime {
         );
     }
 
-    prepareBlock(block) {
+    prepareBlock(block) { return this.#readonly(this.#prepareOwnedBlock(block)); }
+
+    #prepareOwnedBlock(input) {
+        const block = isolateRuntimeInput(input);
         if (!block || typeof block !== 'object') {
             throw new Error('Block skal være et objekt.');
         }
@@ -176,7 +218,7 @@ export class DocumentRuntime {
             throw new Error(`Ukendt block-type: ${block.type}`);
         }
 
-        if (this.blocks.some(existing => existing.id === block.id)) {
+        if (this.#blocks.some(existing => existing.id === block.id)) {
             throw new Error(`Block-id findes allerede: ${block.id}`);
         }
 
@@ -185,6 +227,8 @@ export class DocumentRuntime {
         if (storedBlock.type === 'formula') {
             storedBlock.source ??= '';
             storedBlock.taskId ??= 'default';
+            if (typeof storedBlock.taskId !== 'string' || !storedBlock.taskId)
+                throw new TypeError('S97C_INPUT_INVALID');
 
             storedBlock.dependencies = sourceDependencies(storedBlock.source);
 
@@ -201,18 +245,20 @@ export class DocumentRuntime {
     
     addBlock(block) {
         this.#assertNoReentrantMutation();
-        const storedBlock = this.prepareBlock(block);
+        const storedBlock = this.#prepareOwnedBlock(block);
 
-        this.blocks.push(storedBlock);
+        this.#blocks.push(storedBlock);
+        // Direct structural APIs may throw after writing; never hide that write.
+        this.#recordDocumentMutation();
         this.rebuildDependencyAnalysis();
         if (storedBlock.type === 'formula') this.notifySemanticChange([storedBlock.taskId]);
 
-        return storedBlock;
+        return this.#blockView(storedBlock);
     }
 
     async calculateBlock(blockId) {
         this.#requireLegacyEngine();
-        const block = this.getBlock(blockId);
+        const block = this.#getOwnedBlock(blockId);
 
         if (!block) {
             throw new Error(`Block findes ikke: ${blockId}`);
@@ -246,7 +292,7 @@ export class DocumentRuntime {
             block.calculation = {
                 status: 'success',
                 generation,
-                result,
+                result: isolateRuntimeInput(result),
                 error: null
             };
 
@@ -272,10 +318,10 @@ export class DocumentRuntime {
 
     async recalculateDirty(taskId = 'default', skip = new Set()) {
         this.#requireLegacyEngine();
-        const graph = this.getDependencyGraph(taskId);
+        const graph = this.#getOwnedDependencyGraph(taskId);
         const skipped = new Set(skip);
 
-        for (const block of this.blocks) {
+        for (const block of this.#blocks) {
             if (
                 block.type !== 'formula' ||
                 block.taskId !== taskId ||
@@ -300,7 +346,7 @@ export class DocumentRuntime {
 
     async recalculateFrom(blockId) {
         this.#requireLegacyEngine();
-        const block = this.getBlock(blockId);
+        const block = this.#getOwnedBlock(blockId);
 
         if (!block) {
             throw new Error(`Block findes ikke: ${blockId}`);
@@ -313,7 +359,7 @@ export class DocumentRuntime {
         try {
             await this.calculateBlock(blockId);
         } catch (error) {
-            const graph = this.getDependencyGraph(block.taskId);
+            const graph = this.#getOwnedDependencyGraph(block.taskId);
 
             const skipped = new Set(
                 graph?.getAllDownstream(blockId) ?? []
@@ -331,16 +377,16 @@ export class DocumentRuntime {
     }
     
     getBlock(blockId) {
-        return this.blocks.find(block => block.id === blockId) ?? null;
+        return this.#blockView(this.#getOwnedBlock(blockId));
     }
 
     getBlocks() {
-        return this.blocks.map(block => ({ ...block }));
+        return this.#blocks.map(block => this.#blockView(block));
     }
 
     setBlockSource(blockId, source) {
         this.#assertNoReentrantMutation();
-        const block = this.getBlock(blockId);
+        const block = this.#getOwnedBlock(blockId);
 
         if (!block) {
             throw new Error(`Block findes ikke: ${blockId}`);
@@ -353,11 +399,12 @@ export class DocumentRuntime {
         // Validate input type and derive optional dependencies before mutation.
         // Syntax-invalid or unsupported source is still committed as source data.
         const dependencies = sourceDependencies(source);
+        const previousMutationIdentity = this.#documentMutationIdentity;
         const previousIdentity = this.getBlockSourceIdentity(blockId);
         const previousSource = block.source;
         const previousDependencies = block.dependencies;
-        const previousAnalysis = this.dependencyAnalysis;
-        const previousCalculations = new Map(this.blocks
+        const previousAnalysis = this.#dependencyAnalysis;
+        const previousCalculations = new Map(this.#blocks
             .filter(candidate => candidate.type === 'formula')
             .map(candidate => [candidate, candidate.calculation]));
 
@@ -371,7 +418,7 @@ export class DocumentRuntime {
             // while the writer's VALUE changes (e.g. editing f(t)'s body).
             const oldSemanticDownstream = oldSemantic.get(block.taskId)?.graph.getAllDownstream(blockId) ?? [];
             // Gem downstream fra den gamle graph før dependencies ændres.
-            const oldGraph = this.getDependencyGraph(block.taskId);
+            const oldGraph = this.#getOwnedDependencyGraph(block.taskId);
             const oldDownstream =
                 oldGraph?.getAllDownstream(blockId) ?? [];
 
@@ -393,7 +440,7 @@ export class DocumentRuntime {
             // Den nye source kan have ændret graph-strukturen.
             this.rebuildDependencyAnalysis();
 
-            const newGraph = this.getDependencyGraph(block.taskId);
+            const newGraph = this.#getOwnedDependencyGraph(block.taskId);
             const newDownstream =
                 newGraph?.getAllDownstream(blockId) ?? [];
 
@@ -411,14 +458,16 @@ export class DocumentRuntime {
             }
             this.invalidateSemanticChanges(oldSemantic);
             this.#sourceIdentities.set(block, Symbol('DocumentRuntime.source'));
+            this.#recordDocumentMutation();
             this.notifySemanticChange([block.taskId]);
         } catch (error) {
             // All synchronous semantic/graph failures leave the original
             // authoritative source, graph and calculation slots unchanged.
+            this.#documentMutationIdentity = previousMutationIdentity;
             this.#sourceIdentities.set(block, previousIdentity);
             block.source = previousSource;
             block.dependencies = previousDependencies;
-            this.dependencyAnalysis = previousAnalysis;
+            this.#dependencyAnalysis = previousAnalysis;
             for (const [candidate, calculation] of previousCalculations)
                 candidate.calculation = calculation;
             throw error;
@@ -428,8 +477,8 @@ export class DocumentRuntime {
     }
 
     rebuildDependencyAnalysis() {
-        this.dependencyAnalysis =
-            buildDocumentDependencyAnalysis(this.blocks);
+        this.#dependencyAnalysis =
+            buildDocumentDependencyAnalysis(this.#blocks);
     }
 
     /**
@@ -441,7 +490,7 @@ export class DocumentRuntime {
         if (typeof taskId !== 'string' || !taskId) {
             throw new TypeError('taskId must be a nonempty string');
         }
-        const sourceBlocks = this.blocks
+        const sourceBlocks = this.#blocks
             .filter(block => block.type === 'formula' && block.taskId === taskId)
             .map(block => ({id: block.id, source: block.source}));
         const snapshot = deriveSourceSemanticSnapshot(sourceBlocks, parse, taskId);
@@ -467,7 +516,7 @@ export class DocumentRuntime {
         }
         const plan = {recompute: ids, removed: new Set()};
         const schedule = orderSemanticRecomputation(analysis, plan);
-        const sources = new Map(this.blocks
+        const sources = new Map(this.#blocks
             .filter(block => block.type === 'formula' && block.taskId === taskId)
             .map(block => [block.id, block.source]));
         return prepareSemanticEvaluationBatch(snapshot, analysis, schedule, sources, cachedIds);
@@ -500,12 +549,12 @@ export class DocumentRuntime {
             throw new TypeError('semantic commit requires revision and revision reader');
         }
         const batch = this.prepareSemanticTaskBatch(taskId, options);
-        const owned = this.blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
+        const owned = this.#blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
         const initial = owned.map(b => ({block: b, id: b.id, source: b.source,
             generation: b.calculation.generation}));
         const stillCurrent = () => {
             if (getCurrentRevision() !== revision) return false;
-            const now = this.blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
+            const now = this.#blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
             return now.length === initial.length && initial.every((entry, i) =>
                 now[i] === entry.block && now[i].id === entry.id &&
                 now[i].source === entry.source &&
@@ -530,10 +579,10 @@ export class DocumentRuntime {
             block.calculation = {
                 status: result.status === 'success' ? 'success' : 'error',
                 generation: block.calculation.generation,
-                result: result.status === 'success' ? result.value : null,
+                result: result.status === 'success' ? isolateRuntimeInput(result.value) : null,
                 error: result.status === 'failure' ? {
                     code: result.code, message: result.message,
-                    ...(isDiagnostic(result.diagnostic) ? {diagnostic: result.diagnostic} : {}),
+                    ...(isDiagnostic(result.diagnostic) ? {diagnostic: isolateRuntimeInput(result.diagnostic)} : {}),
                 } : null,
             };
         }
@@ -554,7 +603,7 @@ export class DocumentRuntime {
             typeof createEvaluate !== 'function') {
             throw new TypeError('selective evaluation requires revision and evaluator factory');
         }
-        const owned = this.blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
+        const owned = this.#blocks.filter(b => b.type === 'formula' && b.taskId === taskId);
         const recompute = new Set();
         const cachedIds = [];
         const cachedOutcomes = new Map();
@@ -582,7 +631,7 @@ export class DocumentRuntime {
     /** Transient P0020/P0021 facts, never an authoritative parallel registry. */
     captureSemanticAnalyses() {
         const analyses = new Map();
-        for (const block of this.blocks) {
+        for (const block of this.#blocks) {
             if (block.type !== 'formula') continue;
             const taskId = block.taskId;
             if (!analyses.has(taskId)) {
@@ -614,11 +663,11 @@ export class DocumentRuntime {
     }
 
     getDependencyGraph(taskId = 'default') {
-        return this.dependencyAnalysis.get(taskId)?.graph ?? null;
+        return this.#readonly(this.#getOwnedDependencyGraph(taskId));
     }
 
     markBlockDirty(blockId) {
-        const block = this.getBlock(blockId);
+        const block = this.#getOwnedBlock(blockId);
 
         if (!block || block.type !== 'formula') {
             return;
@@ -641,19 +690,19 @@ export class DocumentRuntime {
     invalidateStructuralChanges(oldAnalysis) {
     const changedBlocks = findBlocksWithChangedBindings(
         oldAnalysis,
-        this.dependencyAnalysis
+        this.#dependencyAnalysis
     );
 
     const affectedBlocks = new Set(changedBlocks);
 
     for (const blockId of changedBlocks) {
-        const block = this.getBlock(blockId);
+        const block = this.#getOwnedBlock(blockId);
 
         if (!block || block.type !== 'formula') {
             continue;
         }
 
-        const graph = this.getDependencyGraph(block.taskId);
+        const graph = this.#getOwnedDependencyGraph(block.taskId);
 
         for (
             const downstreamId of
@@ -673,7 +722,7 @@ export class DocumentRuntime {
     moveBlock(blockId, newIndex) {
         this.#assertNoReentrantMutation();
         const oldIndex =
-            this.blocks.findIndex(block => block.id === blockId);
+            this.#blocks.findIndex(block => block.id === blockId);
 
         if (oldIndex === -1) {
             throw new Error(`Block '${blockId}' findes ikke`);
@@ -682,7 +731,7 @@ export class DocumentRuntime {
         if (
             !Number.isInteger(newIndex) ||
             newIndex < 0 ||
-            newIndex >= this.blocks.length
+            newIndex >= this.#blocks.length
         ) {
             throw new Error(`Ugyldigt block index: ${newIndex}`);
         }
@@ -692,10 +741,11 @@ export class DocumentRuntime {
         }
 
         const oldSemantic = this.captureSemanticAnalyses();
-        const oldAnalysis = this.dependencyAnalysis;
+        const oldAnalysis = this.#dependencyAnalysis;
 
-        const [block] = this.blocks.splice(oldIndex, 1);
-        this.blocks.splice(newIndex, 0, block);
+        const [block] = this.#blocks.splice(oldIndex, 1);
+        this.#blocks.splice(newIndex, 0, block);
+        this.#recordDocumentMutation();
 
         this.rebuildDependencyAnalysis();
 
@@ -708,17 +758,18 @@ export class DocumentRuntime {
     removeBlock(blockId) {
         this.#assertNoReentrantMutation();
         const index =
-            this.blocks.findIndex(block => block.id === blockId);
+            this.#blocks.findIndex(block => block.id === blockId);
 
         if (index === -1) {
             throw new Error(`Block '${blockId}' findes ikke`);
         }
 
         const oldSemantic = this.captureSemanticAnalyses();
-        const oldAnalysis = this.dependencyAnalysis;
-        const removedTaskId = this.blocks[index].taskId;
+        const oldAnalysis = this.#dependencyAnalysis;
+        const removedTaskId = this.#blocks[index].taskId;
 
-        this.blocks.splice(index, 1);
+        this.#blocks.splice(index, 1);
+        this.#recordDocumentMutation();
 
         this.rebuildDependencyAnalysis();
 
@@ -733,16 +784,17 @@ export class DocumentRuntime {
         if (
             !Number.isInteger(index) ||
             index < 0 ||
-            index > this.blocks.length
+            index > this.#blocks.length
         ) {
             throw new Error(`Ugyldigt block index: ${index}`);
         }
 
-        const storedBlock = this.prepareBlock(block);
+        const storedBlock = this.#prepareOwnedBlock(block);
         const oldSemantic = this.captureSemanticAnalyses();
-        const oldAnalysis = this.dependencyAnalysis;
+        const oldAnalysis = this.#dependencyAnalysis;
 
-        this.blocks.splice(index, 0, storedBlock);
+        this.#blocks.splice(index, 0, storedBlock);
+        this.#recordDocumentMutation();
 
         this.rebuildDependencyAnalysis();
 
@@ -764,11 +816,11 @@ export class DocumentRuntime {
             operations.some(op => !op || typeof op !== 'object' || Array.isArray(op))) {
             throw new TypeError('S95N_TRANSACTION_INVALID');
         }
-        const base = this.blocks.map(block => Object.freeze({
+        const base = this.#blocks.map(block => Object.freeze({
             ref: block, id: block.id, source: block.source, taskId: block.taskId,
             type: block.type, generation: block.calculation?.generation,
         }));
-        const staged = [...this.blocks]; // temporary working references; not authoritative
+        const staged = [...this.#blocks]; // temporary working references; not authoritative
         const forward = [], inverse = [], changedSources = new Set();
         let changed = false;
         for (const raw of operations) {
@@ -786,6 +838,9 @@ export class DocumentRuntime {
                 const next = {...found, source: raw.source, dependencies,
                     calculation: {status:'idle',generation:found.calculation.generation + 1,
                         result:null,error:null}};
+                const incarnation = this.#incarnations.get(found) || {current:found};
+                this.#incarnations.set(found,incarnation);
+                this.#incarnations.set(next,incarnation);
                 staged[index] = next;
                 forward.push(Object.freeze({kind:'source',blockId:id,source:raw.source}));
                 inverse.unshift(Object.freeze({kind:'source',blockId:id,source:found.source}));
@@ -829,7 +884,8 @@ export class DocumentRuntime {
         }
         const plan = Object.freeze({changed,
             forward:Object.freeze(forward), inverse:Object.freeze(inverse)});
-        preparedDocumentTransactions.set(plan,{runtime:this,base,staged,changedSources});
+        preparedDocumentTransactions.set(plan,{runtime:this,base,staged,changedSources,
+            mutationIdentity:this.#documentMutationIdentity});
         return plan;
     }
 
@@ -843,17 +899,18 @@ export class DocumentRuntime {
                 throw new TypeError('S95N_PLAN_INVALID');
             // Single-use, even if a guarded apply fails. No reusable stale plans.
             preparedDocumentTransactions.delete(plan);
-            const {base,staged,changedSources} = prepared;
-            if (base.length !== this.blocks.length || base.some((old,i) => {
-                const current = this.blocks[i];
+            const {base,staged,changedSources,mutationIdentity} = prepared;
+            if (mutationIdentity !== this.#documentMutationIdentity ||
+                base.length !== this.#blocks.length || base.some((old,i) => {
+                const current = this.#blocks[i];
                 return current !== old.ref || current.id !== old.id ||
                     current.source !== old.source || current.type !== old.type ||
                     current.taskId !== old.taskId ||
                     current.calculation?.generation !== old.generation;
             })) throw new Error('S95N_STALE_PLAN');
             if (!plan.changed) return Object.freeze({kind:'unchanged',affectedBlockIds:Object.freeze([])});
-            const previousBlocks = this.blocks;
-            const previousAnalysis = this.dependencyAnalysis;
+            const previousBlocks = this.#blocks;
+            const previousAnalysis = this.#dependencyAnalysis;
             const previousCalcs = new Map(previousBlocks.filter(b => b.type === 'formula')
                 .map(b => [b, b.calculation]));
             const previousSemantic = this.captureSemanticAnalyses();
@@ -867,12 +924,12 @@ export class DocumentRuntime {
             // Rebuild before publishing. A failure here cannot leave the staged
             // sources or graph authoritative.
             try {
-                this.blocks = staged;
+                this.#blocks = staged;
                 this.rebuildDependencyAnalysis();
                 const nextSemantic = this.captureSemanticAnalyses();
                 const affected = new Set([...changedSources]);
                 for (const id of changedSources) {
-                    const block = this.getBlock(id);
+                    const block = this.#getOwnedBlock(id);
                     if (block?.type !== 'formula') continue;
                     for (const child of nextSemantic.get(block.taskId)?.graph.getAllDownstream(id) ?? [])
                         affected.add(child);
@@ -891,8 +948,13 @@ export class DocumentRuntime {
                 // Rebuild/invalidation completed; only now send notifications.
                 // A throwing observer cannot undo an already published transaction
                 // or make the session lose its Undo record.
+                for (const block of staged) {
+                    const incarnation = this.#incarnations.get(block);
+                    if (incarnation) incarnation.current = block;
+                }
+                this.#recordDocumentMutation();
                 let notificationErrors = 0;
-                for (const listener of this.semanticChangeListeners) {
+                for (const listener of this.#semanticChangeListeners) {
                     try { listener(Object.freeze([...tasks])); }
                     catch { notificationErrors++; }
                 }
@@ -901,8 +963,9 @@ export class DocumentRuntime {
             } catch (error) {
                 // The prepared transaction never partially publishes block order or
                 // source. Unexpected renderer/listener errors are caller failures.
-                this.blocks = previousBlocks;
-                this.dependencyAnalysis = previousAnalysis;
+                this.#documentMutationIdentity = mutationIdentity;
+                this.#blocks = previousBlocks;
+                this.#dependencyAnalysis = previousAnalysis;
                 for (const [block, calculation] of previousCalcs) block.calculation = calculation;
                 throw error;
             }

@@ -1,3 +1,4 @@
+import {snapshotData} from '../helpers/runtime-fixtures.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DocumentRuntime} from '../../src/js/document-runtime.js';
@@ -40,7 +41,7 @@ test('S95i rejects other tasks, text, unknown IDs before opening draft',()=>{
 });
 test('S95i typing incomplete text never mutates source, dependency or calculation state',()=>{
   const s=make(), block=s.runtime.getBlock('a');
-  const initial=structuredClone(block.calculation), oldAnalysis=s.runtime.dependencyAnalysis;
+  const initial=snapshotData(block.calculation), oldAnalysis=s.runtime.dependencyAnalysis;
   s.editing.begin('a');s.editing.replaceSource('a:=');
   assert.equal(s.editing.snapshot().source,'a:=');
   assert.equal(block.source,'a:=2');
@@ -94,8 +95,9 @@ test('S95i old draft cannot target block removed and reinserted with identical i
   s.runtime.removeBlock('a');s.runtime.insertBlock({id:'a',type:'formula',taskId:'A',source:'a:=2'},0);
   assert.throws(()=>s.editing.prepareCommit(),/S95I_BLOCK_IDENTITY_STALE/);
 });
-test('S95i task boundary still enforced if same block object task membership changes',()=>{
-  const s=make();s.editing.begin('a');s.runtime.getBlock('a').taskId='B';
+test('S95i task boundary remains enforced after replacement into another task',()=>{
+  const s=make();s.editing.begin('a');s.runtime.removeBlock('a');
+  s.runtime.insertBlock({id:'a',type:'formula',taskId:'B',source:'a:=2'},0);
   assert.throws(()=>s.editing.prepareCommit(),/S95I_BLOCK_IDENTITY_STALE/);
 });
 test('S95i move preserves object identity when unaffected formula source remains valid',()=>{

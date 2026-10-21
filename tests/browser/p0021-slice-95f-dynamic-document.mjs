@@ -1,7 +1,7 @@
 /**
  * S95f — independent TEST-ONLY, variable-length formula document.
  * Draft DOM inputs are NOT a second authoritative document; only explicit
- * Calculate reconciles structural edits through DocumentRuntime public APIs.
+ * Calculate submits source/structure together through one HistorySession.
  * Uses existing S95e Calculate action and supervised Pyodide/SymPy session.
  */
 import {DocumentRuntime} from '../../src/js/document-runtime.js';
@@ -15,7 +15,7 @@ import {createFormulaEditingSession} from '../../src/js/editing/create-formula-e
 import {createFormulaStructuralAction} from '../../src/js/editing/create-formula-structural-action.js';
 import {createDocumentHistorySession} from '../../src/js/editing/create-document-history-session.js';
 import {parseS95fTestFixture,validateS95fDrafts,S95F_MAX_BYTES} from './p0021-slice-95f-test-fixture.mjs';
-import {reconcileS95fDraftStructure} from './p0021-slice-95f-draft-structure.mjs';
+// S97b replaces reconcileS95fDraftStructure's direct structural pre-pass.
 const $ = id=>document.getElementById(id);
 const DEFAULT = Object.freeze([
   {id:'a',source:'a:=2'}, {id:'f',source:'f(t):=t^2+a'},
@@ -39,10 +39,13 @@ const session=createSupervisedSemanticTaskSession({
     createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evaluate:evaluateSelected,
       revision:batchRevision,cachedOutcomes}),
 });
-const calculateAction=createSemanticCalculateAction({runtime,session,taskId:TASK,
-  getCurrentRevision:()=>revision,advanceRevision:nextRevision});
 const editing=createFormulaEditingSession({runtime,taskId:TASK});
-const structure=createFormulaStructuralAction({runtime,taskId:TASK,editingSession:editing,
+const history=createDocumentHistorySession({runtime,editingSession:editing,
+  getCurrentRevision:()=>revision,advanceRevision:nextRevision});
+const commitOperations=operations=>history.execute(operations);
+const calculateAction=createSemanticCalculateAction({runtime,session,taskId:TASK,commitOperations,
+  getCurrentRevision:()=>revision,advanceRevision:nextRevision});
+const structure=createFormulaStructuralAction({runtime,taskId:TASK,editingSession:editing,commitOperations,
   getCurrentRevision:()=>revision,advanceRevision:nextRevision});
 const buttons=[$('evaluate'),$('restart'),$('load-fixture'),$('accept-95f'),$('accept-95k'),$('accept-95m'),$('accept-95p')];
 const say=s=>{log.textContent+=`${s}\n`;};
@@ -99,8 +102,8 @@ async function run() {
   // do not leave a stale per-field EditingSession active across this commit.
   if (editing.snapshot() && !editing.snapshot().pending) editing.cancel();
   const drafts=readDrafts();
-  reconcileS95fDraftStructure({runtime,taskId:TASK,advanceRevision:nextRevision,getCurrentRevision:()=>revision},drafts);
-  const result=await calculateAction.calculate(drafts.map(b=>({blockId:b.id,source:b.source})));
+  const result=await calculateAction.calculate(drafts.map(b=>({blockId:b.id,source:b.source})),
+    {reconcileStructure:true});
   display();
   if(result.kind!=='complete')throw new Error(`Batch did not complete: ${result.kind}`);
   for(const draft of drafts) {
@@ -283,7 +286,7 @@ $('accept-95m').addEventListener('click',()=>action('S95m strukturelle handlinge
   await run();
   requireResult(displayedValue('r3')==='= 11' && displayedValue('r4')==='= 18',
     'Efter sletning kan dokumentet stadig beregnes af den superviserede Pyodide-Worker');
-  say('S95m: kun én strukturel handling ad gangen. Ingen Undo/Redo eller .ncas-ændring.');
+  say('S97b/S95m: én strukturel handling gennem fælles historik; ingen .ncas-ændring.');
 }));
 
 // S95p: transient P0027/P0028 Undo/Redo proof; no .ncas persistence or
@@ -294,8 +297,6 @@ $('accept-95p').addEventListener('click',()=>action('S95p Undo/Redo + rigtig Pyo
   renderDrafts(DEFAULT);await run();
   requireResult(displayedValue('r3')==='= 11' && displayedValue('r4')==='= 18',
     'Grunddokument: f(3)=11, f(4)=18 via rigtig Pyodide');
-  const history=createDocumentHistorySession({runtime,editingSession:editing,
-    getCurrentRevision:()=>revision,advanceRevision:nextRevision});
   const recalculate=async()=>{
     renderDrafts(runtime.getBlocks().map(b=>({id:b.id,source:b.source})));
     await run();

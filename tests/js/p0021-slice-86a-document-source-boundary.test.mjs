@@ -1,3 +1,4 @@
+import {seedLegacyCalculation} from '../helpers/runtime-fixtures.js';
 /** Slice 86a — editor source is data, never executable task input. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -52,9 +53,9 @@ test('bad source type rejected BEFORE document mutation',()=>{
  assert.throws(()=>rt.setBlockSource('a',{}),/source must be a string/);
  assert.equal(rt.getBlock('a').source,'a := 1');assert.equal(rt.getBlock('a').calculation.generation,prior);
 });
-test('editing invalid writer to valid switches bindings and invalidates previous downstream result',()=>{
+test('editing invalid writer to valid switches bindings and invalidates previous downstream result',async()=>{
  const rt=make();add(rt,'first','a := 4');add(rt,'middle','a :=');add(rt,'use','b := a+1');
- const consumer=rt.getBlock('use');consumer.calculation={status:'success',generation:0,result:42,error:null};
+ const consumer=rt.getBlock('use');await seedLegacyCalculation(rt,'use',{result:42});
  rt.setBlockSource('middle','a := 7');
  assert.equal(rt.deriveSemanticTask().analysis.bindings.get('use').get('a'),'middle');
  assert.equal(rt.getBlock('use').calculation.status,'dirty');

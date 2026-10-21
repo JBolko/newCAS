@@ -1,3 +1,4 @@
+import {snapshotData} from '../helpers/runtime-fixtures.js';
 /** P0021 S95e — UI action delegates to existing document and evaluation layers. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -110,7 +111,7 @@ test('S95e session failure propagates and does not trigger a hidden Worker resta
   assert.equal(s.runs,2);assert.equal(s.revisions,1);
 });
 test('S95e action changes no calculation slots itself',async()=>{
-  const s=make();let before=structuredClone(s.runtime.getBlock('out').calculation);
+  const s=make();let before=snapshotData(s.runtime.getBlock('out').calculation);
   await s.action.calculate(rows());
   assert.deepEqual(s.runtime.getBlock('out').calculation,before);
 });
