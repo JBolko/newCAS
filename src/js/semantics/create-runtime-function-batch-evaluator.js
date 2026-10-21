@@ -6,6 +6,7 @@ import {createSourceFunctionDefinitionTaskEvaluator} from './create-source-funct
 import {isValue} from '../values/value.js';
 import {createAttestedIRTaskEvaluator} from './create-attested-ir-task-evaluator.js';
 import {evaluateSelectedFunctionApplication} from './evaluate-selected-function-application.js';
+import {diagnostic} from '../diagnostics/diagnostic.js';
 
 const fail = message => {throw new TypeError(`P0021 runtime function batch: ${message}`);};
 export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evaluate,revision,cachedOutcomes=new Map()}={}) {
@@ -37,6 +38,13 @@ export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evalua
       // variable reads, simple calls and arbitrary nested calls.
       evaluator=createAttestedIRTaskEvaluator({snapshot,blockId:task.blockId,parse,specs,evaluate,
         applyFunction:evaluateSelectedFunctionApplication,getProviderOutcome:read,revision});
+    } else if (ast[0].type==='Conversion' &&
+        ['Assignment','FunctionDefinition'].includes(ast[0].expr?.type)) {
+      // Parse acceptance does not enable statement conversion or establish a
+      // nested writer. Report a local capability failure before any backend.
+      const unsupported=diagnostic('unsupported-operation',{operationId:'conversion'});
+      return Object.freeze({blockId:task.blockId,status:'failure',code:unsupported.code,
+        message:unsupported.code,diagnostic:unsupported});
     } else fail('unsupported statement in selected runtime slice');
     const result=await evaluator(task);
     if (result?.blockId!==task.blockId || !['success','failure'].includes(result?.status))

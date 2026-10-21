@@ -109,6 +109,12 @@ function visit(node, state) {
             return;
 
         case 'Conversion':
+            // A conversion wrapping a statement is parseable source data,
+            // not a definition. Keep the legacy graph projection consistent
+            // with source writer establishment; no nested writes or reads.
+            if (node.expr?.type === 'Assignment' || node.expr?.type === 'FunctionDefinition') {
+                return;
+            }
             visit(node.expr, state);
             return;
 

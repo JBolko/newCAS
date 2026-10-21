@@ -33,6 +33,7 @@ driver = None
 try:
     driver = webdriver.Chrome(options=options)
     print('Chrome:', driver.capabilities['browserVersion'], flush=True)
+    print('ChromeDriver:', driver.capabilities.get('chrome', {}).get('chromedriverVersion', 'unavailable'), flush=True)
     driver.get(f'http://127.0.0.1:{server.server_port}/{args.page}')
     if args.buttons:
         cases = []

@@ -44,7 +44,12 @@ function visit(node, refs, calls, bound, analysis, blockId) {
     case 'List': for (const item of node.elements) nested(item); return;
     case 'Vector': for (const item of node.components) nested(item); return;
     case 'Access': if (!bound.has(node.container)) refs.push(node.container); nested(node.index); return;
-    case 'Conversion': nested(node.expr); return;
+    case 'Conversion':
+      // The grammar also admits conversion of a statement. This is not a
+      // complete definition or a supported expression: preserve the source,
+      // but do not invent a nested writer, lexical scope or partial reads.
+      if (node.expr?.type === 'Assignment' || node.expr?.type === 'FunctionDefinition') return;
+      nested(node.expr); return;
     default: throw new TypeError(`unsupported AST node: ${String(node.type)}`);
   }
 }
