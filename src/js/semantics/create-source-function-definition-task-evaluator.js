@@ -8,6 +8,7 @@ import {materializeSelectedFunctionValue} from './materialize-selected-function-
 import {freeSymbolIdentity} from './identity.js';
 import {providerReference} from './semantic-ir.js';
 import {isValue} from '../values/value.js';
+import {rejectLexicalCallable} from './reject-lexical-callable.js';
 
 const fail = msg => { throw new TypeError(`P0021 source function writer: ${msg}`); };
 
@@ -25,6 +26,8 @@ export function createSourceFunctionDefinitionTaskEvaluator({
     // Attest captures against P0020's positional source bindings, not names alone.
     const referenceFacts = matched[0].references ?? [];
     const callFacts = matched[0].calls ?? [];
+    const localCall = callFacts.find(c => c.classification === 'lexical-binder');
+    if (localCall) rejectLexicalCallable(localCall.name);
     // Built-in operations are resolved by OperationSpec. Calls to document
     // functions must have one unambiguous positional provider attestation.
     const callableFacts = callFacts.filter(c => c.classification === 'document-writer');

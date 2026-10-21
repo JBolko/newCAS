@@ -10,6 +10,7 @@ import {resolveSelectedOperationCall} from './resolve-selected-operation-call.js
 import {planSourceOccurrenceRoles} from './plan-source-occurrence-roles.js';
 import {createSelectedArithmeticLowering} from './lower-selected-arithmetic.js';
 import {lowerSourceExpressionTree} from './lower-source-expression-tree.js';
+import {rejectLexicalCallable} from './reject-lexical-callable.js';
 
 const fail = m => {throw new TypeError(`P0021 attested IR: ${m}`);};
 export function compileAttestedDocumentExpressionIR(statement,{
@@ -18,6 +19,8 @@ export function compileAttestedDocumentExpressionIR(statement,{
   if (!entry || !Array.isArray(entry.references) || !Array.isArray(entry.calls) ||
       !(specs instanceof Map) || typeof blockId!=='string' || !blockId) fail('attested entry, block identity and specs required');
   if (entry.parseError!==null && entry.parseError!==undefined) fail('invalid source');
+  const localCall=entry.calls.find(item=>item.classification==='lexical-binder');
+  if(localCall)rejectLexicalCallable(localCall.name);
   const reads = new Map(), callables = new Map(), selectedCalls = new Map();
   for(const ref of entry.references){
     if(ref.binding?.kind!=='provider-reference' || typeof ref.binding.providerId!=='string' || !ref.binding.providerId)fail('unresolved read');
@@ -73,6 +76,7 @@ export function compileAttestedDocumentExpressionIR(statement,{
   };
   const resolveCall=(n,scope,visit)=>{
     if(!Array.isArray(n.args))fail('invalid callable AST');
+    if(scope!==null && scope.resolve(n.name).kind!=='free-symbol')rejectLexicalCallable(n.name);
     if(selectedCalls.has(n.name)) {
       if(scope===null || typeof makeLocalId!=='function')
         fail('selected symbolic operation requires document-owned identity supplier');

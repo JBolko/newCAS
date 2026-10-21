@@ -9,6 +9,7 @@ import { LexicalIdentityScope } from './identity.js';
 import { operationReference, semanticReference, call, isSemanticIRNode } from './semantic-ir.js';
 import {createSelectedArithmeticLowering} from './lower-selected-arithmetic.js';
 import {lowerSourceExpressionTree} from './lower-source-expression-tree.js';
+import {rejectLexicalCallable} from './reject-lexical-callable.js';
 
 const SOURCE_NAME = /^[a-zA-ZæøåÆØÅ_][a-zA-ZæøåÆØÅ0-9_]*$/u;
 function reject(message) { throw new TypeError(`P0021 source AST: ${message}`); }
@@ -45,6 +46,8 @@ export function compileSelectedSourceAst(ast, { specs, resolveVariable: resolveV
   };
   const resolveCall = (node, scope, visit) => {
     if (typeof node.name !== 'string' || !Array.isArray(node.args)) reject('invalid function call');
+    if (scope !== null && scope.resolve(node.name).kind !== 'free-symbol')
+      rejectLexicalCallable(node.name);
     const spec = specs.get(node.name);
     if (!isOperationSpec(spec) || spec.operationId !== node.name) {
       // Document-owned positional call bindings are supplied explicitly, never
@@ -80,5 +83,10 @@ export function compileSelectedSourceAst(ast, { specs, resolveVariable: resolveV
   }
   return lowerSourceExpressionTree(ast, {
     arithmetic, resolveVariable, resolveCall, reject, context: lexicalScope,
+    resolveDerivative:(node,scope)=>{
+      if (scope !== null && scope.resolve(node.name).kind !== 'free-symbol')
+        rejectLexicalCallable(node.name);
+      return reject(`unsupported node type ${String(node.type)}`);
+    },
   });
 }

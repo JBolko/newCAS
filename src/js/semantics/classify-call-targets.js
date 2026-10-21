@@ -18,7 +18,14 @@ export function classifyBlockCallTargets(analysis, derivedBindings) {
       if (block.callTargets.length) throw new TypeError('invalid source cannot have call targets');
       return Object.freeze({blockId:block.blockId, calls:Object.freeze([])});
     }
-    const calls = block.callTargets.map(name => {
+    const lexicalTargets = block.lexicalCallTargets ?? [];
+    if (!Array.isArray(lexicalTargets)) throw new TypeError('invalid lexical call targets');
+    const lexicalCalls = lexicalTargets.map(name => {
+      if (typeof name !== 'string' || !name) throw new TypeError('invalid lexical callable name');
+      return Object.freeze({name,candidates:Object.freeze(['lexical-binder']),
+        providerId:null,classification:'lexical-binder'});
+    });
+    const calls = [...lexicalCalls, ...block.callTargets.map(name => {
       if (typeof name !== 'string' || !name) throw new TypeError('invalid callable name');
       const operation = findSelectedOperationSpec(name);
       const binding = resolveBlockSourceName(analysis,block.blockId,name);
@@ -31,7 +38,7 @@ export function classifyBlockCallTargets(analysis, derivedBindings) {
         // 'ambiguous' is intentionally not an implicit name priority policy.
         classification:candidates.length === 2 ? 'ambiguous'
           : candidates.length === 1 ? candidates[0] : 'unresolved'});
-    });
+    })];
     return Object.freeze({blockId:block.blockId,calls:Object.freeze(calls)});
   });
   return Object.freeze({taskScopeId:analysis.taskScopeId,blocks:Object.freeze(result)});

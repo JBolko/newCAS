@@ -6,7 +6,7 @@
  * Context is caller-owned (e.g. a lexical binder scope), never global state.
  */
 export function lowerSourceExpressionTree(root, {
-  arithmetic, resolveVariable, resolveCall, reject, context = null,
+  arithmetic, resolveVariable, resolveCall, reject, context = null, resolveDerivative = null,
 } = {}) {
   if (!arithmetic || typeof arithmetic.literal !== 'function' ||
       typeof arithmetic.unary !== 'function' || typeof arithmetic.binary !== 'function' ||
@@ -20,6 +20,8 @@ export function lowerSourceExpressionTree(root, {
       case 'Literal': return arithmetic.literal(node.value);
       case 'Variable': return resolveVariable(node, scope);
       case 'FunctionCall': return resolveCall(node, scope, visit);
+      case 'Derivative': return resolveDerivative === null
+        ? reject(`unsupported node type ${String(node.type)}`) : resolveDerivative(node,scope,visit);
       case 'UnaryExpression': return arithmetic.unary(node.op, () => visit(node.argument, scope));
       case 'BinaryExpression': return arithmetic.binary(node.op,
         visit(node.left, scope), visit(node.right, scope));

@@ -6,9 +6,9 @@ import {resolveBlockSourceName} from './analyze-source-blocks.js';
 import {findSelectedOperationSpec} from '../operations/selected-operation-catalog.js';
 import {planSourceOccurrenceRoles,UnsupportedSourceOperationRole} from './plan-source-occurrence-roles.js';
 
-function visit(node, refs, calls, bound, analysis, blockId) {
+function visit(node, refs, calls, lexicalCalls, bound, analysis, blockId) {
   if (!node || typeof node !== 'object') throw new TypeError('invalid expression AST');
-  const nested = (child, scope=bound) => visit(child,refs,calls,scope,analysis,blockId);
+  const nested = (child, scope=bound) => visit(child,refs,calls,lexicalCalls,scope,analysis,blockId);
   switch (node.type) {
     case 'Literal': case 'Quantity': return;
     case 'Variable': if (!bound.has(node.name)) refs.push(node.name); return;
@@ -17,12 +17,13 @@ function visit(node, refs, calls, bound, analysis, blockId) {
     case 'PowerExpression': nested(node.base); nested(node.exponent); return;
     case 'Equation': nested(node.left); nested(node.right); return;
     case 'FunctionCall': {
-      calls.push(node.name);
+      const local = bound.has(node.name);
+      (local ? lexicalCalls : calls).push(node.name);
       let roles = null;
       const spec = findSelectedOperationSpec(node.name);
       // A document writer with the same callable spelling makes selection
       // ambiguous. Never introduce an operation-local binder in that case.
-      if (spec && resolveBlockSourceName(analysis,blockId,node.name).kind !== 'provider-reference') {
+      if (!local && spec && resolveBlockSourceName(analysis,blockId,node.name).kind !== 'provider-reference') {
         try {
           const candidate = planSourceOccurrenceRoles(node,spec);
           if (candidate.status === 'selected') roles = candidate;
@@ -40,7 +41,9 @@ function visit(node, refs, calls, bound, analysis, blockId) {
       }
       return;
     }
-    case 'Derivative': calls.push(node.name); for (const arg of node.args) nested(arg); return;
+    case 'Derivative':
+      (bound.has(node.name) ? lexicalCalls : calls).push(node.name);
+      for (const arg of node.args) nested(arg); return;
     case 'List': for (const item of node.elements) nested(item); return;
     case 'Vector': for (const item of node.components) nested(item); return;
     case 'Access': if (!bound.has(node.container)) refs.push(node.container); nested(node.index); return;
@@ -67,8 +70,8 @@ export function deriveBlockSourceBindings(analysis) {
     const program=entry.ast;
     if(!Array.isArray(program) || program.length !== 1)
       throw new TypeError('expected one parsed statement per formula block');
-    const ast=program[0], refs=[], calls=[];
-    const visitBody=(node,bound=new Set())=>visit(node,refs,calls,bound,analysis,entry.blockId);
+    const ast=program[0], refs=[], calls=[], lexicalCalls=[];
+    const visitBody=(node,bound=new Set())=>visit(node,refs,calls,lexicalCalls,bound,analysis,entry.blockId);
     if(ast.type==='Assignment') visitBody(ast.value);
     else if(ast.type==='FunctionDefinition') visitBody(ast.body,new Set(ast.params));
     else visitBody(ast);
@@ -79,7 +82,9 @@ export function deriveBlockSourceBindings(analysis) {
       references:Object.freeze(references),
       // This is a name-level dependency projection, NOT a per-occurrence IR
       // attestation. Mixed symbolic/source-name uses require an IR contract.
-      callTargets:Object.freeze([...new Set(calls)])}));
+      callTargets:Object.freeze([...new Set(calls)]),
+      // Keep local callees distinct from external occurrences of the same name.
+      ...(lexicalCalls.length ? {lexicalCallTargets:Object.freeze([...new Set(lexicalCalls)])} : {})}));
   }
   return Object.freeze({taskScopeId:analysis.taskScopeId, blocks:Object.freeze(blocks)});
 }
