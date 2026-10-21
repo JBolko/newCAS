@@ -62,13 +62,20 @@ test('95n inverse preserves deletion identity, original order and source',()=>{
   assert.deepEqual(s.current(),before);
   assert.equal(s.runtime.getBlock('f').id,'f');
 });
-test('95n move no-op and source no-op do not replace blocks or notify',()=>{
+test('95n move no-op and source no-op do not replace blocks or notify',async()=>{
   const s=setup(), a=s.runtime.getBlock('a');
+  await seedSemanticTask(s.runtime,'t');
+  const detached=()=>s.runtime.getBlocks().map(b=>({id:b.id,source:b.source,
+    generation:b.calculation.generation,status:b.calculation.status,
+    result:JSON.stringify(b.calculation.result),error:JSON.stringify(b.calculation.error)}));
+  const before=detached(),stamp=s.runtime.getDocumentMutationIdentity();
   const plan=s.runtime.prepareDocumentTransaction([{kind:'source',blockId:'a',source:'a:=2'},
     {kind:'move',blockId:'a',index:0}]);
   assert.equal(plan.changed,false);
   assert.equal(s.runtime.applyDocumentTransaction(plan).kind,'unchanged');
   assert.equal(s.notifications,0);assert.equal(s.runtime.getBlock('a'),a);
+  assert.deepEqual(detached(),before,'stable view identity does not prove unchanged content or slots');
+  assert.equal(s.runtime.getDocumentMutationIdentity(),stamp);
 });
 test('95n rejects stale and reused plans, without partial document mutation',()=>{
   const s=setup();const before=s.current();

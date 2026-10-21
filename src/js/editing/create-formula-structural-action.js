@@ -21,6 +21,7 @@ export function createFormulaStructuralAction({
       typeof runtime.insertBlock !== 'function' ||
       typeof runtime.removeBlock !== 'function' ||
       typeof runtime.moveBlock !== 'function' ||
+      (commitOperations === undefined && typeof runtime.getDocumentMutationIdentity !== 'function') ||
       typeof taskId !== 'string' || !taskId ||
       typeof getCurrentRevision !== 'function' ||
       typeof advanceRevision !== 'function' ||
@@ -83,10 +84,13 @@ export function createFormulaStructuralAction({
         affectedBlockIds:Object.freeze([...(accepted.affectedBlockIds || [])]),
         revision:getCurrentRevision()});
     }
-    const mutationIdentity=runtime.getDocumentMutationIdentity?.();
+    const mutationIdentity=runtime.getDocumentMutationIdentity();
     const before=getCurrentRevision();
     if (!validRevision(before)) throw new TypeError('S95L_REVISION_INVALID');
-    const blocks=runtime.getBlocks();
+    // getBlocks has snapshot order but LIVE block views. Capture primitive
+    // values before the callback; view identity alone cannot detect edits.
+    const blocks=runtime.getBlocks().map(b=>({id:b.id,type:b.type,source:b.source,
+      taskId:b.taskId,generation:b.calculation?.generation}));
     const originalRefs=blocks.map(b=>runtime.getBlock(b.id));
     const oldIndex=blocks.findIndex(b=>b.id===edit.blockId);
     if (edit.kind==='move' && oldIndex===edit.index) return Object.freeze({kind:'unchanged'});
@@ -95,11 +99,12 @@ export function createFormulaStructuralAction({
     advanceRevision();
     const after=getCurrentRevision();
     if (!validRevision(after) || after===before) throw new TypeError('S95L_REVISION_UNCHANGED');
-    // A host revision callback is not allowed to mutate document sources/order.
+    // A host revision callback is not allowed to mutate document sources/order
+    // or calculation generations. Detect side effects; do not roll them back.
     const now=runtime.getBlocks();
-    if (runtime.getDocumentMutationIdentity?.()!==mutationIdentity || now.length!==blocks.length || blocks.some((b,i)=>
+    if (runtime.getDocumentMutationIdentity()!==mutationIdentity || now.length!==blocks.length || blocks.some((b,i)=>
       now[i].id!==b.id || now[i].type!==b.type || now[i].source!==b.source ||
-      now[i].taskId!==b.taskId || now[i].calculation?.generation!==b.calculation?.generation ||
+      now[i].taskId!==b.taskId || now[i].calculation?.generation!==b.generation ||
       runtime.getBlock(b.id)!==originalRefs[i])) {
       throw new Error('S95L_STRUCTURE_CHANGED_DURING_REVISION');
     }
