@@ -63,6 +63,8 @@ test('S91a: deeply nested valid and incomplete input returns promptly in an isol
   `;
   const child = spawnSync(process.execPath, ['--input-type=module', '-e', code], {
     encoding: 'utf8', timeout: 4000,
+    // Keep the numeric console output stable even if the parent forces colors.
+    env: {...process.env, FORCE_COLOR: '0'},
   });
   assert.equal(child.error?.code, undefined,
     `parser stalled beyond subprocess timeout: ${child.error?.message}`);

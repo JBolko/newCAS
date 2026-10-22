@@ -19,12 +19,12 @@ test('S100e gate: existing SymPy adapter and P0005/P0010 carry an exact irration
   assert.ok(isEvaluationOutcome(evaluationSuccess(value)));
 });
 
-test('S100e selected population operations have one pure value argument',()=>{
+test('S100e selected population operations retain their pure unary value signature',()=>{
   for(const op of ['mean','variance','standard_deviation']){
     const spec=findSelectedOperationSpec(op);assert.ok(spec,op);
     assert.equal(spec.evaluatorId,`probe.statistics.${op}`);
     assert.equal(spec.purity,'pure');
-    assert.deepEqual(spec.signatures,[{arguments:[{name:'data',role:'value'}]}]);
+    assert.deepEqual(spec.signatures[0],{arguments:[{name:'data',role:'value'}]});
   }
 });
 

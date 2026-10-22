@@ -13,12 +13,12 @@ const envelope = {protocol:'newcas.semantic-evaluation.v1',revision:'r1',blockId
 const select = value => compileSelectedValueCall(envelope,
   call(operationReference('mean'),[valueLiteral(value)]),findSelectedOperationSpec('mean'));
 
-test('S100b mean has one pure value argument in the existing catalog',()=>{
+test('S100b mean retains its pure unary value signature in the existing catalog',()=>{
   const spec=findSelectedOperationSpec('mean');
   assert.ok(spec);
   assert.equal(spec.evaluatorId,'probe.statistics.mean');
   assert.equal(spec.purity,'pure');
-  assert.deepEqual(spec.signatures,[{arguments:[{name:'data',role:'value'}]}]);
+  assert.deepEqual(spec.signatures[0],{arguments:[{name:'data',role:'value'}]});
 });
 
 // Execute the production Pyodide bootstrap's static Python entry on desktop

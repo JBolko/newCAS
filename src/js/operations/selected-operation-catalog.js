@@ -10,8 +10,12 @@ const definitions = [
   operationSpec({operationId: 'list', evaluatorId: 'probe.container.list',
     arguments: [{name:'item', role:'value', variadic:true}]}),
   operationSpec({operationId: 'mean', evaluatorId: 'probe.statistics.mean',
-    arguments: [V('data')]}),
-  ...['variance','standard_deviation','sample_variance','sample_standard_deviation'].map(operationId=>operationSpec({
+    signatures: [{arguments:[V('data')]},{arguments:[V('values'),V('counts')]}]}),
+  ...['variance','standard_deviation','sample_variance','sample_standard_deviation','median','min','max','quartiles','five_number_summary'].map(operationId=>operationSpec({
+    operationId, evaluatorId:`probe.statistics.${operationId}`,
+    signatures: [{arguments:[V('data')]},{arguments:[V('values'),V('counts')]}]})),
+  ...['observation_values','absolute_frequencies','relative_frequencies',
+    'cumulative_absolute_frequencies','cumulative_relative_frequencies'].map(operationId=>operationSpec({
     operationId, evaluatorId:`probe.statistics.${operationId}`, arguments:[V('data')]})),
   operationSpec({operationId: 'integrate', evaluatorId: 'probe.symbolic.integrate', signatures: [
     {arguments: [V('integrand'), S('variable')]},

@@ -35,6 +35,10 @@ from src.python.evaluator.scalar_trigonometry import evaluate_sine_request, eval
 from src.python.evaluator.list_mean import evaluate_mean_request
 from src.python.evaluator.list_statistics import evaluate_variance_request, evaluate_standard_deviation_request
 from src.python.evaluator.list_statistics import evaluate_sample_variance_request, evaluate_sample_standard_deviation_request
+from src.python.evaluator.list_statistics import evaluate_median_request, evaluate_min_request, evaluate_max_request
+from src.python.evaluator.list_statistics import evaluate_quartiles_request, evaluate_five_number_summary_request
+from src.python.evaluator.list_statistics import evaluate_observation_values_request, evaluate_absolute_frequencies_request, evaluate_relative_frequencies_request
+from src.python.evaluator.list_statistics import evaluate_cumulative_absolute_frequencies_request, evaluate_cumulative_relative_frequencies_request
 from src.python.evaluator.container_list import evaluate_list_request
 _payload = json.loads(_newcas_request_json)
 _selected_id = _payload['selection']['operationSpec']['evaluatorId']
@@ -68,6 +72,26 @@ elif _selected_id == 'probe.statistics.sample_variance':
     _handler = evaluate_sample_variance_request
 elif _selected_id == 'probe.statistics.sample_standard_deviation':
     _handler = evaluate_sample_standard_deviation_request
+elif _selected_id == 'probe.statistics.median':
+    _handler = evaluate_median_request
+elif _selected_id == 'probe.statistics.min':
+    _handler = evaluate_min_request
+elif _selected_id == 'probe.statistics.max':
+    _handler = evaluate_max_request
+elif _selected_id == 'probe.statistics.quartiles':
+    _handler = evaluate_quartiles_request
+elif _selected_id == 'probe.statistics.five_number_summary':
+    _handler = evaluate_five_number_summary_request
+elif _selected_id == 'probe.statistics.observation_values':
+    _handler = evaluate_observation_values_request
+elif _selected_id == 'probe.statistics.absolute_frequencies':
+    _handler = evaluate_absolute_frequencies_request
+elif _selected_id == 'probe.statistics.relative_frequencies':
+    _handler = evaluate_relative_frequencies_request
+elif _selected_id == 'probe.statistics.cumulative_absolute_frequencies':
+    _handler = evaluate_cumulative_absolute_frequencies_request
+elif _selected_id == 'probe.statistics.cumulative_relative_frequencies':
+    _handler = evaluate_cumulative_relative_frequencies_request
 elif _selected_id == 'probe.container.list':
     _handler = evaluate_list_request
 else:
@@ -105,7 +129,7 @@ export function createSelectedPyodideRuntime({loadPyodide, fetchText, indexURL} 
     const e = unique(envelope), s = unique(selection);
     // Static transport-level handler allowlist; operation selection remains in JS.
     // Python gateway checks the selection and provider attestations again.
-    if (!['probe.scalar.add','probe.scalar.multiply','probe.scalar.sin','probe.scalar.cos','probe.scalar.tan','probe.scalar.power','probe.scalar.exp','probe.scalar.ln','probe.scalar.log10','probe.symbolic.diff','probe.statistics.mean','probe.statistics.variance','probe.statistics.standard_deviation','probe.statistics.sample_variance','probe.statistics.sample_standard_deviation','probe.container.list'].includes(s?.operationSpec?.evaluatorId) ||
+    if (!['probe.scalar.add','probe.scalar.multiply','probe.scalar.sin','probe.scalar.cos','probe.scalar.tan','probe.scalar.power','probe.scalar.exp','probe.scalar.ln','probe.scalar.log10','probe.symbolic.diff','probe.statistics.mean','probe.statistics.variance','probe.statistics.standard_deviation','probe.statistics.sample_variance','probe.statistics.sample_standard_deviation','probe.statistics.median','probe.statistics.min','probe.statistics.max','probe.statistics.quartiles','probe.statistics.five_number_summary','probe.statistics.observation_values','probe.statistics.absolute_frequencies','probe.statistics.relative_frequencies','probe.statistics.cumulative_absolute_frequencies','probe.statistics.cumulative_relative_frequencies','probe.container.list'].includes(s?.operationSpec?.evaluatorId) ||
         s?.evaluationRequest?.evaluatorId !== s?.operationSpec?.evaluatorId)
       throw new TypeError('unsupported selected evaluator in P0021 Slice 17');
     if (['probe.scalar.sin','probe.scalar.cos','probe.scalar.tan'].includes(s.operationSpec.evaluatorId) &&
