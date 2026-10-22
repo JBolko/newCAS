@@ -57,13 +57,13 @@ export async function runNumericSourceCases(evaluateSelected){
   check(same(result('fUse')?.data.expr,rational('3','10')),'function arithmetic uses same rational leaves');
   results.push('exact decimal provider invalidation/recomputation and existing FunctionValue path');
 
-  add('meanReject','mean(A)');await run();
-  check(runtime.getBlock('meanReject').calculation.status==='error','mean remains integer-only until S100e');
+  add('meanExact','mean(A)');await run();
+  check(same(result('meanExact')?.data.expr,rational('227037036703703703670370370367','1800000000000000000000000000000')),'S100e mean accepts exact rational data without loss');
   const env={protocol:'newcas.semantic-evaluation.v1',revision:'approx-control',blockId:'approx',taskScopeId:'control',source:'materialized approx Value',providers:[]};
   const approx=expression({op:'approx',value:'0.1',precisionBits:53});
   const selected=compileSelectedValueCall(env,call(operationReference('add'),[valueLiteral(approx),valueLiteral(expression(integer('0')))]),specs.get('add'));
   const out=await evaluate(env,selected);
   check(out.status==='success'&&out.value.data.expr.op==='approx'&&out.value.data.expr.precisionBits===53,'existing approximate Value retains its approximation semantics');
-  results.push('integer-only mean boundary and explicit approx Value remain distinct from exact source decimals');
+  results.push('exact rational mean and explicit approx Value remain distinct from approximate statistics');
   return {pass:results.length,fail:0,todo:0,skip:0,requests,results};
 }

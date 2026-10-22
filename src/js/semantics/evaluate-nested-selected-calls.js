@@ -4,6 +4,7 @@
  */
 import { compileSelectedValueCall } from './compile-selected-value-call.js';
 import { isSemanticIRNode, valueLiteral, call, define } from './semantic-ir.js';
+import {diagnostic} from '../diagnostics/diagnostic.js';
 
 const freeze = value => {
   if (value && typeof value === 'object') {
@@ -47,8 +48,16 @@ export async function evaluateNestedSelectedCalls({envelope, ir, specs, evaluate
       : call(node.callee, argumentsIR);
     const selection = compileSelectedValueCall(subEnvelope, selectedIR, spec);
     const result = await evaluate(subEnvelope, selection);
-    if (result?.status !== 'success' || result.blockId !== envelope.blockId || !result.value)
-      throw new Error(`selected evaluation failed: ${result?.code ?? 'INVALID_OUTCOME'}`);
+    if (result?.status !== 'success' || result.blockId !== envelope.blockId || !result.value) {
+      const error=new Error(`selected evaluation failed: ${result?.code ?? 'INVALID_OUTCOME'}`);
+      const facts=result?.diagnostic;
+      if(result?.status==='failure' && result.blockId===envelope.blockId &&
+          facts?.diagnosticVersion===1 && facts.code===result.code && Object.hasOwn(facts,'parameters')) {
+        try { error.diagnostic=diagnostic(facts.code,facts.parameters); }
+        catch { /* malformed facts remain a generic evaluator failure */ }
+      }
+      throw error;
+    }
     return result.value;
   };
   return copy(await evaluateNode(root, true));

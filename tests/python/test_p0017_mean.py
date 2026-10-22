@@ -1,4 +1,4 @@
-"""S100b: exact mean of already materialized integer ListValues."""
+"""S100b integer regressions; S100e extends mean to exact rational elements."""
 import copy
 import unittest
 from src.python.evaluator.list_mean import evaluate_mean_request
@@ -53,18 +53,18 @@ class MeanTests(unittest.TestCase):
 
     def test_empty_list_rejected(self):
         out = evaluate_mean_request(request([container([])]), spec())
-        self.assertEqual(out['diagnostic'], mismatch('nonempty-list-of-integer-expressions', 'list'))
+        self.assertEqual(out['diagnostic'], mismatch('nonempty-list-of-exact-rational-expressions', 'list'))
 
-    def test_noninteger_elements_rejected(self):
+    def test_unsupported_elements_rejected(self):
         bad = [
             container([]),
             {'valueVersion': 1, 'kind': 'expression', 'data': {'expr': {'op': 'approx', 'value': '2.0'}}},
-            {'valueVersion': 1, 'kind': 'expression', 'data': {'expr': {'op': 'rational', 'numerator': '2', 'denominator': '1'}}},
+            {'valueVersion': 1, 'kind': 'expression', 'data': {'expr': {'op': 'constant', 'name': 'pi'}}},
         ]
         for item in bad:
             with self.subTest(item=item):
                 out = evaluate_mean_request(request([container([integer(2), item])]), spec())
-                self.assertEqual(out['diagnostic'], mismatch('nonempty-list-of-integer-expressions', 'list'))
+                self.assertEqual(out['diagnostic'], mismatch('nonempty-list-of-exact-rational-expressions', 'list'))
 
     def test_wrong_arity(self):
         for inputs in [[], [container([integer(1)])] * 2]:
@@ -102,4 +102,4 @@ class MeanTests(unittest.TestCase):
         selected.update(providerIds=[], evaluationRequest=request([container([])]), operationSpec=spec())
         out = evaluate_selected_gateway(env, selected, evaluate_mean_request)
         self.assertEqual(out['code'], 'type-mismatch')
-        self.assertEqual(out['diagnostic'], mismatch('nonempty-list-of-integer-expressions', 'list'))
+        self.assertEqual(out['diagnostic'], mismatch('nonempty-list-of-exact-rational-expressions', 'list'))

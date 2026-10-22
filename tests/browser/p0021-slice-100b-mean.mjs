@@ -49,10 +49,10 @@ try{
   const failures=[
     ['VectorValue rejected',[[vector([integer('2')]),'list','vector']]],
     ['empty list and wrong element types',[
-      [list([]),'nonempty-list-of-integer-expressions','list'],
-      [list([expression({op:'approx',value:'2.0'})]),'nonempty-list-of-integer-expressions','list'],
-      [list([expression({op:'rational',numerator:'2',denominator:'1'})]),'nonempty-list-of-integer-expressions','list'],
-      [list([list([])]),'nonempty-list-of-integer-expressions','list']]],
+      [list([]),'nonempty-list-of-exact-rational-expressions','list'],
+      [list([expression({op:'approx',value:'2.0'})]),'nonempty-list-of-exact-rational-expressions','list'],
+      [list([expression({op:'constant',name:'pi'})]),'nonempty-list-of-exact-rational-expressions','list'],
+      [list([list([])]),'nonempty-list-of-exact-rational-expressions','list']]],
   ];
   for(const [label,cases] of failures){
     for(const [input,expectedKind,actualKind] of cases){

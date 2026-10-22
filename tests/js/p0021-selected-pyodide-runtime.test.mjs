@@ -23,6 +23,7 @@ test('P0021 Pyodide loads only explicitly whitelisted Python modules',async()=>{
  '/newcas/src/python/evaluator/_unary_value_contract.py',
  '/newcas/src/python/evaluator/_trigonometric_argument.py',
  '/newcas/src/python/evaluator/list_mean.py',
+ '/newcas/src/python/evaluator/list_statistics.py',
  '/newcas/src/python/evaluator/container_list.py',
  '/newcas/src/python/evaluator/scalar_trigonometry.py',
  '/newcas/src/python/evaluator/scalar_multiplication.py',

@@ -11,6 +11,8 @@ const definitions = [
     arguments: [{name:'item', role:'value', variadic:true}]}),
   operationSpec({operationId: 'mean', evaluatorId: 'probe.statistics.mean',
     arguments: [V('data')]}),
+  ...['variance','standard_deviation','sample_variance','sample_standard_deviation'].map(operationId=>operationSpec({
+    operationId, evaluatorId:`probe.statistics.${operationId}`, arguments:[V('data')]})),
   operationSpec({operationId: 'integrate', evaluatorId: 'probe.symbolic.integrate', signatures: [
     {arguments: [V('integrand'), S('variable')]},
     {arguments: [V('integrand'), S('variable'), V('lower'), V('upper')]},
