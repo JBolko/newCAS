@@ -74,7 +74,7 @@ def _list_success(adapter, values):
         'data': {'items': [adapter.from_backend(x) for x in values]}}}
 
 
-def _statistics_arguments(request, operation_spec, capability, frequency_projection):
+def _statistics_arguments(request, operation_spec, capability):
     if not isinstance(request, dict) or not isinstance(operation_spec, dict):
         raise ValueError('expected request and selected operation spec')
     if request.get('evaluationRequestVersion') != 1 or operation_spec.get('operationSpecVersion') != 1:
@@ -98,7 +98,7 @@ def _statistics_arguments(request, operation_spec, capability, frequency_project
                 or len({a['name'] for a in arguments}) != len(arguments)):
             raise ValueError('statistics require ordinary value argument signatures')
         arities.append(len(arguments))
-    if arities != [1] and (frequency_projection or arities != [1, 2]):
+    if arities not in ([1], [1, 2]):
         raise ValueError('unsupported statistics signatures')
     inputs = request.get('inputs')
     if not isinstance(inputs, list):
@@ -143,7 +143,7 @@ def _exact_list(value, adapter):
 def _evaluate_statistics(request, operation_spec, capability, statistic, *, correction=0):
     frequency_projection = statistic in ('observation_values', 'absolute_frequencies', 'relative_frequencies',
                                          'cumulative_absolute_frequencies', 'cumulative_relative_frequencies')
-    arguments, failure = _statistics_arguments(request, operation_spec, capability, frequency_projection)
+    arguments, failure = _statistics_arguments(request, operation_spec, capability)
     if failure is not None:
         return failure
     inputs = request['inputs']

@@ -16,7 +16,8 @@ const definitions = [
     signatures: [{arguments:[V('data')]},{arguments:[V('values'),V('counts')]}]})),
   ...['observation_values','absolute_frequencies','relative_frequencies',
     'cumulative_absolute_frequencies','cumulative_relative_frequencies'].map(operationId=>operationSpec({
-    operationId, evaluatorId:`probe.statistics.${operationId}`, arguments:[V('data')]})),
+    operationId, evaluatorId:`probe.statistics.${operationId}`,
+    signatures: [{arguments:[V('data')]},{arguments:[V('values'),V('counts')]}]})),
   operationSpec({operationId: 'integrate', evaluatorId: 'probe.symbolic.integrate', signatures: [
     {arguments: [V('integrand'), S('variable')]},
     {arguments: [V('integrand'), S('variable'), V('lower'), V('upper')]},
