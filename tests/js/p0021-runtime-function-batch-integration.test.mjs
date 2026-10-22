@@ -57,7 +57,7 @@ test('S51 no cross-batch provider reuse or global name fallback',async()=>{
  assert.equal(value(rt,'three'),'7');
 });
 test('S51 unsupported source fails closed; no old engine call',async()=>{
- const rt=make([['f','f(x):=x^2+3x'],['bad','f(1.5)']]);
+ const rt=make([['f','f(x):=x^2+3x'],['bad','f(1[m])']]);
  const result=await run(rt);
  assert.equal(result.kind,'complete');
  assert.equal(rt.getBlock('bad').calculation.status,'error');

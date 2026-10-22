@@ -77,7 +77,7 @@ test('S53 reject stale cached providers before any evaluation',async()=>{
 });
 test('S53 failed writer is not cached as a successful Value',async()=>{
  const rt=make();await run(rt,'r1');
- rt.setBlockSource('x','x:=1.5');
+ rt.setBlockSource('x','x:=1[m]'); // quantity remains unsupported; decimals now have an exact source path.
  const visited=[];const result=await run(rt,'r2',visited);
  assert.equal(result.kind,'complete');
  assert.deepEqual(visited,['x']); // call is blocked after failed x; no evaluator invocation

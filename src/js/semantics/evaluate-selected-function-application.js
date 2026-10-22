@@ -17,7 +17,9 @@ export async function evaluateSelectedFunctionApplication({fn,args,envelope,spec
   const applied=applySelectedFunctionValue(fn,args);
   const lower = expr => {
     switch (expr.op) {
-      case 'integer': return valueLiteral(expression(expr));
+      case 'integer':
+      case 'rational':
+      case 'approx': return valueLiteral(expression(expr));
       case 'add':
       case 'mul':
       case 'pow': {

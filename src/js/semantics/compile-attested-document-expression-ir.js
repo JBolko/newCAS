@@ -8,6 +8,7 @@ import {LexicalIdentityScope} from './identity.js';
 import {matchesSelectedOperationSpec} from '../operations/selected-operation-catalog.js';
 import {resolveSelectedOperationCall} from './resolve-selected-operation-call.js';
 import {planSourceOccurrenceRoles} from './plan-source-occurrence-roles.js';
+import {planOperationArguments} from './operation-argument-plan.js';
 import {createSelectedArithmeticLowering} from './lower-selected-arithmetic.js';
 import {lowerSourceExpressionTree} from './lower-source-expression-tree.js';
 import {rejectLexicalCallable} from './reject-lexical-callable.js';
@@ -51,8 +52,9 @@ export function compileAttestedDocumentExpressionIR(statement,{
   }
   const selected=(name,args)=>{
     const spec=specs.get(name);
-    if(!isOperationSpec(spec) || spec.operationId!==name ||
-        spec.arguments?.length!==args.length || spec.arguments.some(a=>a.role!=='value'))fail(`unsupported operation ${name}`);
+    if(!isOperationSpec(spec) || spec.operationId!==name)fail(`unsupported operation ${name}`);
+    const plan=planOperationArguments(spec,args.length);
+    if(plan.status!=='selected' || plan.arguments.some(a=>a.role!=='value'))fail(`unsupported operation ${name}`);
     return call(operationReference(name),args);
   };
   // Same arithmetic rules as function-source compilation; attestation stays here.
@@ -78,12 +80,14 @@ export function compileAttestedDocumentExpressionIR(statement,{
     if(!Array.isArray(n.args))fail('invalid callable AST');
     if(scope!==null && scope.resolve(n.name).kind!=='free-symbol')rejectLexicalCallable(n.name);
     if(selectedCalls.has(n.name)) {
-      if(scope===null || typeof makeLocalId!=='function')
-        fail('selected symbolic operation requires document-owned identity supplier');
       const spec=selectedCalls.get(n.name);
       const plan=planSourceOccurrenceRoles(n,spec);
       if(plan.status!=='selected')fail('unselected operation signature');
       seenCalls.add(n.name);
+      if(plan.plan.arguments.every(a=>a.role==='value'))
+        return selected(n.name,n.args.map(arg=>visit(arg,scope)));
+      if(scope===null || typeof makeLocalId!=='function')
+        fail('selected symbolic operation requires document-owned identity supplier');
       return resolveSelectedOperationCall(n,spec,
         (arg,meta)=>visit(arg,meta.lexicalScope??scope),supplyLocalId,scope);
     }
@@ -92,6 +96,7 @@ export function compileAttestedDocumentExpressionIR(statement,{
     return call(providerReference(callables.get(n.name)),n.args.map(arg=>visit(arg,scope)));
   };
   const visit=n=>lowerSourceExpressionTree(n,{arithmetic,resolveVariable,resolveCall,
+    resolveList:(node,scope,visit)=>selected('list',node.elements.map(item=>visit(item,scope))),
     reject:fail,context:lexicalScope});
   if(!statement || typeof statement!=='object')fail('statement required');
   let result;

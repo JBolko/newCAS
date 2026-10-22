@@ -3,7 +3,8 @@
 from src.python.evaluator._binary_expression_contract import _failure
 
 
-def validate_unary_value_request(request, operation_spec, handler_capability, handler_label):
+def validate_unary_value_request(request, operation_spec, handler_capability, handler_label,
+                                 *, expected_kind='expression'):
     if not isinstance(request, dict) or not isinstance(operation_spec, dict):
         raise ValueError('expected request and selected operation spec')
     if request.get('evaluationRequestVersion') != 1:
@@ -40,9 +41,9 @@ def validate_unary_value_request(request, operation_spec, handler_capability, ha
     actual = inputs[0]
     if not isinstance(actual, dict):
         raise ValueError('inputs must contain public Values')
-    if actual.get('kind') != 'expression':
+    if actual.get('kind') != expected_kind:
         return _failure('type-mismatch', {'operationId': operation_id,
                                          'argument': arguments[0]['name'],
-                                         'expectedKinds': ['expression'],
+                                         'expectedKinds': [expected_kind],
                                          'actualKind': str(actual.get('kind', 'unknown'))})
     return None

@@ -69,8 +69,8 @@ Primary
   / id:Identifier { return { type: "Variable", name: id }; }
   / List
   / Vector
-  / num:Number _ unit:Unit { return { type: "Quantity", value: num, unit: unit }; }
-  / num:Number { return { type: "Literal", value: num }; }
+  / num:Number _ unit:Unit { return { type: "Quantity", value: num.value, raw: num.raw, unit: unit }; }
+  / num:Number { return { type: "Literal", value: num.value, raw: num.raw }; }
   
 DerivativeCall
   = name:Identifier ticks:"'"+ _ "(" _ args:Args _ ")"
@@ -113,7 +113,12 @@ Identifier "id" = [a-zA-ZæøåÆØÅ_][a-zA-ZæøåÆØÅ0-9_]* { return text()
 // Canonical parser notation: dot decimal, comma or semicolon argument separator.
 // Locale-specific input normalization is a separate, not-yet-implemented UI step.
 Number "number" = [0-9]+("." [0-9]+)?
-    { return parseFloat(text()); }
+    {
+      // raw is authoritative for selected exact lowering. value is only the
+      // historic numeric projection retained for existing parser consumers.
+      const raw = text();
+      return { raw, value: Number(raw) };
+    }
 
 _ "whitespace" = [ \t\n\r]*
 

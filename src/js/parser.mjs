@@ -250,8 +250,8 @@ function peg$parse(input, options) {
   function peg$f13(expr) {    return expr;  }
   function peg$f14(id, idx) {    return { type: "Access", container: id, index: idx };  }
   function peg$f15(id) {    return { type: "Variable", name: id };  }
-  function peg$f16(num, unit) {    return { type: "Quantity", value: num, unit: unit };  }
-  function peg$f17(num) {    return { type: "Literal", value: num };  }
+  function peg$f16(num, unit) {    return { type: "Quantity", value: num.value, raw: num.raw, unit: unit };  }
+  function peg$f17(num) {    return { type: "Literal", value: num.value, raw: num.raw };  }
   function peg$f18(name, ticks, args) {
     return makeNode("Derivative", {
       name:  name,
@@ -268,7 +268,12 @@ function peg$parse(input, options) {
   function peg$f25(head, tail) {    return [head, ...tail];  }
   function peg$f26() {    return [];  }
   function peg$f27() {    return text();  }
-  function peg$f28() {    return parseFloat(text());  }
+  function peg$f28() {
+    // raw is authoritative for selected exact lowering. value is only the
+    // historic numeric projection retained for existing parser consumers.
+    const raw = text();
+    return { raw, value: Number(raw) };
+  }
   function peg$f29(u) {    return u.join("").trim();  }
   function peg$f30(args) {    return { type: "List", elements: args };  }
   function peg$f31(args) {    return { type: "Vector", components: args };  }

@@ -13,7 +13,7 @@ test('source AST: nested generic function call uses explicit spec',()=>{const ir
 test('source AST: no implicit selection of unregistered functions',()=>assert.throws(()=>compileAst({type:'FunctionCall',name:'arbitrary',args:[lit(1)]}),/unselected/));
 test('source AST: unsupported operators are rejected, not approximated',()=>assert.throws(()=>compileAst(bin('%',lit(2),lit(1))),/unsupported binary/));
 test('source AST: source variable is not guessed from Python scope',()=>assert.throws(()=>compileAst({type:'Variable',name:'x'}),/requires document-owned binding/));
-test('source AST: exact decimal transport deferred (no float approximations)',()=>assert.throws(()=>compileAst(lit(1.2)),/safe integer/));
+test('source AST: fractional Number without a raw lexeme is not treated as exact',()=>assert.throws(()=>compileAst(lit(1.2)),/safe integer/));
 test('source AST: only one source statement',()=>assert.throws(()=>compileAst([lit(1),lit(2)]),/exactly one/));
 test('source AST: roles validated against spec',()=>{const symbolic=operationSpec({operationId:'integrate',evaluatorId:'probe.symbolic.integrate',arguments:[{name:'expression',role:'value'},{name:'variable',role:'symbolic'}]});assert.throws(()=>compile({type:'FunctionCall',name:'integrate',args:[lit(1),lit(2)]},{specs:new Map([['integrate',symbolic]])}),/symbolic role requires document-owned lexical scope and identity supplier/);});
 test('source AST: result is frozen immutable Semantic IR',()=>{const ir=compileAst(bin('+',lit(1),lit(2)));assert.equal(Object.isFrozen(ir),true);assert.equal(Object.isFrozen(ir.args[0].value),true);});

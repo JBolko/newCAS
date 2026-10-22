@@ -7,6 +7,10 @@ const V = (name) => ({name, role: 'value'});
 const S = (name) => ({name, role: 'symbolic'});
 
 const definitions = [
+  operationSpec({operationId: 'list', evaluatorId: 'probe.container.list',
+    arguments: [{name:'item', role:'value', variadic:true}]}),
+  operationSpec({operationId: 'mean', evaluatorId: 'probe.statistics.mean',
+    arguments: [V('data')]}),
   operationSpec({operationId: 'integrate', evaluatorId: 'probe.symbolic.integrate', signatures: [
     {arguments: [V('integrand'), S('variable')]},
     {arguments: [V('integrand'), S('variable'), V('lower'), V('upper')]},

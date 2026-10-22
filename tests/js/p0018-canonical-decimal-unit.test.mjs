@@ -7,7 +7,7 @@ const parser = peggy.generate(readFileSync('docs/Grammatik.pegjs', 'utf8'));
 const parse = source => parser.parse(source)[0];
 
 test('P0018 canonical decimals use dot', () => {
-  assert.deepEqual(parse('1.5'), { type:'Literal', value:1.5 });
+  assert.deepEqual(parse('1.5'), { type:'Literal', value:1.5, raw:'1.5' });
 });
 test('P0018 canonical comma means argument separator', () => {
   const call=parse('f(1,5)');

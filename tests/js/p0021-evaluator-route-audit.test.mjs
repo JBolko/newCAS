@@ -42,7 +42,7 @@ test('production batch selects definition and attested IR expression evaluators'
  assert.match(src,/createSourceFunctionDefinitionTaskEvaluator\(/);
  assert.match(src,/createAttestedIRTaskEvaluator\(/);
  assert.doesNotMatch(src,/createSourceComposedExpressionTaskEvaluator\(/);
- assert.match(src,/\['Assignment','FunctionCall','Variable'\]/);
+ assert.match(src,/\['Assignment','FunctionCall','Variable','List','Literal','UnaryExpression','BinaryExpression','PowerExpression'\]/);
  assert.doesNotMatch(src,/createSource(?:IntegerAssignment|LiteralFunction|VariableFunction|Expression)TaskEvaluator\(/);
 });
 test('static production evaluation graph reaches both active evaluator routes',()=>{

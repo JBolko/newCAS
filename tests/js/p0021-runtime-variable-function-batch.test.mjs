@@ -57,8 +57,8 @@ test('S52 later x writer must not resolve earlier f(x)',async()=>{
  assert.equal(rt.getBlock('call').calculation.status,'error');
  assert.equal(value(rt,'x'),'10');
 });
-test('S52 malformed source assignment does not become a writer Value',async()=>{
- const rt=make([['x','x:=1.5'],['f','f(t):=t^2+3t'],['call','f(x)']]);
+test('S52 unsupported source assignment does not become a writer Value',async()=>{
+ const rt=make([['x','x:=1[m]'],['f','f(t):=t^2+3t'],['call','f(x)']]);
  const result=await run(rt);
  assert.equal(result.kind,'complete');
  assert.equal(rt.getBlock('x').calculation.status,'error');

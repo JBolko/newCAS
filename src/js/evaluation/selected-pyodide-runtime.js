@@ -17,6 +17,8 @@ const FILES = [
   'src/python/evaluator/_unary_value_contract.py',
   'src/python/evaluator/_trigonometric_argument.py',
   'src/python/evaluator/scalar_trigonometry.py',
+  'src/python/evaluator/list_mean.py',
+  'src/python/evaluator/container_list.py',
   'src/python/evaluator/selected_gateway_bridge.py',
 ];
 const PYTHON_ENTRY = `
@@ -29,6 +31,8 @@ from src.python.evaluator.scalar_power import evaluate_power_request
 from src.python.evaluator.scalar_exponential import evaluate_exp_request
 from src.python.evaluator.scalar_logarithms import evaluate_ln_request, evaluate_log10_request
 from src.python.evaluator.scalar_trigonometry import evaluate_sine_request, evaluate_cosine_request, evaluate_tangent_request
+from src.python.evaluator.list_mean import evaluate_mean_request
+from src.python.evaluator.container_list import evaluate_list_request
 _payload = json.loads(_newcas_request_json)
 _selected_id = _payload['selection']['operationSpec']['evaluatorId']
 if _selected_id == 'probe.symbolic.diff':
@@ -51,6 +55,10 @@ elif _selected_id == 'probe.scalar.cos':
     _handler = evaluate_cosine_request
 elif _selected_id == 'probe.scalar.tan':
     _handler = evaluate_tangent_request
+elif _selected_id == 'probe.statistics.mean':
+    _handler = evaluate_mean_request
+elif _selected_id == 'probe.container.list':
+    _handler = evaluate_list_request
 else:
     raise ValueError('unsupported selected evaluator')
 _result = evaluate_selected_gateway(_payload['envelope'], _payload['selection'], _handler)
@@ -86,7 +94,7 @@ export function createSelectedPyodideRuntime({loadPyodide, fetchText, indexURL} 
     const e = unique(envelope), s = unique(selection);
     // Static transport-level handler allowlist; operation selection remains in JS.
     // Python gateway checks the selection and provider attestations again.
-    if (!['probe.scalar.add','probe.scalar.multiply','probe.scalar.sin','probe.scalar.cos','probe.scalar.tan','probe.scalar.power','probe.scalar.exp','probe.scalar.ln','probe.scalar.log10','probe.symbolic.diff'].includes(s?.operationSpec?.evaluatorId) ||
+    if (!['probe.scalar.add','probe.scalar.multiply','probe.scalar.sin','probe.scalar.cos','probe.scalar.tan','probe.scalar.power','probe.scalar.exp','probe.scalar.ln','probe.scalar.log10','probe.symbolic.diff','probe.statistics.mean','probe.container.list'].includes(s?.operationSpec?.evaluatorId) ||
         s?.evaluationRequest?.evaluatorId !== s?.operationSpec?.evaluatorId)
       throw new TypeError('unsupported selected evaluator in P0021 Slice 17');
     if (['probe.scalar.sin','probe.scalar.cos','probe.scalar.tan'].includes(s.operationSpec.evaluatorId) &&

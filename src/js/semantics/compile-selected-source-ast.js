@@ -83,6 +83,7 @@ export function compileSelectedSourceAst(ast, { specs, resolveVariable: resolveV
   }
   return lowerSourceExpressionTree(ast, {
     arithmetic, resolveVariable, resolveCall, reject, context: lexicalScope,
+    resolveList:(node,scope,visit)=>selected('list',node.elements.map(item=>visit(item,scope))),
     resolveDerivative:(node,scope)=>{
       if (scope !== null && scope.resolve(node.name).kind !== 'free-symbol')
         rejectLexicalCallable(node.name);

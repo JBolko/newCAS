@@ -72,4 +72,5 @@ def evaluate_selected_gateway(envelope, selection, selected_handler):
     diagnostic = outcome.get('diagnostic')
     if not isinstance(diagnostic, dict) or not isinstance(diagnostic.get('code'), str) or not diagnostic['code']:
         raise GatewayContractError('failed outcome without diagnostic')
-    return {'blockId': envelope['blockId'], 'status': 'failure', 'code': diagnostic['code'], 'message': diagnostic['code']}
+    return {'blockId': envelope['blockId'], 'status': 'failure', 'code': diagnostic['code'],
+            'message': diagnostic['code'], 'diagnostic': diagnostic}

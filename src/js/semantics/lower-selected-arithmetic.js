@@ -21,7 +21,22 @@ export function createSelectedArithmeticLowering(select) {
   const negate = node => selected('multiply',[minusOne(),node]);
   const power = (base, exponent) => selected('power',[base,exponent]);
   return Object.freeze({
-    literal(value) {
+    literal(value, raw = undefined) {
+      if (raw !== undefined) {
+        if (typeof raw !== 'string' || !/^[0-9]+(?:\.[0-9]+)?$/.test(raw))
+          fail('invalid exact numeric literal lexeme');
+        const [whole, fraction = ''] = raw.split('.');
+        let numerator = BigInt(whole + fraction);
+        let denominator = 10n ** BigInt(fraction.length);
+        let a = numerator, b = denominator;
+        while (b !== 0n) { const remainder = a % b; a = b; b = remainder; }
+        numerator /= a; denominator /= a;
+        return denominator === 1n ? integer(numerator) : valueLiteral(expression({
+          op:'rational', numerator:String(numerator), denominator:String(denominator),
+        }));
+      }
+      // Old hand-built ASTs carry no lexeme. Never infer missing source digits
+      // from an unsafe Number, or silently turn a fractional Number into exact data.
       if (!Number.isSafeInteger(value) || value < 0) fail('only nonnegative safe integer literals supported');
       return integer(value);
     },

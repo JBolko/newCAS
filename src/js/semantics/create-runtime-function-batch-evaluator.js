@@ -33,7 +33,7 @@ export function createRuntimeFunctionBatchEvaluator({snapshot,parse,specs,evalua
     if (ast[0].type==='FunctionDefinition') {
       evaluator=createSourceFunctionDefinitionTaskEvaluator({snapshot,blockId:task.blockId,
         expectedName:ast[0].name,parse,specs,getProviderOutcome:read,revision});
-    } else if (['Assignment','FunctionCall','Variable'].includes(ast[0].type)) {
+    } else if (['Assignment','FunctionCall','Variable','List','Literal','UnaryExpression','BinaryExpression','PowerExpression'].includes(ast[0].type)) {
       // Single resolved IR expression path for assignment values,
       // variable reads, simple calls and arbitrary nested calls.
       evaluator=createAttestedIRTaskEvaluator({snapshot,blockId:task.blockId,parse,specs,evaluate,
