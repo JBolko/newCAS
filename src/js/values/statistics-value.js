@@ -7,15 +7,17 @@ const VERSIONED_ID = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*\/v[1-9][0-9]*$/;
 const pointer = (path,key) => `${path}/${String(key).replaceAll('~','~0').replaceAll('/','~1')}`;
 const pathOf = path => path || '/';
 
-function codecError(code, parameters) {
+export class ValueCodecError extends TypeError {
+ constructor(code, parameters) {
   // Keep the existing public unsupported-version wording as well as the new
   // structured facts; no caller needs to parse this presentation text.
   const message=code==='unsupported-value-encoding'&&parameters.feature==='value-version'
     ? `unsupported valueVersion ${parameters.actual}` : code;
-  const error=new TypeError(`Invalid Value: ${message}`);
-  Object.defineProperty(error,'diagnostic',{value:valueCodecDiagnostic(code,parameters)});
-  throw error;
+  super(`Invalid Value: ${message}`);
+  Object.defineProperty(this,'diagnostic',{value:valueCodecDiagnostic(code,parameters)});
+ }
 }
+function codecError(code, parameters) {throw new ValueCodecError(code,parameters);}
 function invalid(path,reason='leaf-shape') {
   codecError('invalid-value-encoding',{path:pathOf(path),reason});
 }

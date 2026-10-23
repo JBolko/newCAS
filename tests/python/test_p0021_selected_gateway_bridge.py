@@ -3,10 +3,14 @@ import unittest
 from src.python.evaluator.selected_gateway_bridge import evaluate_selected_gateway, GatewayContractError
 
 
+def integer(n):
+    return {'valueVersion': 1, 'kind': 'expression', 'data': {'expr': {'op': 'integer', 'value': str(n)}}}
+
+
 def envelope():
     return {'protocol': 'newcas.semantic-evaluation.v1', 'revision': 'r1', 'blockId': 'b',
             'taskScopeId': 'T', 'source': 'b := a+2', 'providers': [
-                {'name': 'a', 'providerId': 'writer-A', 'value': {'kind': 'expression', 'expression': {'kind': 'integer', 'value': '3'}}}]}
+                {'name': 'a', 'providerId': 'writer-A', 'value': integer(3)}]}
 
 
 def selection():
@@ -17,13 +21,13 @@ def selection():
 
 
 def ok_handler(request, spec):
-    return {'evaluationOutcomeVersion': 1, 'status': 'success', 'value': {'kind': 'expression', 'value': 5}}
+    return {'evaluationOutcomeVersion': 1, 'status': 'success', 'value': integer(5)}
 
 
 class SelectedGatewayTests(unittest.TestCase):
     def test_success_maps_outcome(self):
         self.assertEqual(evaluate_selected_gateway(envelope(), selection(), ok_handler),
-                         {'blockId': 'b', 'status': 'success', 'value': {'kind': 'expression', 'value': 5}})
+                         {'blockId': 'b', 'status': 'success', 'value': integer(5)})
 
     def test_failure_maps_diagnostic(self):
         def fail(*_):
@@ -62,7 +66,11 @@ class SelectedGatewayTests(unittest.TestCase):
 
     def test_nonportable_provider_rejected(self):
         e = envelope(); e['providers'][0]['value'] = object()
-        self.assertRaises(GatewayContractError, evaluate_selected_gateway, e, selection(), ok_handler)
+        called = []
+        out = evaluate_selected_gateway(e, selection(), lambda *_: called.append(True))
+        self.assertEqual(called, [])
+        self.assertEqual(out['status'], 'failure')
+        self.assertEqual(out['code'], 'invalid-value-encoding')
 
     def test_rejects_invalid_handler_outcome(self):
         self.assertRaises(GatewayContractError, evaluate_selected_gateway, envelope(), selection(), lambda *_: {'status':'success'})

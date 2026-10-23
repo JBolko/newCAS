@@ -575,6 +575,13 @@ def list_v2(items):
     return _visit(_snapshot({'valueVersion': 2, 'kind': 'list', 'data': {'items': items}}))
 
 
+def materialize_value(value):
+    """Typed object ingress, before JSON/clone; shared with transport, not a codec fork."""
+    version = value.get('valueVersion') if type(value) in (dict, _FrozenRecord) else None
+    bounded = not (type(version) in (int, float) and version == 1)
+    return _visit(_snapshot(value, bounded=bounded))
+
+
 def decode_value(serialized):
     if type(serialized) is not str:
         _invalid(reason='json-syntax')

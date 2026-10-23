@@ -109,7 +109,7 @@ def _statistics_arguments(request, operation_spec, capability):
 
 
 def _exact_list(value, adapter):
-    if (set(value) != {'valueVersion', 'kind', 'data'} or value['valueVersion'] != 1
+    if (set(value) != {'valueVersion', 'kind', 'data'} or value['valueVersion'] not in (1, 2)
             or not isinstance(value['data'], dict) or set(value['data']) != {'items'}
             or not isinstance(value['data']['items'], list)):
         raise ValueError('expected canonical ListValue')

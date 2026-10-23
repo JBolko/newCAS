@@ -4,6 +4,7 @@ No parsing, symbol lookup, registry or durable Python document scope.
 This is deliberately not yet a source-to-Pyodide evaluator.
 """
 import json
+from src.python.adapters.statistics_value_adapter import materialize_value, encode_value, ValueCodecError
 
 
 class GatewayContractError(ValueError):
@@ -17,6 +18,18 @@ def _portable(obj):
         raise GatewayContractError('payload is not JSON portable') from exc
 
 
+def _public_value(value):
+    # Object ingress precedes whole-envelope JSON copies; immutable internal
+    # codec objects use their explicit encoder to become plain public JSON.
+    return json.loads(encode_value(materialize_value(value)))
+
+
+def _codec_failure(block_id, error):
+    diagnostic = error.diagnostic
+    return {'blockId': block_id, 'status': 'failure', 'code': diagnostic['code'],
+            'message': diagnostic['code'], 'diagnostic': diagnostic}
+
+
 def evaluate_selected_gateway(envelope, selection, selected_handler):
     """Evaluate an externally selected P0010 request with a P0012 handler.
 
@@ -24,8 +37,6 @@ def evaluate_selected_gateway(envelope, selection, selected_handler):
     compilation step (NOT by Python parsing the source). `providerIds`
     explicitly attest the exact provider bindings used to compile it.
     """
-    envelope = _portable(envelope)
-    selection = _portable(selection)
     if not isinstance(envelope, dict) or envelope.get('protocol') != 'newcas.semantic-evaluation.v1':
         raise GatewayContractError('unsupported gateway protocol')
     for key in ('revision', 'blockId', 'taskScopeId', 'source'):
@@ -61,14 +72,32 @@ def evaluate_selected_gateway(envelope, selection, selected_handler):
         raise GatewayContractError('selection evaluator mismatch')
     if not callable(selected_handler):
         raise GatewayContractError('preselected handler required')
+    if set(request) != {'evaluationRequestVersion', 'evaluatorId', 'inputs', 'instruction', 'options'} or not isinstance(request['inputs'], list):
+        raise GatewayContractError('invalid P0010 request fields')
+    try:
+        # Only these fields are Values; arbitrary options are not interpreted.
+        providers = [{**entry, 'value': _public_value(entry['value'])} for entry in providers]
+        request = {**request, 'inputs': [_public_value(v) for v in request['inputs']]}
+    except ValueCodecError as error:
+        return _codec_failure(envelope['blockId'], error)
+    envelope = _portable({**envelope, 'providers': providers})
+    selection = _portable({**selection, 'evaluationRequest': request})
+    request, spec = selection['evaluationRequest'], selection['operationSpec']
     # The handler owns mathematical diagnostics, not this transport boundary.
-    outcome = _portable(selected_handler(request, spec))
+    outcome = selected_handler(request, spec)
     if not isinstance(outcome, dict) or outcome.get('evaluationOutcomeVersion') != 1 or outcome.get('status') not in ('success', 'failure'):
         raise GatewayContractError('invalid P0010 evaluation outcome')
     if outcome['status'] == 'success':
-        if 'value' not in outcome:
+        if set(outcome) != {'evaluationOutcomeVersion', 'status', 'value'}:
             raise GatewayContractError('successful outcome without Value')
-        return {'blockId': envelope['blockId'], 'status': 'success', 'value': outcome['value']}
+        try:
+            value = _public_value(outcome['value'])
+        except ValueCodecError as error:
+            raise GatewayContractError('handler returned invalid Value') from error
+        return {'blockId': envelope['blockId'], 'status': 'success', 'value': value}
+    outcome = _portable(outcome)
+    if set(outcome) != {'evaluationOutcomeVersion', 'status', 'diagnostic'}:
+        raise GatewayContractError('invalid P0010 failure fields')
     diagnostic = outcome.get('diagnostic')
     if not isinstance(diagnostic, dict) or not isinstance(diagnostic.get('code'), str) or not diagnostic['code']:
         raise GatewayContractError('failed outcome without diagnostic')

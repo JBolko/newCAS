@@ -2,10 +2,12 @@
  * Worker-only intended; do not instantiate on the UI thread.
  * No source parser, Python task scope or operation-name registry.
  */
+import {snapshotSelectedValueFields} from './worker-evaluation-protocol.js';
 const FILES = [
   'src/__init__.py', 'src/python/__init__.py',
   'src/python/adapters/__init__.py',
   'src/python/adapters/sympy_value_adapter.py',
+  'src/python/adapters/statistics_value_adapter.py',
   'src/python/evaluator/__init__.py',
   'src/python/evaluator/_binary_expression_contract.py',
   'src/python/evaluator/scalar_operations.py',
@@ -125,8 +127,8 @@ export function createSelectedPyodideRuntime({loadPyodide, fetchText, indexURL} 
     try { return await initPromise; } catch (error) { initPromise = undefined; throw error; }
   }
   async function evaluateSelected(envelope, selection) {
+    const {envelope:e,selection:s}=snapshotSelectedValueFields(envelope,selection);
     const py = await init();
-    const e = unique(envelope), s = unique(selection);
     // Static transport-level handler allowlist; operation selection remains in JS.
     // Python gateway checks the selection and provider attestations again.
     if (!['probe.scalar.add','probe.scalar.multiply','probe.scalar.sin','probe.scalar.cos','probe.scalar.tan','probe.scalar.power','probe.scalar.exp','probe.scalar.ln','probe.scalar.log10','probe.symbolic.diff','probe.statistics.mean','probe.statistics.variance','probe.statistics.standard_deviation','probe.statistics.sample_variance','probe.statistics.sample_standard_deviation','probe.statistics.median','probe.statistics.min','probe.statistics.max','probe.statistics.quartiles','probe.statistics.five_number_summary','probe.statistics.observation_values','probe.statistics.absolute_frequencies','probe.statistics.relative_frequencies','probe.statistics.cumulative_absolute_frequencies','probe.statistics.cumulative_relative_frequencies','probe.container.list'].includes(s?.operationSpec?.evaluatorId) ||

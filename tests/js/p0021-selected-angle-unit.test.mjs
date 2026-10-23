@@ -14,6 +14,7 @@ test('worker runtime loads sine and trigonometric contract modules',async()=>{co
 '/newcas/src/python/__init__.py',
 '/newcas/src/python/adapters/__init__.py',
 '/newcas/src/python/adapters/sympy_value_adapter.py',
+'/newcas/src/python/adapters/statistics_value_adapter.py',
 '/newcas/src/python/evaluator/__init__.py',
 '/newcas/src/python/evaluator/_binary_expression_contract.py',
 '/newcas/src/python/evaluator/_unary_value_contract.py',

@@ -1,5 +1,6 @@
 import { isSemanticIdentity } from '../semantics/identity.js';
-import {createValueV2Codec, encodedValueVersion} from './statistics-value.js';
+import {createValueV2Codec, encodedValueVersion, ValueCodecError} from './statistics-value.js';
+export {ValueCodecError} from './statistics-value.js';
 
 /**
  * P0005 — Value Contract v1, first implementation slice.
@@ -379,3 +380,9 @@ function ownVersion(value) {
 export function statisticsValue(data) {return valueV2Codec.build({valueVersion:2,kind:'statistics',data});}
 export function listV2(items) {return valueV2Codec.build({valueVersion:2,kind:'list',data:{items}});}
 export function sameValue(left,right) {return encodeValue(left)===encodeValue(right);}
+/** Materialized/structured-clone ingress: validate before expanding a v2 tree. */
+export function rehydrateValue(value) {
+  if(ownVersion(value)!==1)return valueV2Codec.build(value);
+  try{return decodeValue(JSON.stringify(value));}
+  catch{throw new ValueCodecError('invalid-value-encoding',{path:'/',reason:'leaf-shape'});}
+}

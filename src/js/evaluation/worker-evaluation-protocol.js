@@ -1,4 +1,4 @@
-import {decodeValue} from '../values/value.js';
+import {rehydrateValue,ValueCodecError} from '../values/value.js';
 import {createWorkerTransportError} from './worker-transport-diagnostics.js';
 /** P0021 Slice 11: transport of preselected evaluations across a Worker boundary.
  * No parser, OperationSpec selection, Python registry or document-owned state here.
@@ -28,6 +28,35 @@ function snapshot(value) {
   const copy = safe(value);
   if (copy === undefined || !isRecord(copy)) throw new TypeError('non-JSON-portable protocol payload');
   return copy;
+}
+/** Only actual typed fields are Value ingress. Options/instruction stay opaque.
+ * Used on both sides of postMessage and by the direct Pyodide entry point.
+ * Routing is this protocol's envelope contract; the Python gateway enforces
+ * the full P0010 request before any mathematical handler is called.
+ */
+export function snapshotSelectedValueFields(envelope,selection) {
+  let providers;
+  if(Object.hasOwn(envelope,'providers')) {
+    if(!Array.isArray(envelope.providers))throw new TypeError('providers must be an array');
+    providers=envelope.providers.map(p=>({...p,value:rehydrateValue(p?.value)}));
+  }
+  const request=selection.evaluationRequest;
+  let inputs;
+  if(request&&Object.hasOwn(request,'inputs')) {
+    if(!Array.isArray(request.inputs))throw new TypeError('selected inputs must be a Value array');
+    inputs=Array.from(request.inputs,value=>rehydrateValue(value));
+  }
+  return {envelope:snapshot({...envelope,...(providers===undefined?{}:{providers})}),
+    selection:snapshot({...selection,...(request?{evaluationRequest:{...request,...(inputs===undefined?{}:{inputs})}}:{})})};
+}
+export function prepareSelectedValuePayload(envelope,selection) {
+  validatePayload(envelope,selection);
+  return snapshotSelectedValueFields(envelope,selection);
+}
+function inputFailure(blockId,error) {
+  if(!(error instanceof ValueCodecError))return null;
+  const diagnostic=error.diagnostic;
+  return Object.freeze({blockId,status:'failure',code:diagnostic.code,message:diagnostic.code,diagnostic});
 }
 /** Main-thread adapter. `worker` exposes postMessage, addEventListener, removeEventListener.
  * Always pass current document revision; late replies are rejected, not committed.
@@ -96,10 +125,13 @@ export function createWorkerEvaluationClient({worker, getCurrentRevision, superv
     // A Worker clone/JSON boundary drops Object.freeze markers on public Values.
     // Rehydrate *once* at this shared boundary; never weaken P0005 validation.
     try {
-      const outcome = snapshot(message.outcome);
+      // Rehydrate before any JSON clone of the Value. Oversized/invalid v2
+      // must not be expanded first by snapshot() or accepted as a success.
+      const {value:wireValue,...fields}=message.outcome;
+      const outcome = snapshot(fields);
       if (outcome.status === 'success') {
-        if (!Object.hasOwn(outcome, 'value')) throw new TypeError('missing Value');
-        outcome.value = decodeValue(JSON.stringify(outcome.value));
+        if (!Object.hasOwn(message.outcome, 'value')) throw new TypeError('missing Value');
+        outcome.value = rehydrateValue(wireValue);
       }
       entry.resolve(Object.freeze(outcome));
     } catch {
@@ -132,7 +164,9 @@ export function createWorkerEvaluationClient({worker, getCurrentRevision, superv
   function evaluate(envelope, selection) {
     if (closed) return Promise.reject(createWorkerTransportError(terminalReason,
       terminalReason === 'WORKER_TIMEOUT' ? {timeoutMs: policy.timeoutMs} : {}));
-    const e = snapshot(envelope), s = snapshot(selection);
+    let e,s;
+    try{({envelope:e,selection:s}=prepareSelectedValuePayload(envelope,selection));}
+    catch(error){const failure=inputFailure(envelope?.blockId,error);if(failure)return Promise.resolve(failure);throw error;}
     validatePayload(e,s);
     let currentRevision;
     try { currentRevision = getCurrentRevision(); }
@@ -170,10 +204,13 @@ export function createWorkerEvaluationHandler({evaluateSelected, postMessage} = 
     const base = {protocol:PROTOCOL,kind:'result',requestId:msg.requestId,
       revision:msg.revision,blockId:msg.blockId};
     try {
-      const envelope = snapshot(msg.envelope), selection = snapshot(msg.selection);
-      validatePayload(envelope,selection);
-      if (msg.revision !== envelope.revision || msg.blockId !== envelope.blockId)
+      // Correlation must be established before producing a typed-input failure.
+      validatePayload(msg.envelope,msg.selection);
+      if (msg.revision !== msg.envelope.revision || msg.blockId !== msg.envelope.blockId)
         throw new TypeError('request correlation mismatch');
+      let envelope,selection;
+      try{({envelope,selection}=prepareSelectedValuePayload(msg.envelope,msg.selection));}
+      catch(error){const failure=inputFailure(msg.blockId,error);if(!failure)throw error;postMessage({...base,outcome:failure});return;}
       const outcome = snapshot(await evaluateSelected(envelope,selection));
       if (outcome.blockId !== envelope.blockId || !['success','failure'].includes(outcome.status))
         throw new TypeError('invalid evaluation outcome');

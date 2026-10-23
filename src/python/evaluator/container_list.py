@@ -1,5 +1,7 @@
 """S100c: explicit preselected list construction from materialized Values."""
 from copy import deepcopy
+import json
+from src.python.adapters.statistics_value_adapter import materialize_value, encode_value, list_v2, ValueCodecError
 from src.python.evaluator._binary_expression_contract import _failure
 
 
@@ -19,10 +21,17 @@ def evaluate_list_request(request, operation_spec):
     if signatures != [{'arguments': [{'name': 'item', 'role': 'value', 'variadic': True}]}]:
         raise ValueError('expected selected variadic value list constructor')
     inputs = request.get('inputs')
-    if not isinstance(inputs, list) or any(not isinstance(v, dict) or
-            set(v) != {'valueVersion', 'kind', 'data'} or v['valueVersion'] != 1 for v in inputs):
+    if not isinstance(inputs, list):
         raise ValueError('list inputs must be materialized public Values')
+    try:
+        values = [materialize_value(v) for v in inputs]
+        if any(v['valueVersion'] == 2 for v in values):
+            # Immutable codec objects never cross JSON directly.
+            value = json.loads(encode_value(list_v2(values)))
+            return {'evaluationOutcomeVersion': 1, 'status': 'success', 'value': value}
+    except ValueCodecError as error:
+        return _failure(error.diagnostic['code'], error.diagnostic['parameters'])
     # No shape inference, conversion, sorting, expression evaluation or lookup.
-    # Public Values are validated/rehydrated by the existing JS boundary.
+    # Both the JS ingress and Python codec validate structure, not mathematics.
     return {'evaluationOutcomeVersion': 1, 'status': 'success', 'value': {
         'valueVersion': 1, 'kind': 'list', 'data': {'items': deepcopy(inputs)}}}
