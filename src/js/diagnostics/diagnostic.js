@@ -55,3 +55,23 @@ export function diagnosticFromSpec(spec,parameters){
  for(let [n,v] of Object.entries(parameters))check(spec.parameters[n].type,v,n);
  return diagnostic(spec.code,parameters)
 }
+
+// Accepted P0005 v2 codec producers; no mathematical/statistical diagnostics.
+export const VALUE_CODEC_DIAGNOSTIC_SPECS = Object.freeze({
+ 'unsupported-value-encoding': diagnosticSpec({code:'unsupported-value-encoding',parameters:{path:'string',feature:'string',actual:'string',supported:'string-list'}}),
+ 'invalid-value-encoding': diagnosticSpec({code:'invalid-value-encoding',parameters:{path:'string',reason:'string'}}),
+ 'value-codec-resource-limit': diagnosticSpec({code:'value-codec-resource-limit',parameters:{path:'string',resource:'string',limit:'non-negative-integer'}}),
+});
+const CODEC_ENUMS = Object.freeze({
+ feature: new Set(['value-version','value-kind','statistics-variant']),
+ reason: new Set(['json-syntax','record-shape','field-set','version-shape','leaf-shape','variant-shape','nesting-version','mutable-value','non-json-data']),
+ resource: new Set(['depth','nodes','encoded-bytes']),
+});
+export function valueCodecDiagnostic(code, parameters) {
+ const spec=VALUE_CODEC_DIAGNOSTIC_SPECS[code];
+ if(!spec)fail('unknown Value codec producer');
+ for(const [name,allowed] of Object.entries(CODEC_ENUMS)) {
+  if(Object.hasOwn(parameters,name)&&!allowed.has(parameters[name]))fail(`invalid codec ${name}`);
+ }
+ return diagnosticFromSpec(spec,parameters);
+}

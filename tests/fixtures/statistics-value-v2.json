@@ -1,0 +1,3302 @@
+[
+  {
+    "name": "grouped",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "grouped-data",
+        "basisKind": "interval-grouped",
+        "classes": [
+          {
+            "lower": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "0"
+                }
+              }
+            },
+            "upper": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "10"
+                }
+              }
+            },
+            "lowerClosed": true,
+            "upperClosed": true,
+            "count": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "9007199254740993"
+                }
+              }
+            }
+          },
+          {
+            "lower": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "10"
+                }
+              }
+            },
+            "upper": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "20"
+                }
+              }
+            },
+            "lowerClosed": false,
+            "upperClosed": true,
+            "count": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "0"
+                }
+              }
+            }
+          },
+          {
+            "lower": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "20"
+                }
+              }
+            },
+            "upper": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "40"
+                }
+              }
+            },
+            "lowerClosed": false,
+            "upperClosed": true,
+            "count": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "5"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}"
+  },
+  {
+    "name": "symbolic-result",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "rational",
+                  "numerator": "1",
+                  "denominator": "2"
+                },
+                {
+                  "op": "pow",
+                  "base": {
+                    "op": "integer",
+                    "value": "409"
+                  },
+                  "exponent": {
+                    "op": "rational",
+                    "numerator": "1",
+                    "denominator": "2"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"mul\",\"args\":[{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"},{\"op\":\"pow\",\"base\":{\"op\":\"integer\",\"value\":\"409\"},\"exponent\":{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"}}]}}}}}"
+  },
+  {
+    "name": "quartiles-result",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "quartiles",
+        "methodId": "piecewise-uniform-cdf/v1",
+        "estimand": "within-class-model-quartiles/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "2"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "3"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "list",
+          "data": {
+            "items": [
+              {
+                "valueVersion": 1,
+                "kind": "expression",
+                "data": {
+                  "expr": {
+                    "op": "rational",
+                    "numerator": "35",
+                    "denominator": "3"
+                  }
+                }
+              },
+              {
+                "valueVersion": 1,
+                "kind": "expression",
+                "data": {
+                  "expr": {
+                    "op": "integer",
+                    "value": "20"
+                  }
+                }
+              },
+              {
+                "valueVersion": 1,
+                "kind": "expression",
+                "data": {
+                  "expr": {
+                    "op": "integer",
+                    "value": "30"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"quartiles\",\"methodId\":\"piecewise-uniform-cdf/v1\",\"estimand\":\"within-class-model-quartiles/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"2\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"3\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"list\",\"data\":{\"items\":[{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"rational\",\"numerator\":\"35\",\"denominator\":\"3\"}}},{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"30\"}}}]}}}}"
+  },
+  {
+    "name": "approximate-result",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "approximate",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "approx",
+              "value": "10.111874208078341",
+              "precisionBits": 100
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"approximate\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"approx\",\"value\":\"10.111874208078341\",\"precisionBits\":100}}}}}"
+  },
+  {
+    "name": "exact-known",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "known",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "rational",
+                  "numerator": "1",
+                  "denominator": "2"
+                },
+                {
+                  "op": "pow",
+                  "base": {
+                    "op": "integer",
+                    "value": "409"
+                  },
+                  "exponent": {
+                    "op": "rational",
+                    "numerator": "1",
+                    "denominator": "2"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"known\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"mul\",\"args\":[{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"},{\"op\":\"pow\",\"base\":{\"op\":\"integer\",\"value\":\"409\"},\"exponent\":{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"}}]}}}}}"
+  },
+  {
+    "name": "exact-estimated",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "rational",
+                  "numerator": "1",
+                  "denominator": "2"
+                },
+                {
+                  "op": "pow",
+                  "base": {
+                    "op": "integer",
+                    "value": "409"
+                  },
+                  "exponent": {
+                    "op": "rational",
+                    "numerator": "1",
+                    "denominator": "2"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"mul\",\"args\":[{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"},{\"op\":\"pow\",\"base\":{\"op\":\"integer\",\"value\":\"409\"},\"exponent\":{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"}}]}}}}}"
+  },
+  {
+    "name": "approximate-known",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "approximate",
+        "estimateStatus": "known",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "approx",
+              "value": "10.111874208078341",
+              "precisionBits": 100
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"approximate\",\"estimateStatus\":\"known\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"approx\",\"value\":\"10.111874208078341\",\"precisionBits\":100}}}}}"
+  },
+  {
+    "name": "approximate-estimated",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "approximate",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "approx",
+              "value": "10.111874208078341",
+              "precisionBits": 100
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"approximate\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"approx\",\"value\":\"10.111874208078341\",\"precisionBits\":100}}}}}"
+  },
+  {
+    "name": "derived-result",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "transformed-estimate",
+        "methodId": "shift-estimate/v1",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "operand",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "statistical-result",
+                  "statisticId": "standard-deviation",
+                  "methodId": "future-moments/v999999999999999999999999",
+                  "estimand": "model-standard-deviation/v1",
+                  "arithmetic": "exact",
+                  "estimateStatus": "estimated",
+                  "assumptions": [
+                    "uniform-within-class/v1"
+                  ],
+                  "provenance": {
+                    "inputs": [
+                      {
+                        "role": "data",
+                        "value": {
+                          "valueVersion": 2,
+                          "kind": "statistics",
+                          "data": {
+                            "variant": "grouped-data",
+                            "basisKind": "interval-grouped",
+                            "classes": [
+                              {
+                                "lower": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "0"
+                                    }
+                                  }
+                                },
+                                "upper": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "10"
+                                    }
+                                  }
+                                },
+                                "lowerClosed": true,
+                                "upperClosed": true,
+                                "count": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "9007199254740993"
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "lower": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "10"
+                                    }
+                                  }
+                                },
+                                "upper": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "20"
+                                    }
+                                  }
+                                },
+                                "lowerClosed": false,
+                                "upperClosed": true,
+                                "count": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "0"
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "lower": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "20"
+                                    }
+                                  }
+                                },
+                                "upper": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "40"
+                                    }
+                                  }
+                                },
+                                "lowerClosed": false,
+                                "upperClosed": true,
+                                "count": {
+                                  "valueVersion": 1,
+                                  "kind": "expression",
+                                  "data": {
+                                    "expr": {
+                                      "op": "integer",
+                                      "value": "5"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "mul",
+                        "args": [
+                          {
+                            "op": "rational",
+                            "numerator": "1",
+                            "denominator": "2"
+                          },
+                          {
+                            "op": "pow",
+                            "base": {
+                              "op": "integer",
+                              "value": "409"
+                            },
+                            "exponent": {
+                              "op": "rational",
+                              "numerator": "1",
+                              "denominator": "2"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "role": "offset",
+              "value": {
+                "valueVersion": 1,
+                "kind": "expression",
+                "data": {
+                  "expr": {
+                    "op": "integer",
+                    "value": "2"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "rational",
+                  "numerator": "1",
+                  "denominator": "2"
+                },
+                {
+                  "op": "pow",
+                  "base": {
+                    "op": "integer",
+                    "value": "409"
+                  },
+                  "exponent": {
+                    "op": "rational",
+                    "numerator": "1",
+                    "denominator": "2"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"transformed-estimate\",\"methodId\":\"shift-estimate/v1\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"operand\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"mul\",\"args\":[{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"},{\"op\":\"pow\",\"base\":{\"op\":\"integer\",\"value\":\"409\"},\"exponent\":{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"}}]}}}}}},{\"role\":\"offset\",\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"2\"}}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"mul\",\"args\":[{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"},{\"op\":\"pow\",\"base\":{\"op\":\"integer\",\"value\":\"409\"},\"exponent\":{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"2\"}}]}}}}}"
+  },
+  {
+    "name": "list-empty",
+    "value": {
+      "valueVersion": 2,
+      "kind": "list",
+      "data": {
+        "items": []
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"list\",\"data\":{\"items\":[]}}"
+  },
+  {
+    "name": "list-v1-only",
+    "value": {
+      "valueVersion": 2,
+      "kind": "list",
+      "data": {
+        "items": [
+          {
+            "valueVersion": 1,
+            "kind": "expression",
+            "data": {
+              "expr": {
+                "op": "integer",
+                "value": "2"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"list\",\"data\":{\"items\":[{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"2\"}}}]}}"
+  },
+  {
+    "name": "list-v2-only",
+    "value": {
+      "valueVersion": 2,
+      "kind": "list",
+      "data": {
+        "items": [
+          {
+            "valueVersion": 2,
+            "kind": "statistics",
+            "data": {
+              "variant": "grouped-data",
+              "basisKind": "interval-grouped",
+              "classes": [
+                {
+                  "lower": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "0"
+                      }
+                    }
+                  },
+                  "upper": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "10"
+                      }
+                    }
+                  },
+                  "lowerClosed": true,
+                  "upperClosed": true,
+                  "count": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "9007199254740993"
+                      }
+                    }
+                  }
+                },
+                {
+                  "lower": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "10"
+                      }
+                    }
+                  },
+                  "upper": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "20"
+                      }
+                    }
+                  },
+                  "lowerClosed": false,
+                  "upperClosed": true,
+                  "count": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "0"
+                      }
+                    }
+                  }
+                },
+                {
+                  "lower": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "20"
+                      }
+                    }
+                  },
+                  "upper": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "40"
+                      }
+                    }
+                  },
+                  "lowerClosed": false,
+                  "upperClosed": true,
+                  "count": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "5"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"list\",\"data\":{\"items\":[{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}]}}"
+  },
+  {
+    "name": "list-mixed",
+    "value": {
+      "valueVersion": 2,
+      "kind": "list",
+      "data": {
+        "items": [
+          {
+            "valueVersion": 1,
+            "kind": "expression",
+            "data": {
+              "expr": {
+                "op": "integer",
+                "value": "2"
+              }
+            }
+          },
+          {
+            "valueVersion": 2,
+            "kind": "statistics",
+            "data": {
+              "variant": "grouped-data",
+              "basisKind": "interval-grouped",
+              "classes": [
+                {
+                  "lower": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "0"
+                      }
+                    }
+                  },
+                  "upper": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "10"
+                      }
+                    }
+                  },
+                  "lowerClosed": true,
+                  "upperClosed": true,
+                  "count": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "9007199254740993"
+                      }
+                    }
+                  }
+                },
+                {
+                  "lower": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "10"
+                      }
+                    }
+                  },
+                  "upper": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "20"
+                      }
+                    }
+                  },
+                  "lowerClosed": false,
+                  "upperClosed": true,
+                  "count": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "0"
+                      }
+                    }
+                  }
+                },
+                {
+                  "lower": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "20"
+                      }
+                    }
+                  },
+                  "upper": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "40"
+                      }
+                    }
+                  },
+                  "lowerClosed": false,
+                  "upperClosed": true,
+                  "count": {
+                    "valueVersion": 1,
+                    "kind": "expression",
+                    "data": {
+                      "expr": {
+                        "op": "integer",
+                        "value": "5"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"list\",\"data\":{\"items\":[{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"2\"}}},{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}]}}"
+  },
+  {
+    "name": "list-nested",
+    "value": {
+      "valueVersion": 2,
+      "kind": "list",
+      "data": {
+        "items": [
+          {
+            "valueVersion": 2,
+            "kind": "list",
+            "data": {
+              "items": [
+                {
+                  "valueVersion": 2,
+                  "kind": "statistics",
+                  "data": {
+                    "variant": "grouped-data",
+                    "basisKind": "interval-grouped",
+                    "classes": [
+                      {
+                        "lower": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "0"
+                            }
+                          }
+                        },
+                        "upper": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "10"
+                            }
+                          }
+                        },
+                        "lowerClosed": true,
+                        "upperClosed": true,
+                        "count": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "9007199254740993"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "lower": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "10"
+                            }
+                          }
+                        },
+                        "upper": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "20"
+                            }
+                          }
+                        },
+                        "lowerClosed": false,
+                        "upperClosed": true,
+                        "count": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "0"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "lower": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "20"
+                            }
+                          }
+                        },
+                        "upper": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "40"
+                            }
+                          }
+                        },
+                        "lowerClosed": false,
+                        "upperClosed": true,
+                        "count": {
+                          "valueVersion": 1,
+                          "kind": "expression",
+                          "data": {
+                            "expr": {
+                              "op": "integer",
+                              "value": "5"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"list\",\"data\":{\"items\":[{\"valueVersion\":2,\"kind\":\"list\",\"data\":{\"items\":[{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}]}}]}}"
+  },
+  {
+    "name": "payload-function",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "function",
+          "data": {
+            "parameters": [
+              {
+                "identity": {
+                  "identityVersion": 1,
+                  "kind": "binder",
+                  "id": "b:1",
+                  "displayName": "x"
+                }
+              }
+            ],
+            "body": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "symbolRef",
+                  "identity": {
+                    "identityVersion": 1,
+                    "kind": "binder",
+                    "id": "b:1",
+                    "displayName": "x"
+                  }
+                }
+              }
+            },
+            "capturedValues": []
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"function\",\"data\":{\"parameters\":[{\"identity\":{\"identityVersion\":1,\"kind\":\"binder\",\"id\":\"b:1\",\"displayName\":\"x\"}}],\"body\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"symbolRef\",\"identity\":{\"identityVersion\":1,\"kind\":\"binder\",\"id\":\"b:1\",\"displayName\":\"x\"}}}},\"capturedValues\":[]}}}}"
+  },
+  {
+    "name": "payload-relation",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "relation",
+          "data": {
+            "operator": "eq",
+            "left": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "1"
+                }
+              }
+            },
+            "right": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"relation\",\"data\":{\"operator\":\"eq\",\"left\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"1\"}}},\"right\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"1\"}}}}}}}"
+  },
+  {
+    "name": "payload-set",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "set",
+          "data": {
+            "setKind": "interval",
+            "lower": {
+              "bound": "negative-infinity"
+            },
+            "upper": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "integer",
+                  "value": "2"
+                }
+              }
+            },
+            "lowerClosed": false,
+            "upperClosed": true
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"set\",\"data\":{\"setKind\":\"interval\",\"lower\":{\"bound\":\"negative-infinity\"},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"2\"}}},\"lowerClosed\":false,\"upperClosed\":true}}}}"
+  },
+  {
+    "name": "payload-vector",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "vector",
+          "data": {
+            "items": [
+              {
+                "valueVersion": 1,
+                "kind": "expression",
+                "data": {
+                  "expr": {
+                    "op": "integer",
+                    "value": "1"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"vector\",\"data\":{\"items\":[{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"1\"}}}]}}}}"
+  },
+  {
+    "name": "payload-matrix",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "matrix",
+          "data": {
+            "rows": 1,
+            "cols": 1,
+            "entries": [
+              [
+                {
+                  "valueVersion": 1,
+                  "kind": "expression",
+                  "data": {
+                    "expr": {
+                      "op": "integer",
+                      "value": "1"
+                    }
+                  }
+                }
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"matrix\",\"data\":{\"rows\":1,\"cols\":1,\"entries\":[[{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"1\"}}}]]}}}}"
+  },
+  {
+    "name": "payload-quantity",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "quantity",
+          "data": {
+            "magnitude": {
+              "valueVersion": 1,
+              "kind": "expression",
+              "data": {
+                "expr": {
+                  "op": "rational",
+                  "numerator": "1",
+                  "denominator": "3"
+                }
+              }
+            },
+            "unit": "m"
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"quantity\",\"data\":{\"magnitude\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"rational\",\"numerator\":\"1\",\"denominator\":\"3\"}}},\"unit\":\"m\"}}}}"
+  },
+  {
+    "name": "payload-large-dimension",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "matrix",
+          "data": {
+            "rows": 0,
+            "cols": 1000000000000000100,
+            "entries": []
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"matrix\",\"data\":{\"rows\":0,\"cols\":1000000000000000100,\"entries\":[]}}}}"
+  },
+  {
+    "name": "payload-unicode-surrogates",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "constant",
+              "name": "α😀\ud800x\udfff\n\""
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"constant\",\"name\":\"α😀\\ud800x\\udfff\\n\\\"\"}}}}}"
+  },
+  {
+    "name": "payload-optional-approx-precision",
+    "value": {
+      "valueVersion": 2,
+      "kind": "statistics",
+      "data": {
+        "variant": "statistical-result",
+        "statisticId": "standard-deviation",
+        "methodId": "future-moments/v999999999999999999999999",
+        "estimand": "model-standard-deviation/v1",
+        "arithmetic": "exact",
+        "estimateStatus": "estimated",
+        "assumptions": [
+          "uniform-within-class/v1"
+        ],
+        "provenance": {
+          "inputs": [
+            {
+              "role": "data",
+              "value": {
+                "valueVersion": 2,
+                "kind": "statistics",
+                "data": {
+                  "variant": "grouped-data",
+                  "basisKind": "interval-grouped",
+                  "classes": [
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "lowerClosed": true,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "9007199254740993"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "0"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "lower": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "20"
+                          }
+                        }
+                      },
+                      "upper": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "40"
+                          }
+                        }
+                      },
+                      "lowerClosed": false,
+                      "upperClosed": true,
+                      "count": {
+                        "valueVersion": 1,
+                        "kind": "expression",
+                        "data": {
+                          "expr": {
+                            "op": "integer",
+                            "value": "5"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "value": {
+          "valueVersion": 1,
+          "kind": "expression",
+          "data": {
+            "expr": {
+              "op": "approx",
+              "value": "-0.0001"
+            }
+          }
+        }
+      }
+    },
+    "canonical": "{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"statistical-result\",\"statisticId\":\"standard-deviation\",\"methodId\":\"future-moments/v999999999999999999999999\",\"estimand\":\"model-standard-deviation/v1\",\"arithmetic\":\"exact\",\"estimateStatus\":\"estimated\",\"assumptions\":[\"uniform-within-class/v1\"],\"provenance\":{\"inputs\":[{\"role\":\"data\",\"value\":{\"valueVersion\":2,\"kind\":\"statistics\",\"data\":{\"variant\":\"grouped-data\",\"basisKind\":\"interval-grouped\",\"classes\":[{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"lowerClosed\":true,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"9007199254740993\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"10\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"0\"}}}},{\"lower\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"20\"}}},\"upper\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"40\"}}},\"lowerClosed\":false,\"upperClosed\":true,\"count\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"integer\",\"value\":\"5\"}}}}]}}}]},\"value\":{\"valueVersion\":1,\"kind\":\"expression\",\"data\":{\"expr\":{\"op\":\"approx\",\"value\":\"-0.0001\"}}}}}"
+  }
+]

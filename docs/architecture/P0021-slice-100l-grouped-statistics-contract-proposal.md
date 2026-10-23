@@ -1,6 +1,8 @@
 # S100l — kontraktforslag for intervalgrupperede observationer
 
 **Status: INFORMATIVE / PROPOSED — ikke FROZEN, ikke en accepteret ADR.**
+
+**Beslutningsopdatering:** Se [S100l beslutningslukning](P0021-slice-100l-decision-resolution.md). Brugeren har nu godkendt dansk højrelukket klassekonvention og metode A `piecewise-uniform-cdf/v1`, inklusive grouped singleton og plateau-regler. Addendum skelner USER-ACCEPTED matematik fra PROPOSED arkitektur og OPEN kontraktgates. Forslaget her er fortsat informativt; ingen ny Value-/dokument-/persistenskontrakt er accepteret eller implementeret.
 22. oktober 2026. Basis: `architecture-v1-implementation`, checkpoint `c5fd1f7`, med S100k verificeret særskilt. Dette dokument indeholder analyse, referenceberegninger og beslutningsforslag. **Ingen grupperet produktionsfunktion, parserregel, Value-kind, diagnosekode, dokumentindstilling eller persistensændring er implementeret i S100l.**
 
 ## 1. Konklusion og beslutningsgrænse
@@ -9,7 +11,7 @@ Anbefalingen er en eksplicit intervalgrupperet datamodel med **navngivne klassef
 
 Brugerens supplerende danske konvention indgår direkte: **venstreåbne, højrelukkede klasser anbefales som dokumentstandard for danske statistikdokumenter**, eksempelvis `]0;10]`, `]10;20]`, `]20;40]`. Dette er en matematisk konvention. En fælles grænse tilhører klassen til venstre. Denne retning er brugerfastlagt; den konkrete dokument-/Value-kontrakt er stadig et forslag. Eksempler med den modsatte lukning i den oprindelige opgavetekst er ikke den anbefalede danske standard.
 
-De vigtigste åbne valg er den fremtidige typedata-/resultatrepræsentation, propagation ved aritmetik med estimater, den præcise interpolationsmetode og integration af dokumentkonventioner. De kræver eksplicit godkendelse før implementering. En P0005-/P0010-ændring skal versionsvurderes; S100l vedtager ingen ændring af frosne kontrakter.
+De vigtigste åbne valg er den fremtidige typedata-/resultatrepræsentation, propagation ved aritmetik med estimater og integration af dokumentkonventioner. Interpolationsmetode A er nu brugeraccepteret som beskrevet i addendum. De resterende arkitekturvalg kræver eksplicit godkendelse før implementering. En P0005-/P0010-ændring skal versionsvurderes; S100l vedtager ingen ændring af frosne kontrakter.
 
 ## 2. Eksisterende kontrakter og faktiske kodefund
 
@@ -69,7 +71,7 @@ statisticsConventions {
 displayLocale: "da-DK"  // separat præsentationsvalg
 ```
 
-Profilen vælges ved oprettelse af et dansk statistikdokument og bliver autoritativ dokumentdata, ikke en aflæsning af det aktuelle UI-sprog ved hver beregning/genåbning. Alle materialiserede klasser har konkrete booleans. Metode-id'er for grupperet interpolation/momenter skal ligeledes fastlægges eksplicit; deres foreslåede valg nedenfor er endnu ikke godkendt som profildefaults.
+Profilen vælges ved oprettelse af et dansk statistikdokument og bliver autoritativ dokumentdata, ikke en aflæsning af det aktuelle UI-sprog ved hver beregning/genåbning. Alle materialiserede klasser har konkrete booleans. Interpolationsmetode A er nu matematisk accepteret; dens integration i en konkret versionsbestemt dokumentprofil er fortsat OPEN. Momentmetoden er fortsat et forslag.
 
 At skifte præsentation fra dansk `]0;10]` til international `(0,10]` ændrer **ingen** flag, counts eller beregning. `[0,10)` er en anden matematisk klasse og kan ikke vælges alene ved sprogskift. Decimal-/argumentseparatorer og konkrete inputaliaser er fortsat en parser-/languageVersion-opgave; notationseksemplerne her er ikke ny fungerende kildesyntaks.
 
@@ -203,7 +205,7 @@ R1, N=10: Q1 bruger rang 3 →25/2; Q2 gennemsnitsdanner rang 5 og 6 →245/12; 
 
 R4: én observation i `]0;10]`. A giver [5/2,5,15/2] som **modelquantiler**. B giver [5,5,5], fordi samme ukendte observation erstattes af sit midpoint og H's singletonregel gentager den. Ingen af delene er den kendte rå observationsværdi; faktisk x kan være ethvert tilladt punkt i klassen. H's besluttede `[x,x,x]` for kendt diskret x er uændret.
 
-**Anbefal A** til en første grupperet sumkurve-/interpolationsfunktion, fordi dens quantiler og de foreslåede linjestykker er én sammenhængende model. Metoden skal navngives, estimand mærkes og afvigelsen fra rå H-kvartiler forklares. Vælg **B**, hvis målet i stedet er at bevare det empiriske H-estimand under en eksplicit within-class-model. Bør ikke eksponeres som en tavs biblioteksstandard. **Brugeren skal godkende metode og grouped N=1-adfærd før implementering**; S100l ændrer ikke H's konvention eller en dokumentdefault automatisk.
+**USER-ACCEPTED efter analysen:** A er nu valgt som standard, inklusive grouped N=1-adfærd, kumuleret grænse og venstre plateauende; se beslutningsaddendum. B bevares ovenfor som analyseret alternativ, ikke som valgt standard. Metode/estimand/modelstatus skal fortsat bæres eksplicit. H's rå konvention ændres ikke; dokumentprofil og Value-/transportkontrakt afventer fortsat godkendelse.
 
 ## 9. Faktiske ekstremværdier og foreslåede diagnoser
 
@@ -234,7 +236,7 @@ Domænefejl kan genbruge `type-mismatch`/`dimension-mismatch` med konkrete produ
 | Klassemodel | Navngivne records, eksakte grænser/counts, sammenhængende ikke-overlappende partition, nulklasser bevaret | Konkret fremtidig P0005-/inputkontrakt og versionsvurdering kræves |
 | Resultater | Rig StatisticsValue før automatisk scalar-aritmetik; dataBasis/metode/estimand/status følger Value | P0005/equality/extraction/arithmetikgate; ingen implementering her |
 | Momentmetode | Midpoint-estimater med n og separat n−1; ingen skjult within-class-varians | Godkend metode-id og målbetydning |
-| Grupperede kvartiler | A til model/sumkurve; B som eksplicit alternativ til empirisk H-estimand | Brugerbeslutning inklusive grouped N=1 og plateau-regel kræves |
+| Grupperede kvartiler | **USER-ACCEPTED:** A `piecewise-uniform-cdf/v1`, inklusive grouped N=1 og plateau-regler | Matematik besluttet; typed resultattransport og konkret implementering afventer kontraktgate |
 | Yderklasser | Først finite beregninger; ingen gættede midtpunkter eller bredder | Afgræns capabilities, utilstrækkelig-information og evt. lokale quantiler |
 | Huller/overlap | Afvis i første version; kendt tomt interval repræsenteres med nulcount | Godkend validator-/producentschema før kode |
 | Ekstremværdier | Struktureret afvisning af faktisk min/max/femtalsresumé uden fakta | Godkend diagnoseproducent; senere særskilt klassegrænse-/intervaloperation muligt |
@@ -245,7 +247,7 @@ Domænefejl kan genbruge `type-mismatch`/`dimension-mismatch` med konkrete produ
 2. **Dokumentbinding:** Vedtag dokument-/opgaveprofil og persistensmigrering, hvis defaults skal påvirke kildens betydning. Test uændret semantik ved UI-sprogskift, `[0;10]`-undtagelsens stabilitet, historiske metode-id'er, autoritativ konventionsændring/invalidering og ADR-0005-snapshots. Ingen localStorage-default som erstatning.
 3. **Kun eksakte klassefakta:** Frekvenser, kumulerede værdier, finite bredder og density-/sumkurvedata med eksplicit skelnen mellem kendte grænsepunkter og interpolerede segmenter. R1, nulklasse, ulige bredder og store counts er RED-referencecases; stadig ingen grafik.
 4. **Midpoint-estimater:** Mean/variance/std med godkendt metode, estimatstatus og typed transport. Test R1/R2, sample-total<2, åbne yderklasser og propagation/afvisning ved aritmetik efter den vedtagne kontrakt.
-5. **Grupperet quantilemetode:** Implementér den valgte A/B-metode, ikke begge som skjulte defaults. R1/R3/R4, præcis kumuleret grænse, nulclasser, n=1/2/3, rationals og store counts/rangplaceringer; actual min/max må fortsat fejle struktureret. Kør relevante rå/diskrete regressioner.
+5. **Grupperet quantilemetode:** Implementér den nu brugeraccepterede metode A efter Value-/transportgaten, ikke B som en skjult alternativ default. R1/R3/R4, præcis kumuleret grænse, nulclasser, n=1/2/3, rationals og store counts/rangplaceringer; actual min/max må fortsat fejle struktureret. Kør relevante rå/diskrete regressioner.
 
 Alle fremtidige slices skal have egne RED→GREEN-beviser, korrekt providerbinding/genberegning, virkelig Worker/Pyodide-accept og afgrænset Git-diff. Parser, grafik/Plotly, renderer, Excel, student-release og nye frontend-flows er ikke en del af denne analyse.
 

@@ -1,4 +1,5 @@
 import { isSemanticIdentity } from '../semantics/identity.js';
+import {createValueV2Codec, encodedValueVersion} from './statistics-value.js';
 
 /**
  * P0005 — Value Contract v1, first implementation slice.
@@ -335,6 +336,7 @@ export function quantity(magnitude, unit) {
 }
 
 export function encodeValue(value) {
+  if(ownVersion(value)!==1)return valueV2Codec.encode(value);
   validateValue(value);
   // Object insertion order is controlled by constructors/decoder in this
   // first slice. Full unordered-set canonicalization belongs to the Set slice.
@@ -342,6 +344,7 @@ export function encodeValue(value) {
 }
 
 export function decodeValue(serialized) {
+  if(encodedValueVersion(serialized)!==1)return valueV2Codec.decode(serialized);
   if (typeof serialized !== 'string') fail('encoded Value must be a string');
 
   let parsed;
@@ -358,9 +361,21 @@ export function decodeValue(serialized) {
 
 export function isValue(value) {
   try {
+    if(ownVersion(value)!==1)return valueV2Codec.recognize(value);
     validateValue(value);
     return true;
   } catch {
     return false;
   }
 }
+
+// The old recursive validator and all v1 factories above remain v1-only.
+const valueV2Codec=createValueV2Codec(validateValue);
+function ownVersion(value) {
+  if(!value||typeof value!=='object')return undefined;
+  const d=Object.getOwnPropertyDescriptor(value,'valueVersion');
+  return d&&Object.hasOwn(d,'value')?d.value:undefined;
+}
+export function statisticsValue(data) {return valueV2Codec.build({valueVersion:2,kind:'statistics',data});}
+export function listV2(items) {return valueV2Codec.build({valueVersion:2,kind:'list',data:{items}});}
+export function sameValue(left,right) {return encodeValue(left)===encodeValue(right);}
